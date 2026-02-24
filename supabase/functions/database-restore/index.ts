@@ -28,8 +28,8 @@ const AUTH_USER_FK_COLUMNS: Record<string, string[]> = {
 // Tables to skip entirely (they reference auth.users as PK/unique)
 const SKIP_TABLES = ["profiles", "user_roles"];
 
-// Tables that are single-row with no PK — handle specially
-const SINGLE_ROW_TABLES = ["visitor_stats"];
+// Tables to skip entirely (views or non-insertable)
+const SKIP_VIEWS = ["visitor_stats"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -102,29 +102,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Null out auth.users FK columns
-    const fkCols = AUTH_USER_FK_COLUMNS[table];
-    const cleanedRows = fkCols && fkCols.length > 0
-      ? rows.map((row: any) => {
-          const cleaned = { ...row };
-          for (const col of fkCols) {
-            cleaned[col] = null;
-          }
-          return cleaned;
-        })
-      : rows;
-
-    // Handle single-row tables (no PK)
-    if (SINGLE_ROW_TABLES.includes(table)) {
-      const { error } = await adminClient.from(table).upsert(cleanedRows[0]);
-      if (error) {
-        return new Response(
-          JSON.stringify({ table, success: 0, errors: 1, message: error.message }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // Skip views (not insertable)
+    if (SKIP_VIEWS.includes(table)) {
       return new Response(
-        JSON.stringify({ table, success: 1, errors: 0 }),
+        JSON.stringify({ table, success: 0, errors: 0, message: "Skipped (view)" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
