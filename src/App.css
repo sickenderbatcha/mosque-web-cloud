@@ -1,4 +1,5 @@
 /* App-specific styles - cleaned up from default Vite template */
+/* App styles */
 
 /* Removed default Vite #root styles that caused layout issues:
    - max-width: 1280px (restricted full-width layouts)
