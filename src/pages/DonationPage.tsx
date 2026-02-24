@@ -391,6 +391,8 @@ const SubscriptionForm = () => {
 
     setLoading(true);
 
+    let createdSubscriptionId: string | undefined;
+
     try {
       // Check if any months are already paid in subscription_slots
       if (subscriptionType === "monthly") {
@@ -488,6 +490,7 @@ const SubscriptionForm = () => {
       }).select().single();
 
       if (insertError) throw insertError;
+      createdSubscriptionId = subscriptionData.id;
 
       // Create Razorpay order
       const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
@@ -624,6 +627,7 @@ const SubscriptionForm = () => {
       });
       // Offer cash payment request on error
       setCashRequestData({
+        subscriptionId: createdSubscriptionId,
         amount: totalAmount,
         failureReason: error.message || "Payment initiation failed",
       });
