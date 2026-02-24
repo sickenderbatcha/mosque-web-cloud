@@ -1,0 +1,12 @@
+/* App-specific styles - cleaned up from default Vite template */
+
+/* Removed default Vite #root styles that caused layout issues:
+   - max-width: 1280px (restricted full-width layouts)
+   - padding: 2rem (added unwanted spacing)
+   - text-align: center (forced centered text everywhere)
+*/
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}

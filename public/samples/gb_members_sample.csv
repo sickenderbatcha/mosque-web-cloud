@@ -1,0 +1,6 @@
+member_id,full_name,father_name,family_name,phone,email,address,occupation,blood_group,date_of_birth,date_of_marriage,is_active
+00001,முஹம்மது அலி,இப்ராஹீம்,அன்சாரி,9876543210,ali@example.com,"123, Main Street, Chennai - 600001",வணிகம்,A+,15-05-1985,20-06-2010,true
+00002,அஹ்மத் கான்,யூசுப் கான்,கான்,9876543211,ahmed@example.com,"456, Second Street, Chennai - 600002",ஆசிரியர்,B+,22-08-1990,10-03-2015,true
+00003,Yusuf Ibrahim,Abdullah,Syed,9876543212,yusuf@example.com,"789, Third Avenue, Chennai - 600003",Doctor,O+,05-12-1988,25-11-2012,true
+00004,Imran Ahmed,Zakir Ahmed,Shaikh,9876543213,,"101, Fourth Lane, Chennai - 600004",Engineer,AB+,18-03-1992,14-02-2018,true
+00005,Farhan Ali,Rashid Ali,Ansari,9876543214,farhan@example.com,"202, Fifth Road, Chennai - 600005",,B-,30-07-1995,05-01-2020,false

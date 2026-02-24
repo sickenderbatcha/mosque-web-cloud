@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="220" viewBox="0 0 900 220">
+  <rect width="100%" height="100%" fill="white"/>
+  <!-- Simple scanned-signature style strokes -->
+  <g fill="none" stroke="#0b0b0b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.92">
+    <path d="M60 140 C120 60, 170 190, 240 120 C290 70, 320 160, 360 130"/>
+    <path d="M370 132 C410 105, 450 95, 500 120 C560 150, 600 95, 650 118"/>
+    <path d="M660 120 C700 140, 730 170, 770 150 C810 130, 830 95, 860 105"/>
+    <path d="M155 150 C175 165, 195 170, 215 160"/>
+    <path d="M470 155 C500 175, 540 178, 570 162"/>
+  </g>
+  <g fill="none" stroke="#0b0b0b" stroke-width="4" stroke-linecap="round" opacity="0.55">
+    <path d="M80 170 C180 210, 320 210, 430 185"/>
+    <path d="M460 185 C600 150, 740 160, 860 190"/>
+  </g>
+</svg>
