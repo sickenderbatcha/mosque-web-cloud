@@ -106,7 +106,7 @@ const DonationsTab = () => {
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("payment_status", "completed")
+        .in("payment_status", ["completed", "paid"])
         .order("created_at", { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
       
