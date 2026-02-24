@@ -6,6 +6,13 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  define: {
+    ...(process.env.VITE_SUPABASE_URL ? {} : {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://mikipjdymkhocpjxsitd.supabase.co'),
+      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pa2lwamR5bWtob2NwanhzaXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDg1MjIsImV4cCI6MjA4NzQ4NDUyMn0.Bp9sfSgO4VVd9-CaOGXb8CslC1bos0IA2VnKvqd5wDY'),
+      'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify('mikipjdymkhocpjxsitd'),
+    }),
+  },
   server: {
     host: "::",
     port: 8080,
