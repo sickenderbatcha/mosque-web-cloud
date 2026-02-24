@@ -124,49 +124,87 @@ const CashPaymentRequestsTab = () => {
   const [receiptRequest, setReceiptRequest] = useState<CashPaymentRequest | null>(null);
   const [confirmPrintRequest, setConfirmPrintRequest] = useState<CashPaymentRequest | null>(null);
 
-   const markAsPaidMutation = useMutation({
-     mutationFn: async (id: string) => {
-       // First get the request to check service type and reference_id
-       const { data: request, error: fetchError } = await supabase
-         .from("cash_payment_requests")
-         .select("service_type, reference_id")
-         .eq("id", id)
-         .single();
-       
-       if (fetchError) throw fetchError;
+  const resolveSubscriptionReferenceId = async (request: CashPaymentRequest): Promise<string | null> => {
+    if (request.reference_id) return request.reference_id;
 
-       // Update the cash payment request status to paid
-       const { error } = await supabase
-         .from("cash_payment_requests")
-         .update({
-           status: "paid",
-           processed_at: new Date().toISOString(),
-         })
-         .eq("id", id);
- 
-       if (error) throw error;
+    const details = (request.service_details || {}) as Record<string, any>;
 
-       // If it's a booking, also update the booking payment_status to paid
-       if (request?.service_type === "booking" && request?.reference_id) {
-         await supabase
-           .from("mahal_bookings")
-           .update({ 
-             payment_status: "paid",
-             admin_notes: "Cash payment received" 
-           })
-           .eq("id", request.reference_id);
-       }
-     },
-     onSuccess: () => {
-       toast.success("ரசீது அச்சிடப்பட்டது, நிலை புதுப்பிக்கப்பட்டது (Receipt printed, status updated to paid)");
-       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
-       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
-     },
-     onError: (error) => {
-       console.error("Error marking as paid:", error);
-       toast.error("நிலை புதுப்பிக்கத்தில் பிழை (Error updating status)");
-     },
-   });
+    const explicitId = [
+      details.subscriptionId,
+      details.subscription_id,
+      details.referenceId,
+      details.reference_id,
+    ].find((value) => typeof value === "string" && value.trim() !== "") as string | undefined;
+
+    if (explicitId) return explicitId;
+
+    const memberId = details.member_id || details.memberId;
+    if (!memberId || typeof memberId !== "string") return null;
+
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("member_id", memberId)
+      .eq("payment_status", "pending")
+      .eq("total_amount", request.amount)
+      .lte("created_at", request.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error resolving subscription reference:", error);
+      return null;
+    }
+
+    return data?.id || null;
+  };
+
+  const markAsPaidMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: request, error: fetchError } = await supabase
+        .from("cash_payment_requests")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!request) throw new Error("Cash payment request not found");
+
+      await updateServicePaymentStatus(request as CashPaymentRequest);
+
+      const { error } = await supabase
+        .from("cash_payment_requests")
+        .update({
+          status: "paid",
+          processed_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      if (request.service_type === "booking" && request.reference_id) {
+        const { error: bookingError } = await supabase
+          .from("mahal_bookings")
+          .update({
+            payment_status: "paid",
+            admin_notes: "Cash payment received",
+          })
+          .eq("id", request.reference_id);
+
+        if (bookingError) throw bookingError;
+      }
+    },
+    onSuccess: () => {
+      toast.success("ரசீது அச்சிடப்பட்டது, நிலை புதுப்பிக்கப்பட்டது (Receipt printed, status updated to paid)");
+      queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
+    },
+    onError: (error) => {
+      console.error("Error marking as paid:", error);
+      toast.error("நிலை புதுப்பிக்கத்தில் பிழை (Error updating status)");
+    },
+  });
  
    const handleReceiptPrinted = (requestId: string) => {
      markAsPaidMutation.mutate(requestId);
@@ -256,27 +294,26 @@ const CashPaymentRequestsTab = () => {
       switch (service_type) {
         case "booking":
           if (reference_id) {
-            // Only approve the booking, payment stays pending until receipt is printed
-            await supabase
+            const { error } = await supabase
               .from("mahal_bookings")
-              .update({ 
-                status: "approved", 
-                admin_notes: "Cash payment approved - awaiting receipt" 
+              .update({
+                status: "approved",
+                admin_notes: "Cash payment approved - awaiting receipt",
               })
               .eq("id", reference_id);
+            if (error) throw error;
           }
           break;
 
         case "donation":
-          // For donations, we might need to create a new donation record
           if (reference_id) {
-            await supabase
+            const { error } = await supabase
               .from("donations")
               .update({ payment_status: "completed", payment_method: "cash" })
               .eq("id", reference_id);
+            if (error) throw error;
           } else if (service_details) {
-            // Create new donation if no reference
-            await supabase.from("donations").insert({
+            const { error } = await supabase.from("donations").insert({
               donor_name: applicant_name,
               donor_phone: applicant_phone,
               donor_email: applicant_email,
@@ -288,47 +325,69 @@ const CashPaymentRequestsTab = () => {
               donor_address: service_details.donor_address,
               donated_at: new Date().toISOString(),
             });
+            if (error) throw error;
           }
           break;
 
-        case "subscription":
-          if (reference_id) {
-            await supabase
-              .from("subscriptions")
-              .update({ payment_status: "completed", payment_method: "Cash" })
-              .eq("id", reference_id);
+        case "subscription": {
+          const resolvedReferenceId = await resolveSubscriptionReferenceId(request);
+
+          if (!resolvedReferenceId) {
+            console.warn("Unable to resolve subscription reference for cash request", request.id);
+            break;
+          }
+
+          const { error: subscriptionError } = await supabase
+            .from("subscriptions")
+            .update({ payment_status: "completed", payment_method: "Cash" })
+            .eq("id", resolvedReferenceId);
+
+          if (subscriptionError) throw subscriptionError;
+
+          if (!reference_id) {
+            const { error: requestUpdateError } = await supabase
+              .from("cash_payment_requests")
+              .update({ reference_id: resolvedReferenceId })
+              .eq("id", request.id);
+
+            if (requestUpdateError) throw requestUpdateError;
           }
           break;
+        }
 
         case "certificate":
           if (reference_id) {
-            await supabase
+            const { error } = await supabase
               .from("certificate_payments")
               .update({ payment_status: "completed", payment_method: "cash" })
               .eq("id", reference_id);
+            if (error) throw error;
           }
           break;
 
         case "noc":
           if (reference_id) {
-            await supabase
+            const { error } = await supabase
               .from("noc_certificates")
               .update({ payment_status: "completed" })
               .eq("id", reference_id);
+            if (error) throw error;
           }
           break;
 
         case "heir":
           if (reference_id) {
-            await supabase
+            const { error } = await supabase
               .from("heir_certificates")
               .update({ payment_status: "completed" })
               .eq("id", reference_id);
+            if (error) throw error;
           }
           break;
       }
     } catch (error) {
       console.error("Error updating service payment status:", error);
+      throw error;
     }
   };
 
