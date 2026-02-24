@@ -145,9 +145,8 @@ const CashPaymentRequestsTab = () => {
       .from("subscriptions")
       .select("id")
       .eq("member_id", memberId)
-      .eq("payment_status", "pending")
+      .in("payment_status", ["pending", "completed", "paid"])
       .eq("total_amount", request.amount)
-      .lte("created_at", request.created_at)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
