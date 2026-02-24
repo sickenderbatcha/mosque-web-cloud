@@ -30,8 +30,8 @@ const AUTH_USER_FK_COLUMNS: Record<string, string[]> = {
 // Tables to skip entirely (they reference auth.users as PK/unique)
 const SKIP_TABLES = ["profiles", "user_roles"];
 
-// Tables that are single-row with no PK — handle specially
-const SINGLE_ROW_TABLES = ["visitor_stats"];
+// Tables to skip entirely (views or non-insertable)
+const SKIP_VIEWS = ["visitor_stats"];
 
 // Restore order: parent tables first, then dependents
 const RESTORE_ORDER = [
@@ -198,6 +198,11 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        if (SKIP_VIEWS.includes(table)) {
+          results[table] = { success: 0, errors: 0, message: "Skipped (view)" };
+          continue;
+        }
+
         const rows = backupData.data[table];
         if (!rows || !Array.isArray(rows) || rows.length === 0) {
           results[table] = { success: 0, errors: 0, message: "No data" };
@@ -215,17 +220,6 @@ Deno.serve(async (req) => {
               return cleaned;
             })
           : rows;
-
-        // Handle single-row tables (no PK)
-        if (SINGLE_ROW_TABLES.includes(table)) {
-          const { error } = await adminClient.from(table).upsert(cleanedRows[0]);
-          results[table] = error
-            ? { success: 0, errors: 1, message: error.message }
-            : { success: 1, errors: 0 };
-          if (!error) totalSuccess += 1;
-          else totalErrors += 1;
-          continue;
-        }
 
         // Delete existing data first, then insert (proper restore)
         const { error: deleteError } = await adminClient.from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");
