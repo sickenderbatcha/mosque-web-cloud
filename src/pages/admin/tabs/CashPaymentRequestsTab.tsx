@@ -295,7 +295,7 @@ const CashPaymentRequestsTab = () => {
           if (reference_id) {
             await supabase
               .from("subscriptions")
-              .update({ payment_status: "paid", payment_method: "cash" })
+              .update({ payment_status: "completed", payment_method: "Cash" })
               .eq("id", reference_id);
           }
           break;
