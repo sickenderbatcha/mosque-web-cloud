@@ -30,10 +30,8 @@ const AUTH_USER_FK_COLUMNS: Record<string, string[]> = {
 // Tables to skip entirely (they reference auth.users as PK/unique)
 const SKIP_TABLES = ["profiles", "user_roles"];
 
-// Tables that have no "id" column — use alternative conflict key
-const CONFLICT_KEYS: Record<string, string> = {
-  visitor_stats: "date",
-};
+// Tables that are single-row with no PK — handle specially
+const SINGLE_ROW_TABLES = ["visitor_stats"];
 
 // Restore order: parent tables first, then dependents
 const RESTORE_ORDER = [
@@ -218,17 +216,31 @@ Deno.serve(async (req) => {
             })
           : rows;
 
+        // Handle single-row tables (no PK)
+        if (SINGLE_ROW_TABLES.includes(table)) {
+          const { error } = await adminClient.from(table).upsert(cleanedRows[0]);
+          results[table] = error
+            ? { success: 0, errors: 1, message: error.message }
+            : { success: 1, errors: 0 };
+          if (!error) totalSuccess += 1;
+          else totalErrors += 1;
+          continue;
+        }
+
+        // Delete existing data first, then insert (proper restore)
+        const { error: deleteError } = await adminClient.from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+        if (deleteError) {
+          console.error(`Error deleting ${table}:`, deleteError.message);
+        }
+
         let tableSuccess = 0;
         let tableErrors = 0;
         let lastError = "";
         const batchSize = 500;
-        const conflictKey = CONFLICT_KEYS[table] || "id";
 
         for (let i = 0; i < cleanedRows.length; i += batchSize) {
           const batch = cleanedRows.slice(i, i + batchSize);
-          const { error } = await adminClient
-            .from(table)
-            .upsert(batch, { onConflict: conflictKey, ignoreDuplicates: false });
+          const { error } = await adminClient.from(table).insert(batch);
 
           if (error) {
             console.error(`Error restoring ${table} batch ${i}:`, error.message);

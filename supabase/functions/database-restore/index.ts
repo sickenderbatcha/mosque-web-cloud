@@ -28,10 +28,8 @@ const AUTH_USER_FK_COLUMNS: Record<string, string[]> = {
 // Tables to skip entirely (they reference auth.users as PK/unique)
 const SKIP_TABLES = ["profiles", "user_roles"];
 
-// Tables that have no "id" column — use alternative conflict key
-const CONFLICT_KEYS: Record<string, string> = {
-  visitor_stats: "date",
-};
+// Tables that are single-row with no PK — handle specially
+const SINGLE_ROW_TABLES = ["visitor_stats"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -55,13 +53,15 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const user = { id: claimsData.claims.sub as string };
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: roleData } = await adminClient
@@ -83,20 +83,14 @@ Deno.serve(async (req) => {
     if (!table || !rows || !Array.isArray(rows)) {
       return new Response(
         JSON.stringify({ error: "Invalid request. Expected { table, rows }" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (rows.length === 0) {
       return new Response(
         JSON.stringify({ table, success: 0, errors: 0, message: "No data" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -104,10 +98,7 @@ Deno.serve(async (req) => {
     if (SKIP_TABLES.includes(table)) {
       return new Response(
         JSON.stringify({ table, success: 0, errors: 0, message: "Skipped (auth-dependent)" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -123,21 +114,35 @@ Deno.serve(async (req) => {
         })
       : rows;
 
+    // Handle single-row tables (no PK)
+    if (SINGLE_ROW_TABLES.includes(table)) {
+      const { error } = await adminClient.from(table).upsert(cleanedRows[0]);
+      if (error) {
+        return new Response(
+          JSON.stringify({ table, success: 0, errors: 1, message: error.message }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify({ table, success: 1, errors: 0 }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Delete existing data first, then insert (proper restore)
+    const { error: deleteError } = await adminClient.from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (deleteError) {
+      console.error(`Error deleting ${table}:`, deleteError.message);
+    }
+
     let successCount = 0;
     let errorCount = 0;
     let lastError = "";
     const batchSize = 500;
-    const conflictKey = CONFLICT_KEYS[table] || "id";
 
     for (let i = 0; i < cleanedRows.length; i += batchSize) {
       const batch = cleanedRows.slice(i, i + batchSize);
-
-      const { error } = await adminClient
-        .from(table)
-        .upsert(batch, {
-          onConflict: conflictKey,
-          ignoreDuplicates: false,
-        });
+      const { error } = await adminClient.from(table).insert(batch);
 
       if (error) {
         console.error(`Error restoring ${table} batch ${i}:`, error.message);
@@ -155,10 +160,7 @@ Deno.serve(async (req) => {
         errors: errorCount,
         message: lastError || undefined,
       }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
