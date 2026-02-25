@@ -409,6 +409,35 @@ const SubscriptionForm = () => {
         }
       }
 
+      // For yearly subscription, check if any months are already paid in that year
+      if (subscriptionType === "yearly") {
+        const yearToCheck = parseInt(subscriptionYear);
+        const { data: paidSlots, error: slotsError } = await supabase
+          .from("subscription_slots")
+          .select("year, month")
+          .eq("member_id", membershipNumber.trim())
+          .eq("is_paid", true)
+          .eq("year", yearToCheck);
+
+        if (!slotsError && paidSlots && paidSlots.length > 0) {
+          const paidMonthNames = paidSlots
+            .sort((a, b) => a.month - b.month)
+            .map(s => MONTHS[s.month - 1]?.label.split(" / ")[0])
+            .join(", ");
+          
+          const unpaidCount = 12 - paidSlots.length;
+          
+          toast({
+            title: "வருட சந்தா செலுத்த இயலாது / Cannot Pay Yearly",
+            description: `${yearToCheck} ஆம் ஆண்டில் ${paidMonthNames} மாதங்களுக்கு ஏற்கனவே சந்தா செலுத்தப்பட்டுள்ளது. மீதமுள்ள ${unpaidCount} மாதங்களுக்கு மாத சந்தா மூலம் செலுத்தவும். / Subscription for ${paidMonthNames} is already paid for ${yearToCheck}. Please pay monthly subscription for the remaining ${unpaidCount} month(s).`,
+            variant: "destructive",
+          });
+          setSubscriptionType("monthly");
+          setLoading(false);
+          return;
+        }
+      }
+
       const fromMonthNum = parseInt(fromMonth);
       const toMonthNum = parseInt(endPeriod.month);
       const fromYearNum = parseInt(fromYear);
