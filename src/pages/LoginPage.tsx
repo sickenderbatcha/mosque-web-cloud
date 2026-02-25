@@ -97,26 +97,34 @@ const LoginPage = () => {
 
   // Fetch member details when membership number changes (for signup)
   useEffect(() => {
+    let isCancelled = false;
+
+    if (!isSignUp || formData.memberId.length < 1) {
+      setMemberDetails(null);
+      setMemberValidating(false);
+      return;
+    }
+
+    // Bypass validation for special accounts
+    if (specialAccounts.includes(formData.memberId.toUpperCase())) {
+      setMemberDetails({
+        full_name: formData.memberId.toUpperCase() === "SUPUSR" ? "Super Administrator" : "Administrator",
+        phone: "0000000000",
+      });
+      setMemberValidating(false);
+      return;
+    }
+
+    // Mark as validating immediately (before debounce) to avoid premature "not found" message
+    setMemberValidating(true);
+
     const fetchMemberDetails = async () => {
-      if (!isSignUp || formData.memberId.length < 1) {
-        setMemberDetails(null);
-        return;
-      }
-
-      // Bypass validation for special accounts
-      if (specialAccounts.includes(formData.memberId.toUpperCase())) {
-        setMemberDetails({
-          full_name: formData.memberId.toUpperCase() === "SUPUSR" ? "Super Administrator" : "Administrator",
-          phone: "0000000000",
-        });
-        return;
-      }
-
-      setMemberValidating(true);
       try {
         const { data, error } = await supabase.functions.invoke("validate-member", {
           body: { memberId: formData.memberId },
         });
+
+        if (isCancelled) return;
 
         if (error || !data?.found) {
           setMemberDetails(null);
@@ -128,14 +136,21 @@ const LoginPage = () => {
           phone: data.phone,
         });
       } catch {
-        setMemberDetails(null);
+        if (!isCancelled) {
+          setMemberDetails(null);
+        }
       } finally {
-        setMemberValidating(false);
+        if (!isCancelled) {
+          setMemberValidating(false);
+        }
       }
     };
 
     const debounce = setTimeout(fetchMemberDetails, 500);
-    return () => clearTimeout(debounce);
+    return () => {
+      isCancelled = true;
+      clearTimeout(debounce);
+    };
   }, [formData.memberId, isSignUp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -622,7 +637,7 @@ const LoginPage = () => {
                 </div>
               )}
 
-              {isSignUp && formData.memberId && !memberDetails && (
+              {isSignUp && formData.memberId && !memberValidating && !memberDetails && (
                 <p className="text-sm text-destructive">
                   Member not found. Please enter a valid membership number.
                 </p>
