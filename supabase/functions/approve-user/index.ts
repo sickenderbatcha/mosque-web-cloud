@@ -146,8 +146,9 @@ serve(async (req) => {
       }
 
       // Create auth user with the stored password
+      const userEmail = `${pendingUser.member_id.toLowerCase()}@mosque.local`;
       const { data: authData, error: createError } = await supabase.auth.admin.createUser({
-        email: `${pendingUser.member_id.toLowerCase()}@mosque.local`,
+        email: userEmail,
         password: pendingUser.password_hash,
         email_confirm: true,
         user_metadata: {
@@ -156,14 +157,39 @@ serve(async (req) => {
         },
       });
 
+      let userId: string;
+
       if (createError) {
-        throw new Error(`Failed to create user: ${createError.message}`);
+        // If user already exists, find and update them instead
+        if (createError.message.includes("already been registered")) {
+          const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+          if (listError) throw new Error(`Failed to list users: ${listError.message}`);
+          
+          const existingUser = listData.users.find((u: any) => u.email === userEmail);
+          if (!existingUser) throw new Error("User email conflict but user not found");
+          
+          // Update password to the new one from pending registration
+          await supabase.auth.admin.updateUserById(existingUser.id, {
+            password: pendingUser.password_hash,
+            email_confirm: true,
+            user_metadata: {
+              full_name: pendingUser.full_name,
+              member_id: pendingUser.member_id,
+            },
+          });
+          
+          userId = existingUser.id;
+        } else {
+          throw new Error(`Failed to create user: ${createError.message}`);
+        }
+      } else {
+        userId = authData.user.id;
       }
 
       // Link auth user to member
       await supabase
         .from("gb_members")
-        .update({ auth_user_id: authData.user.id })
+        .update({ auth_user_id: userId })
         .eq("member_id", pendingUser.member_id);
 
       // Update pending user status
