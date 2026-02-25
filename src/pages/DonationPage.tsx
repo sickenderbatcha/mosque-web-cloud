@@ -505,9 +505,16 @@ const SubscriptionForm = () => {
       });
 
       if (orderError || orderData?.error) {
-        // Delete the pending subscription if order creation fails
-        await supabase.from("subscriptions").delete().eq("id", subscriptionData.id);
-        throw new Error(orderData?.error || orderError?.message || "Failed to create payment order");
+        // Don't delete - keep for cash payment fallback
+        const failReason = orderData?.error || orderError?.message || "Payment gateway unavailable";
+        setCashRequestData({
+          subscriptionId: subscriptionData.id,
+          amount: totalAmount,
+          failureReason: failReason,
+        });
+        setShowCashRequestDialog(true);
+        setLoading(false);
+        return;
       }
 
       const fromMonthName = MONTHS[fromMonthNum - 1]?.label.split(" / ")[0];
@@ -1319,9 +1326,16 @@ const DonationPage = () => {
       });
 
       if (orderError || orderData?.error) {
-        // Delete the pending donation if order creation fails
-        await supabase.from("donations").delete().eq("id", donationData.id);
-        throw new Error(orderData?.error || orderError?.message || "Failed to create payment order");
+        // Don't delete - keep for cash payment fallback
+        const failReason = orderData?.error || orderError?.message || "Payment gateway unavailable";
+        setCashRequestData({
+          donationId: donationData.id,
+          amount: amount,
+          failureReason: failReason,
+        });
+        setShowCashRequestDialog(true);
+        setLoading(false);
+        return;
       }
 
       // Open Razorpay checkout
