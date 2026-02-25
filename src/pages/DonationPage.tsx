@@ -624,11 +624,6 @@ const SubscriptionForm = () => {
       });
       razorpay.open();
     } catch (error: any) {
-      toast({
-        title: "பிழை / Error",
-        description: error.message || "Failed to process subscription. Please try again.",
-        variant: "destructive",
-      });
       // Offer cash payment request on error
       setCashRequestData({
         subscriptionId: createdSubscriptionId,
@@ -1440,12 +1435,7 @@ const DonationPage = () => {
       });
       razorpay.open();
     } catch (error: any) {
-      toast({
-        title: "பிழை / Error",
-        description: error.message || "Failed to process donation. Please try again.",
-        variant: "destructive",
-      });
-      // Offer cash payment request
+      // Offer cash payment request on any error
       const amount = parseFloat(donationAmount);
       if (!isNaN(amount) && amount > 0) {
         setCashRequestData({
