@@ -18,7 +18,7 @@ import MahalBookingPage from "./pages/MahalBookingPage";
 import EventsPage from "./pages/EventsPage";
 import GrievancesPage from "./pages/GrievancesPage";
 import LoginPage from "./pages/LoginPage";
-import AdminSetupPage from "./pages/AdminSetupPage";
+
 import ServicesPage from "./pages/ServicesPage";
 import FinancialStatementPage from "./pages/FinancialStatementPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -50,7 +50,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/admin-setup" element={<AdminSetupPage />} />
+      {/* admin-setup route removed for security - use edge functions directly */}
       <Route path="/" element={<Layout><HomePage /></Layout>} />
       <Route path="/about" element={<Layout><AboutPage /></Layout>} />
       <Route path="/donation" element={<Layout><DonationPage /></Layout>} />

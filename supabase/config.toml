@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.setup-superadmin]
 verify_jwt = false
+
+[functions.validate-member]
+verify_jwt = false

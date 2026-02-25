@@ -111,20 +111,23 @@ const LoginPage = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, phone")
-        .eq("member_id", formData.memberId)
-        .eq("is_active", true)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase.functions.invoke("validate-member", {
+          body: { memberId: formData.memberId },
+        });
 
-      if (error) {
-        console.error("Error fetching member:", error);
+        if (error || !data?.found) {
+          setMemberDetails(null);
+          return;
+        }
+
+        setMemberDetails({
+          full_name: data.full_name,
+          phone: data.phone,
+        });
+      } catch {
         setMemberDetails(null);
-        return;
       }
-
-      setMemberDetails(data);
     };
 
     const debounce = setTimeout(fetchMemberDetails, 500);
@@ -162,13 +165,11 @@ const LoginPage = () => {
 
         // Check if member already has an auth account (skip for special accounts)
         if (!isSpecialAccount) {
-          const { data: existingMember } = await supabase
-            .from("gb_members")
-            .select("auth_user_id")
-            .eq("member_id", formData.memberId)
-            .maybeSingle();
+          const { data: validateData } = await supabase.functions.invoke("validate-member", {
+            body: { memberId: formData.memberId },
+          });
 
-          if (existingMember?.auth_user_id) {
+          if (validateData?.has_account) {
             toast({
               title: "கணக்கு ஏற்கனவே உள்ளது / Account Already Exists",
               description: "This membership number already has an account. Please login.",
