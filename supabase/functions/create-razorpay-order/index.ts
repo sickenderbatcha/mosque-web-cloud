@@ -55,7 +55,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (action === "create") {
       const { amount, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, currency = "INR", receipt, notes, type = "booking" }: CreateOrderRequest = await req.json();
 
-      if (!amount || amount <= 0) {
+      // Input validation
+      if (!amount || typeof amount !== "number" || amount <= 0 || amount > 10000000) {
         return new Response(
           JSON.stringify({ error: "Invalid amount" }),
           { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
