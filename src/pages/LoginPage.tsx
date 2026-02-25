@@ -60,6 +60,7 @@ const LoginPage = () => {
     full_name: string;
     phone: string;
   } | null>(null);
+  const [memberValidating, setMemberValidating] = useState(false);
   const [formData, setFormData] = useState({
     memberId: "",
     password: "",
@@ -111,6 +112,7 @@ const LoginPage = () => {
         return;
       }
 
+      setMemberValidating(true);
       try {
         const { data, error } = await supabase.functions.invoke("validate-member", {
           body: { memberId: formData.memberId },
@@ -127,6 +129,8 @@ const LoginPage = () => {
         });
       } catch {
         setMemberDetails(null);
+      } finally {
+        setMemberValidating(false);
       }
     };
 
@@ -152,15 +156,46 @@ const LoginPage = () => {
           return;
         }
 
-        // Check if member exists
-        if (!memberDetails) {
+        // If still validating, wait for it; otherwise re-validate now
+        if (memberValidating) {
           toast({
-            title: "உறுப்பினர் கிடைக்கவில்லை / Member Not Found",
-            description: "Please enter a valid membership number.",
-            variant: "destructive",
+            title: "சரிபார்க்கப்படுகிறது / Validating",
+            description: "Please wait while we verify your membership number.",
           });
           setLoading(false);
           return;
+        }
+
+        // Re-validate member if details not loaded yet
+        if (!memberDetails && !isSpecialAccount) {
+          try {
+            const { data: revalidateData, error: revalidateError } = await supabase.functions.invoke("validate-member", {
+              body: { memberId: formData.memberId },
+            });
+
+            if (revalidateError || !revalidateData?.found) {
+              toast({
+                title: "உறுப்பினர் கிடைக்கவில்லை / Member Not Found",
+                description: "Please enter a valid membership number.",
+                variant: "destructive",
+              });
+              setLoading(false);
+              return;
+            }
+
+            setMemberDetails({
+              full_name: revalidateData.full_name,
+              phone: revalidateData.phone,
+            });
+          } catch {
+            toast({
+              title: "உறுப்பினர் கிடைக்கவில்லை / Member Not Found",
+              description: "Please enter a valid membership number.",
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
         }
 
         // Check if member already has an auth account (skip for special accounts)
