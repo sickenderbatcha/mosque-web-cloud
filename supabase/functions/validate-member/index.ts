@@ -25,10 +25,10 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Only return minimal info needed for signup validation
+    // Return info needed for signup validation and subscription/donation lookups
     const { data, error } = await supabase
       .from("gb_members")
-      .select("full_name, phone, auth_user_id")
+      .select("full_name, phone, email, address, auth_user_id")
       .eq("member_id", memberId)
       .eq("is_active", true)
       .maybeSingle();
@@ -53,6 +53,8 @@ serve(async (req) => {
         found: true,
         full_name: data.full_name,
         phone: data.phone,
+        email: data.email,
+        address: data.address,
         has_account: !!data.auth_user_id,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
