@@ -111,9 +111,6 @@ const SubscriptionForm = () => {
     amount: number;
     failureReason?: string;
   } | null>(null);
-  const [yearlyPaidMonths, setYearlyPaidMonths] = useState<number>(0);
-  const [yearlyPaidAmount, setYearlyPaidAmount] = useState<number>(0);
-  const [yearlyCheckLoading, setYearlyCheckLoading] = useState(false);
   
   // Period fields
   const currentDate = new Date();
@@ -129,7 +126,7 @@ const SubscriptionForm = () => {
 
   const totalAmount = subscriptionType === "monthly" 
     ? monthlyAmount * numberOfMonths 
-    : Math.max(0, yearlyAmount - yearlyPaidAmount);
+    : yearlyAmount;
 
   // Load Razorpay script
   useEffect(() => {
@@ -146,48 +143,6 @@ const SubscriptionForm = () => {
     };
   }, []);
 
-  // Check already paid months when yearly subscription year changes
-  useEffect(() => {
-    const checkYearlyPaidMonths = async () => {
-      if (!memberFound || !membershipNumber.trim() || subscriptionType !== "yearly") {
-        setYearlyPaidMonths(0);
-        setYearlyPaidAmount(0);
-        return;
-      }
-
-      setYearlyCheckLoading(true);
-      try {
-        const year = parseInt(subscriptionYear);
-        const { data: paidSlots, error } = await supabase
-          .from("subscription_slots")
-          .select("year, month, amount")
-          .eq("member_id", membershipNumber.trim())
-          .eq("is_paid", true)
-          .eq("year", year);
-
-        if (error) {
-          console.error("Error checking yearly paid months:", error);
-          setYearlyPaidMonths(0);
-          setYearlyPaidAmount(0);
-          return;
-        }
-
-        const paidCount = paidSlots?.length || 0;
-        const paidTotal = paidCount * monthlyAmount;
-        setYearlyPaidMonths(paidCount);
-        setYearlyPaidAmount(paidTotal);
-      } catch (error) {
-        console.error("Error checking yearly paid months:", error);
-        setYearlyPaidMonths(0);
-        setYearlyPaidAmount(0);
-      } finally {
-        setYearlyCheckLoading(false);
-      }
-    };
-
-    const timeoutId = setTimeout(checkYearlyPaidMonths, 300);
-    return () => clearTimeout(timeoutId);
-  }, [memberFound, membershipNumber, subscriptionYear, subscriptionType, monthlyAmount]);
 
   // Calculate end month/year based on from date and number of months
   const endPeriod = useMemo(() => {
@@ -213,9 +168,9 @@ const SubscriptionForm = () => {
   }, [currentYear]);
 
   // Check if any months in the selected range are already paid
-  const checkAlreadyPaidMonths = async (memberId: string): Promise<{ hasPaidMonths: boolean; paidMonths: string[]; paidCount?: number }> => {
+  const checkAlreadyPaidMonths = async (memberId: string): Promise<{ hasPaidMonths: boolean; paidMonths: string[] }> => {
     if (subscriptionType !== "monthly") {
-      return { hasPaidMonths: false, paidMonths: [], paidCount: 0 };
+      return { hasPaidMonths: false, paidMonths: [] };
     }
 
     const startMonth = parseInt(fromMonth);
@@ -981,53 +936,15 @@ const SubscriptionForm = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {yearlyCheckLoading && (
-                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground font-tamil">ஏற்கனவே செலுத்திய மாதங்களை சரிபார்க்கிறது... / Checking paid months...</span>
-                  </div>
-                )}
                 <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm text-muted-foreground font-tamil">வருடம் / Year</p>
-                        <p className="font-medium">{subscriptionYear}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">வருட சந்தா / Yearly</p>
-                        <p className={`text-lg font-bold ${yearlyPaidMonths > 0 ? "line-through text-muted-foreground" : "text-primary"}`}>₹{yearlyAmount}</p>
-                      </div>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-tamil">வருடம் / Year</p>
+                      <p className="font-medium">{subscriptionYear}</p>
                     </div>
-                    {yearlyPaidMonths > 0 && (
-                      <>
-                        <div className="border-t border-primary/20 pt-3 space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground font-tamil">
-                              ஏற்கனவே செலுத்தியது / Already Paid ({yearlyPaidMonths} month{yearlyPaidMonths > 1 ? "s" : ""})
-                            </span>
-                            <span className="text-muted-foreground">- ₹{yearlyPaidAmount}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium font-tamil">இருப்பு / Balance</span>
-                            <span className="text-xl font-bold text-primary">₹{totalAmount}</span>
-                          </div>
-                        </div>
-                        {totalAmount === 0 && (
-                          <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded border border-green-200 dark:border-green-800">
-                            <p className="text-sm text-green-700 dark:text-green-400 font-tamil">
-                              ✅ இந்த வருடத்திற்கான சந்தா முழுமையாக செலுத்தப்பட்டுள்ளது / Subscription fully paid for this year.
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {yearlyPaidMonths === 0 && !yearlyCheckLoading && (
-                      <div className="flex justify-between items-center border-t border-primary/20 pt-3">
-                        <span className="font-medium font-tamil">மொத்தம் / Total</span>
-                        <span className="text-xl font-bold text-primary">₹{totalAmount}</span>
-                      </div>
-                    )}
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-primary">₹{yearlyAmount}</p>
+                    </div>
                   </div>
                 </div>
               </div>
