@@ -329,23 +329,20 @@ const SubscriptionForm = () => {
     setPendingMonths([]);
 
     try {
-      const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, phone, address")
-        .eq("member_id", membershipNumber.trim())
-        .eq("is_active", true)
-        .maybeSingle();
+      const { data: fnData, error: fnError } = await supabase.functions.invoke("validate-member", {
+        body: { memberId: membershipNumber.trim() },
+      });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
 
-      if (data) {
-        setMemberName(data.full_name);
-        setMemberPhone(data.phone);
-        setMemberAddress(data.address || "");
+      if (fnData?.found) {
+        setMemberName(fnData.full_name);
+        setMemberPhone(fnData.phone);
+        setMemberAddress(fnData.address || "");
         setMemberFound(true);
         toast({
           title: "உறுப்பினர் கண்டறியப்பட்டது / Member Found",
-          description: `Welcome, ${data.full_name}!`,
+          description: `Welcome, ${fnData.full_name}!`,
         });
         // Check for pending months after finding member
         await checkPendingMonths(membershipNumber.trim());
@@ -1133,24 +1130,21 @@ const DonationPage = () => {
     setDonationMemberFound(false);
 
     try {
-      const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, phone, email, address")
-        .eq("member_id", donationMembershipNumber.trim())
-        .eq("is_active", true)
-        .maybeSingle();
+      const { data: fnData, error: fnError } = await supabase.functions.invoke("validate-member", {
+        body: { memberId: donationMembershipNumber.trim() },
+      });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
 
-      if (data) {
-        setDonorName(data.full_name || "");
-        setPhone(data.phone || "");
-        setEmail(data.email || "");
-        setAddress(data.address || "");
+      if (fnData?.found) {
+        setDonorName(fnData.full_name || "");
+        setPhone(fnData.phone || "");
+        setEmail(fnData.email || "");
+        setAddress(fnData.address || "");
         setDonationMemberFound(true);
         toast({
           title: "உறுப்பினர் கண்டறியப்பட்டது / Member Found",
-          description: `Details auto-filled for ${data.full_name}`,
+          description: `Details auto-filled for ${fnData.full_name}`,
         });
       } else {
         toast({
