@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Shield, Globe, Database, Settings } from "lucide-react";
+import { Shield, Globe, Database, Settings, TableProperties } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataManagementTab from "./tabs/DataManagementTab";
 import LandingContentTab from "./tabs/LandingContentTab";
 import SuperAdminSettingsTab from "./tabs/SuperAdminSettingsTab";
+import DatabaseManagerTab from "./tabs/DatabaseManagerTab";
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("landing-content");
@@ -35,6 +36,10 @@ const SuperAdminDashboard = () => {
               <Database className="h-4 w-4" />
               <span>Data Management</span>
             </TabsTrigger>
+            <TabsTrigger value="database-manager" className="flex items-center gap-2">
+              <TableProperties className="h-4 w-4" />
+              <span>Database</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
@@ -47,6 +52,10 @@ const SuperAdminDashboard = () => {
 
           <TabsContent value="data-management">
             <DataManagementTab />
+          </TabsContent>
+
+          <TabsContent value="database-manager">
+            <DatabaseManagerTab />
           </TabsContent>
         </Tabs>
       </div>
