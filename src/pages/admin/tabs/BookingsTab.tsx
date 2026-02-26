@@ -4,11 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Check, X, Printer } from "lucide-react";
+import { Check, X, Printer, Ban } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Booking {
   id: string;
@@ -24,14 +35,8 @@ interface Booking {
   booking_amount: number | null;
   payment_status: string | null;
   created_at: string;
+  user_id: string | null;
 }
-
-// Service mapping for receipt
-const SERVICE_MAP: Record<string, { name: string; rate: number }> = {
-  "500": { name: "நிக்காஹ் புத்தகம் (Nikkah Book)", rate: 500 },
-  "15000": { name: "மண்டபம் (Hall)", rate: 15000 },
-  "10000": { name: "உணவு இட வசதி (Dining Hall)", rate: 10000 },
-};
 
 const BookingsTab = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -42,6 +47,11 @@ const BookingsTab = () => {
   // Filter states
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+  // Cancel dialog states
+  const [cancelBooking, setCancelBooking] = useState<Booking | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -89,7 +99,6 @@ const BookingsTab = () => {
     if (error) {
       toast.error("Failed to update booking status");
     } else {
-      // Send status update notification (email and/or SMS)
       if (booking) {
         supabase.functions.invoke("send-notification-email", {
           body: {
@@ -111,6 +120,70 @@ const BookingsTab = () => {
     }
   };
 
+  const handleCancelBooking = async () => {
+    if (!cancelBooking) return;
+    setIsCancelling(true);
+
+    try {
+      const wasPaid = cancelBooking.payment_status === "paid" || cancelBooking.payment_status === "completed";
+
+      // 1. Update booking status to cancelled, payment_status to refunded if paid
+      const bookingUpdate: Record<string, any> = {
+        status: "cancelled",
+        admin_notes: cancelReason ? `ரத்து காரணம்: ${cancelReason}` : "நிர்வாகியால் ரத்து செய்யப்பட்டது (Cancelled by admin)",
+      };
+      if (wasPaid) {
+        bookingUpdate.payment_status = "refunded";
+      }
+
+      const { error: bookingError } = await supabase
+        .from("mahal_bookings")
+        .update(bookingUpdate)
+        .eq("id", cancelBooking.id);
+
+      if (bookingError) throw bookingError;
+
+      // 2. Cancel associated cash payment requests
+      const { error: cashError } = await supabase
+        .from("cash_payment_requests")
+        .update({
+          status: "cancelled",
+          admin_notes: cancelReason ? `முன்பதிவு ரத்து: ${cancelReason}` : "முன்பதிவு ரத்து செய்யப்பட்டது (Booking cancelled)",
+          processed_at: new Date().toISOString(),
+        })
+        .eq("reference_id", cancelBooking.id)
+        .eq("service_type", "booking")
+        .in("status", ["pending", "approved", "paid"]);
+
+      if (cashError) console.error("Error cancelling cash payment requests:", cashError);
+
+      // 3. Auto-create refund request for paid bookings
+      if (wasPaid && cancelBooking.booking_amount && cancelBooking.booking_amount > 0) {
+        const { error: refundError } = await supabase
+          .from("refund_requests")
+          .insert({
+            booking_id: cancelBooking.id,
+            user_id: cancelBooking.user_id || "00000000-0000-0000-0000-000000000000",
+            amount: cancelBooking.booking_amount,
+            reason: cancelReason || "முன்பதிவு நிர்வாகியால் ரத்து செய்யப்பட்டது (Booking cancelled by admin)",
+            status: "pending",
+          });
+
+        if (refundError) console.error("Error creating refund request:", refundError);
+      }
+
+      toast.success("முன்பதிவு ரத்து செய்யப்பட்டது (Booking cancelled)");
+      setCancelBooking(null);
+      setCancelReason("");
+      fetchBookings();
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error("ரத்து செய்வதில் பிழை (Error cancelling booking)");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const handlePrintReceipt = (booking: Booking) => {
     if (booking.payment_status !== "paid") {
       toast.error("Receipt can only be printed for paid bookings");
@@ -120,12 +193,10 @@ const BookingsTab = () => {
     setShowReceipt(true);
   };
 
-  // Estimate services from amount
   const getServicesFromAmount = (amount: number): { name: string; rate: number }[] => {
     const services: { name: string; rate: number }[] = [];
     let remaining = amount;
     
-    // Try to match known service amounts
     if (remaining >= 15000) {
       services.push({ name: "மண்டபம் (Hall)", rate: 15000 });
       remaining -= 15000;
@@ -139,7 +210,6 @@ const BookingsTab = () => {
       remaining -= 500;
     }
     
-    // If we couldn't match any services, just show the total
     if (services.length === 0) {
       services.push({ name: "Booking Services", rate: amount });
     }
@@ -163,6 +233,7 @@ const BookingsTab = () => {
       paid: "default",
       pending: "outline",
       refunded: "secondary",
+      completed: "default",
     };
     return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
   };
@@ -191,7 +262,6 @@ const BookingsTab = () => {
     });
   }, [bookings, searchValue, filterValues]);
 
-  // Get unique event types
   const eventTypes = useMemo(() => {
     const types = [...new Set(bookings.map(b => b.event_type))];
     return types.map(t => ({ label: t, value: t }));
@@ -224,6 +294,47 @@ const BookingsTab = () => {
           }}
         />
       )}
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={!!cancelBooking} onOpenChange={() => { setCancelBooking(null); setCancelReason(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>முன்பதிவை ரத்து செய்ய வேண்டுமா? (Cancel Booking?)</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  <strong>{cancelBooking?.applicant_name}</strong> அவர்களின் <strong>{cancelBooking?.event_type}</strong> முன்பதிவு ({cancelBooking?.event_date}) ரத்து செய்யப்படும்.
+                </p>
+                {(cancelBooking?.payment_status === "paid" || cancelBooking?.payment_status === "completed") && (
+                  <p className="text-destructive font-medium">
+                    ⚠ இந்த முன்பதிவுக்கு பணம் செலுத்தப்பட்டுள்ளது. பணத்திரும்ப கோரிக்கை தானாக உருவாக்கப்படும். (Payment was received. A refund request will be auto-created.)
+                  </p>
+                )}
+                <div>
+                  <label className="text-sm font-medium">ரத்து காரணம் (Cancellation Reason - Optional)</label>
+                  <Textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="ரத்து காரணத்தை உள்ளிடவும்... (Enter cancellation reason...)"
+                    rows={3}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancelling}>வேண்டாம் (No)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleCancelBooking(); }}
+              disabled={isCancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isCancelling ? "ரத்து செய்கிறது..." : "ஆம், ரத்து செய் (Yes, Cancel)"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
@@ -349,6 +460,17 @@ const BookingsTab = () => {
                               <X className="h-4 w-4" />
                             </Button>
                           </>
+                        )}
+                        {(booking.status === "pending" || booking.status === "approved") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive"
+                            onClick={() => setCancelBooking(booking)}
+                            title="ரத்து செய் (Cancel)"
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
                         )}
                         {booking.payment_status === "paid" && (
                           <Button

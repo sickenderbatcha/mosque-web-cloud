@@ -39,7 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { Check, X, Eye, Clock, IndianRupee, AlertCircle, Printer } from "lucide-react";
+import { Check, X, Eye, Clock, IndianRupee, AlertCircle, Printer, Ban } from "lucide-react";
 import CashPaymentReceipt from "@/components/CashPaymentReceipt";
 
 // Helper to format service details labels
@@ -112,7 +112,8 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
-   paid: "bg-blue-100 text-blue-800",
+  paid: "bg-blue-100 text-blue-800",
+  cancelled: "bg-gray-100 text-gray-800",
 };
 
 const CashPaymentRequestsTab = () => {
@@ -123,6 +124,9 @@ const CashPaymentRequestsTab = () => {
   const [filterService, setFilterService] = useState<string>("all");
   const [receiptRequest, setReceiptRequest] = useState<CashPaymentRequest | null>(null);
   const [confirmPrintRequest, setConfirmPrintRequest] = useState<CashPaymentRequest | null>(null);
+  const [cancelRequest, setCancelRequest] = useState<CashPaymentRequest | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const resolveSubscriptionReferenceId = async (request: CashPaymentRequest): Promise<string | null> => {
     if (request.reference_id) return request.reference_id;
@@ -399,6 +403,72 @@ const CashPaymentRequestsTab = () => {
     });
   };
 
+  const handleCancelPaidBookingCash = async () => {
+    if (!cancelRequest) return;
+    setIsCancelling(true);
+
+    try {
+      // 1. Update cash payment request to cancelled
+      const { error: cashError } = await supabase
+        .from("cash_payment_requests")
+        .update({
+          status: "cancelled",
+          admin_notes: cancelReason ? `ரத்து: ${cancelReason}` : "நிர்வாகியால் ரத்து செய்யப்பட்டது (Cancelled by admin)",
+          processed_at: new Date().toISOString(),
+        })
+        .eq("id", cancelRequest.id);
+
+      if (cashError) throw cashError;
+
+      // 2. Cancel linked booking with refunded payment status
+      if (cancelRequest.reference_id) {
+        const { error: bookingError } = await supabase
+          .from("mahal_bookings")
+          .update({
+            status: "cancelled",
+            payment_status: "refunded",
+            admin_notes: cancelReason ? `ரொக்க ரசீது ரத்து: ${cancelReason}` : "ரொக்க ரசீது ரத்து செய்யப்பட்டது (Cash receipt cancelled)",
+          })
+          .eq("id", cancelRequest.reference_id);
+
+        if (bookingError) console.error("Error cancelling booking:", bookingError);
+
+        // 3. Auto-create refund request
+        if (cancelRequest.amount > 0) {
+          // Get booking user_id
+          const { data: bookingData } = await supabase
+            .from("mahal_bookings")
+            .select("user_id")
+            .eq("id", cancelRequest.reference_id)
+            .single();
+
+          const { error: refundError } = await supabase
+            .from("refund_requests")
+            .insert({
+              booking_id: cancelRequest.reference_id,
+              user_id: bookingData?.user_id || "00000000-0000-0000-0000-000000000000",
+              amount: cancelRequest.amount,
+              reason: cancelReason || "ரொக்க ரசீது நிர்வாகியால் ரத்து செய்யப்பட்டது (Cash receipt cancelled by admin)",
+              status: "pending",
+            });
+
+          if (refundError) console.error("Error creating refund request:", refundError);
+        }
+      }
+
+      toast.success("ரொக்க ரசீது ரத்து செய்யப்பட்டது (Cash receipt cancelled)");
+      setCancelRequest(null);
+      setCancelReason("");
+      queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
+    } catch (error) {
+      console.error("Error cancelling:", error);
+      toast.error("ரத்து செய்வதில் பிழை (Error cancelling)");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -457,6 +527,7 @@ const CashPaymentRequestsTab = () => {
                 <SelectItem value="approved">அங்கீகரிக்கப்பட்டது (Approved)</SelectItem>
                  <SelectItem value="paid">ரொக்கம் பெறப்பட்டது (Paid)</SelectItem>
                 <SelectItem value="rejected">நிராகரிக்கப்பட்டது (Rejected)</SelectItem>
+                <SelectItem value="cancelled">ரத்து செய்யப்பட்டது (Cancelled)</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterService} onValueChange={setFilterService}>
@@ -517,8 +588,9 @@ const CashPaymentRequestsTab = () => {
                       <Badge className={STATUS_COLORS[request.status]}>
                         {request.status === "pending" && "நிலுவையில்"}
                         {request.status === "approved" && "அங்கீகரிக்கப்பட்டது"}
-                         {request.status === "paid" && "ரொக்கம் பெறப்பட்டது"}
+                        {request.status === "paid" && "ரொக்கம் பெறப்பட்டது"}
                         {request.status === "rejected" && "நிராகரிக்கப்பட்டது"}
+                        {request.status === "cancelled" && "ரத்து செய்யப்பட்டது"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -542,6 +614,17 @@ const CashPaymentRequestsTab = () => {
                             title="ரசீது / Receipt"
                           >
                             <Printer className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {request.status === "paid" && request.service_type === "booking" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => setCancelRequest(request)}
+                            title="ரத்து செய் (Cancel)"
+                          >
+                            <Ban className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -711,6 +794,45 @@ const CashPaymentRequestsTab = () => {
             }}>
               <Printer className="h-4 w-4 mr-2" />
               தொடர் (Continue)
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={!!cancelRequest} onOpenChange={() => { setCancelRequest(null); setCancelReason(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ரொக்க ரசீதை ரத்து செய்ய வேண்டுமா? (Cancel Cash Receipt?)</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  <strong>{cancelRequest?.applicant_name}</strong> அவர்களின் ₹{cancelRequest?.amount.toLocaleString()} ரொக்க ரசீது ரத்து செய்யப்படும்.
+                </p>
+                <p className="text-destructive font-medium">
+                  ⚠ இணைக்கப்பட்ட முன்பதிவும் ரத்து செய்யப்படும், பணத்திரும்ப கோரிக்கை தானாக உருவாக்கப்படும். (Linked booking will be cancelled and a refund request will be auto-created.)
+                </p>
+                <div>
+                  <label className="text-sm font-medium">ரத்து காரணம் (Cancellation Reason - Optional)</label>
+                  <Textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="ரத்து காரணத்தை உள்ளிடவும்... (Enter cancellation reason...)"
+                    rows={3}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancelling}>வேண்டாம் (No)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleCancelPaidBookingCash(); }}
+              disabled={isCancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isCancelling ? "ரத்து செய்கிறது..." : "ஆம், ரத்து செய் (Yes, Cancel)"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
