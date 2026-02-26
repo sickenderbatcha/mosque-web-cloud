@@ -290,22 +290,22 @@ const SubscriptionReceipt = ({ subscription, onClose }: SubscriptionReceiptProps
       >
         <Card className="p-0 overflow-hidden shadow-lg">
           {/* Actions Bar */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 border-b">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-muted/50 border-b">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={onClose} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 பின்செல்
               </Button>
               <h2 className="font-semibold font-tamil">சந்தா ரசீது</h2>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
-                பதிவிறக்கம்
-              </Button>
+            <div className="flex items-center gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                பதிவிறக்கம்
               </Button>
             </div>
           </div>
