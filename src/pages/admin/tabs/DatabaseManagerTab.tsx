@@ -464,7 +464,7 @@ const DatabaseManagerTab = () => {
                                 <TableCell
                                   key={col.column_name}
                                   className="p-1 max-w-[200px]"
-                                  onDoubleClick={() =>
+                                  onClick={() =>
                                     setEditingCell({ rowId: row.id, col: col.column_name })
                                   }
                                 >
