@@ -347,20 +347,19 @@ const DatabaseManagerTab = () => {
                   <Save className="h-4 w-4 mr-1" />
                   {saving ? "Saving..." : "Save"}
                 </Button>
-                {hasChanges && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditedCells({});
-                      setNewRows([]);
-                      setEditingCell(null);
-                      toast.info("Changes discarded");
-                    }}
-                  >
-                    Discard
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!hasChanges}
+                  onClick={() => {
+                    setEditedCells({});
+                    setNewRows([]);
+                    setEditingCell(null);
+                    toast.info("Changes discarded");
+                  }}
+                >
+                  Discard
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleExportSql}>
                   <Download className="h-4 w-4 mr-1" /> Export SQL
                 </Button>
