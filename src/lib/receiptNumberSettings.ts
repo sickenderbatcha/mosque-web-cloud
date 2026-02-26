@@ -80,6 +80,10 @@ export const formatReceiptNumber = (
 ): string => {
   const prefixKey = `${type}_prefix` as keyof ReceiptNumberSettings;
   const prefix = settings[prefixKey] || DEFAULT_SETTINGS[prefixKey];
+  // Avoid double-prefixing if uniqueId already starts with the prefix
+  if (prefix && uniqueId.startsWith(prefix)) {
+    return uniqueId;
+  }
   return `${prefix}${uniqueId}`;
 };
 
