@@ -100,8 +100,16 @@ Deno.serve(async (req) => {
           const countResult = await conn.queryObject(`SELECT COUNT(*)::int as total FROM public."${table}"`);
           const total = (countResult.rows[0] as any).total;
 
+          // Determine order column dynamically
+          const orderColResult = await conn.queryObject(`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = '${table}' AND column_name IN ('created_at', 'id')
+            ORDER BY CASE column_name WHEN 'created_at' THEN 1 WHEN 'id' THEN 2 END LIMIT 1
+          `);
+          const orderCol = (orderColResult.rows[0] as any)?.column_name || 'id';
+
           const dataResult = await conn.queryObject(
-            `SELECT * FROM public."${table}" ORDER BY created_at DESC NULLS LAST, id LIMIT ${pageSize} OFFSET ${offset}`
+            `SELECT * FROM public."${table}" ORDER BY "${orderCol}" DESC NULLS LAST LIMIT ${pageSize} OFFSET ${offset}`
           );
           return jsonResponse({ rows: dataResult.rows, total, page, pageSize });
         }
