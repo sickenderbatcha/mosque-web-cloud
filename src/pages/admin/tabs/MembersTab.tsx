@@ -234,8 +234,8 @@ const MembersTab = () => {
       member_id: formData.member_id,
       full_name: formData.full_name,
       father_name: formData.father_name || null,
-      family_name: formData.family_name || null,
-      phone: formData.phone || null,
+      family_name: formData.family_name,
+      phone: formData.phone,
       email: formData.email || null,
       address: formData.address || null,
       occupation: formData.occupation || null,
@@ -1265,12 +1265,12 @@ const MembersTab = () => {
                     <Input id="father_name" value={formData.father_name} onChange={(e) => setFormData({ ...formData, father_name: e.target.value })} required />
                   </div>
                   <div>
-                    <Label htmlFor="family_name">வகையரா / Family Name</Label>
-                    <Input id="family_name" value={formData.family_name} onChange={(e) => setFormData({ ...formData, family_name: e.target.value })} />
+                    <Label htmlFor="family_name">வகையரா / Family Name *</Label>
+                    <Input id="family_name" value={formData.family_name} onChange={(e) => setFormData({ ...formData, family_name: e.target.value })} required />
                   </div>
                   <div>
-                    <Label htmlFor="phone">தொலைபேசி / Phone</Label>
-                    <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                    <Label htmlFor="phone">தொலைபேசி / Phone *</Label>
+                    <Input id="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
                   </div>
                   <div>
                     <Label htmlFor="email">மின்னஞ்சல் / Email</Label>
