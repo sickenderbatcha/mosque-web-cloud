@@ -271,7 +271,7 @@ const DatabaseManagerTab = () => {
     t.table_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const visibleColumns = columns.filter(c => c.column_name !== "id").slice(0, 8);
+  const visibleColumns = columns.filter(c => c.column_name !== "id");
   const idColumn = columns.find(c => c.column_name === "id");
 
   if (tableLoading) {
@@ -403,8 +403,8 @@ const DatabaseManagerTab = () => {
               </div>
             ) : (
               <>
-                <ScrollArea className="w-full">
-                  <div className="min-w-[800px]">
+                <div className="overflow-auto max-h-[70vh]">
+                  <div className="min-w-max">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -428,11 +428,6 @@ const DatabaseManagerTab = () => {
                               </span>
                             </TableHead>
                           ))}
-                          {columns.length > visibleColumns.length + 1 && (
-                            <TableHead className="text-xs text-muted-foreground">
-                              +{columns.length - visibleColumns.length - 1} more
-                            </TableHead>
-                          )}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -498,7 +493,6 @@ const DatabaseManagerTab = () => {
                                 </TableCell>
                               );
                             })}
-                            {columns.length > visibleColumns.length + 1 && <TableCell />}
                           </TableRow>
                         ))}
 
@@ -526,7 +520,7 @@ const DatabaseManagerTab = () => {
                                 />
                               </TableCell>
                             ))}
-                            {columns.length > visibleColumns.length + 1 && <TableCell />}
+                            
                           </TableRow>
                         ))}
 
@@ -540,7 +534,7 @@ const DatabaseManagerTab = () => {
                       </TableBody>
                     </Table>
                   </div>
-                </ScrollArea>
+                </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
