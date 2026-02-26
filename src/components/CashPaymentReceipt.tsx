@@ -297,16 +297,16 @@ import { useRef, useState } from "react";
                </Button>
                <h2 className="font-semibold text-sm sm:text-base">ரசீது</h2>
              </div>
-             <div className="flex items-center gap-2 w-full sm:w-auto">
-               <Button variant="outline" size="sm" onClick={handleDownload}>
-                 <Download className="h-4 w-4 mr-2" />
-                 பதிவிறக்கம்
-               </Button>
-               <Button variant="default" size="sm" onClick={handlePrint}>
-                 <Printer className="h-4 w-4 mr-2" />
-                 அச்சிடு
-               </Button>
-             </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                <Button variant="outline" size="sm" onClick={handlePrint}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  அச்சிடு
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleDownload}>
+                  <Download className="h-4 w-4 mr-2" />
+                  பதிவிறக்கம்
+                </Button>
+              </div>
            </div>
  
            {/* Receipt Content */}
