@@ -303,15 +303,15 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
       >
         <Card className="p-0 overflow-hidden shadow-lg">
           {/* Actions Bar */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 border-b">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-2 p-4 bg-muted/50 border-b">
+            <div className="flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={onClose} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 பின்செல்
               </Button>
-              <h2 className="font-semibold font-tamil">மஹால் முன்பதிவு ரசீது</h2>
+              <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-end">
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
