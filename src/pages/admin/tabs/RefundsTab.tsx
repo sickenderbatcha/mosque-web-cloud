@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Check, X, Eye, Loader2, Search, Filter, Printer } from "lucide-react";
+import { Check, X, Eye, Loader2, Search, Filter, Printer, Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -195,8 +195,7 @@ const RefundsTab = () => {
     return { type: "Not provided", value: "-" };
   };
 
-  const printRefundVoucher = async (refund: RefundRequest) => {
-    // Load Tamil fonts
+  const buildVoucherHTML = async (refund: RefundRequest, autoPrint = false) => {
     let regularBase64 = "";
     let boldBase64 = "";
     try {
@@ -218,7 +217,7 @@ const RefundsTab = () => {
     }
 
     const paymentMethod = getPaymentMethod(refund);
-    const voucherHTML = `
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -249,7 +248,6 @@ const RefundsTab = () => {
   .details-table th, .details-table td { border: 1px solid #666; padding: 8px 12px; text-align: left; font-size: 13px; }
   .details-table th { background: #f0f0f0; font-weight: 700; }
   .amount-highlight { font-size: 18px; font-weight: 700; }
-  .section-title { font-weight: 700; font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
   .received-by { margin-top: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
   .received-by .sign-block { text-align: center; }
   .received-by .sign-line { border-top: 1px solid #333; width: 200px; margin-top: 40px; padding-top: 4px; }
@@ -302,15 +300,31 @@ const RefundsTab = () => {
     <div>${headerSettings.footerMessageEn}</div>
   </div>
 </div>
-<script>window.onload = function() { window.print(); }</script>
+${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` : ""}
 </body>
 </html>`;
+  };
 
+  const printRefundVoucher = async (refund: RefundRequest) => {
+    const html = await buildVoucherHTML(refund, true);
     const printWindow = window.open("", "_blank");
     if (printWindow) {
-      printWindow.document.write(voucherHTML);
+      printWindow.document.write(html);
       printWindow.document.close();
     }
+  };
+
+  const downloadRefundVoucher = async (refund: RefundRequest) => {
+    const html = await buildVoucherHTML(refund, false);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `refund-voucher-REF-${refund.id.substring(0, 8).toUpperCase()}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -453,14 +467,24 @@ const RefundsTab = () => {
                           <Eye className="h-4 w-4" />
                         </Button>
                         {refund.status === "approved" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => printRefundVoucher(refund)}
-                            title="Print Voucher"
-                          >
-                            <Printer className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => printRefundVoucher(refund)}
+                              title="அச்சிடு"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadRefundVoucher(refund)}
+                              title="பதிவிறக்கம்"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         {refund.status === "pending" && (
                           <>
