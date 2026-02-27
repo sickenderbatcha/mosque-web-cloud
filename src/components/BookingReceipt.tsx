@@ -7,15 +7,6 @@ import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
 
-// Tamil Unicode font CSS - embedded for offline support
-const getTamilFontCSS = () => `
-  @font-face {
-    font-family: 'Tamil';
-    src: local('Noto Sans Tamil'), local('Latha'), local('Vijaya'), local('Arial Unicode MS');
-    unicode-range: U+0B80-0BFF;
-  }
-`;
-
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
   "Wedding": "திருமணம்",
@@ -39,6 +30,54 @@ const getEventTypeTamil = (eventType: string): string => {
 const getServiceNameTamil = (serviceName: string): string => {
   return SERVICE_NAME_TAMIL[serviceName] || serviceName;
 };
+
+// Convert local font to base64 for embedding in print/download windows
+const getTamilFontBase64 = async (): Promise<string> => {
+  try {
+    const response = await fetch("/fonts/NotoSansTamil-Regular.ttf");
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch {
+    return "";
+  }
+};
+
+const getTamilBoldFontBase64 = async (): Promise<string> => {
+  try {
+    const response = await fetch("/fonts/NotoSansTamil-Bold.ttf");
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch {
+    return "";
+  }
+};
+
+const buildFontCSS = (regularBase64: string, boldBase64: string) => `
+  @font-face {
+    font-family: 'NotoSansTamil';
+    src: url(data:font/truetype;base64,${regularBase64}) format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  ${boldBase64 ? `
+  @font-face {
+    font-family: 'NotoSansTamil';
+    src: url(data:font/truetype;base64,${boldBase64}) format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+  ` : ""}
+`;
 
 interface BookingReceiptProps {
   booking: {
@@ -64,24 +103,18 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
 
   const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
 
-  const handlePrint = () => {
-    const printContent = receiptRef.current;
-    if (!printContent) return;
-
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
+  const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
       <style>
+        ${fontCSS}
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Sans Tamil', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #fff; }
+        body { font-family: 'NotoSansTamil', 'Noto Sans Tamil', 'Latha', 'Vijaya', 'Arial Unicode MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #fff; }
         .receipt { max-width: 600px; margin: 0 auto; border: 2px solid #1a5f4a; padding: 30px; }
         .header { text-align: center; border-bottom: 2px dashed #1a5f4a; padding-bottom: 20px; margin-bottom: 20px; }
-        .mosque-name { font-size: 24px; font-weight: bold; color: #1a5f4a; margin-bottom: 5px; }
-        .mosque-name-tamil { font-size: 20px; color: #1a5f4a; margin-bottom: 10px; }
+        .mosque-name-tamil { font-size: 22px; font-weight: bold; color: #1a5f4a; margin-bottom: 4px; }
+        .mosque-name-en { font-size: 16px; color: #1a5f4a; margin-bottom: 6px; }
+        .header-address { font-size: 11px; color: #555; margin-bottom: 2px; }
+        .header-phone { font-size: 11px; color: #555; margin-bottom: 10px; }
         .receipt-title { font-size: 18px; color: #333; text-transform: uppercase; letter-spacing: 2px; }
         .success-badge { background: #22c55e; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; }
         .section { margin-bottom: 20px; }
@@ -100,10 +133,11 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
       </style>
     `;
 
-    printWindow.document.write(`
+    return `
       <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="UTF-8">
           <title>மஹால் முன்பதிவு ரசீது - ${formattedReceiptNumber}</title>
           ${styles}
         </head>
@@ -111,6 +145,10 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
           <div class="receipt">
             <div class="header">
               <div class="mosque-name-tamil">${headerSettings.organizationNameTa}</div>
+              <div class="mosque-name-en">${headerSettings.organizationNameEn}</div>
+              <div class="header-address">${headerSettings.addressLine1}</div>
+              <div class="header-address">${headerSettings.addressLine2}</div>
+              <div class="header-phone">📞 ${headerSettings.phone}</div>
               <div class="receipt-title">மஹால் முன்பதிவு ரசீது</div>
               <div class="success-badge">✓ பணம் செலுத்தப்பட்டது</div>
             </div>
@@ -181,103 +219,44 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
             </div>
 
             <div class="footer">
-              <p>உங்கள் முன்பதிவுக்கு நன்றி!</p>
-              <p style="margin-top: 5px;">${headerSettings.footerMessage}</p>
-              <p style="margin-top: 10px; font-size: 10px;">உருவாக்கப்பட்ட தேதி: ${format(new Date(), "dd/MM/yyyy")}</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
-  };
-
-  const handleDownload = () => {
-    const printContent = receiptRef.current;
-    if (!printContent) return;
-
-    // Create a blob with HTML content for download with embedded Tamil font support
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>மஹால் முன்பதிவு ரசீது - ${formattedReceiptNumber}</title>
-          <style>
-            ${getTamilFontCSS()}
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Tamil', 'Noto Sans Tamil', 'Latha', 'Vijaya', 'Arial Unicode MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: #fff; }
-            .receipt { max-width: 600px; margin: 0 auto; border: 2px solid #1a5f4a; padding: 30px; border-radius: 10px; }
-            .header { text-align: center; border-bottom: 2px dashed #1a5f4a; padding-bottom: 20px; margin-bottom: 20px; }
-            .mosque-name { font-size: 24px; font-weight: bold; color: #1a5f4a; }
-            .mosque-name-tamil { font-size: 20px; color: #1a5f4a; margin-bottom: 5px; }
-            .receipt-title { font-size: 16px; color: #333; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; }
-            .success-badge { background: #22c55e; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px; font-weight: bold; }
-            .section { margin-bottom: 20px; }
-            .section-title { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ddd; }
-            .info-label { color: #666; }
-            .info-value { font-weight: 600; color: #333; }
-            .services-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .services-table th, .services-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-            .services-table th { background: #f5f5f5; color: #666; font-weight: 600; }
-            .total-row { background: #1a5f4a; color: white; }
-            .total-row td { font-weight: bold; }
-            .footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #1a5f4a; color: #666; font-size: 12px; }
-            .transaction-id { font-family: monospace; background: #f5f5f5; padding: 10px; text-align: center; margin-top: 15px; border-radius: 5px; }
-          </style>
-        </head>
-        <body>
-          <div class="receipt">
-            <div class="header">
-              <div class="mosque-name-tamil">${headerSettings.organizationNameTa}</div>
-              <div class="receipt-title">மஹால் முன்பதிவு ரசீது</div>
-              <div class="success-badge">✓ பணம் செலுத்தப்பட்டது</div>
-            </div>
-
-            <div class="section">
-              <div class="section-title">முன்பதிவு விவரங்கள்</div>
-              <div class="info-row"><span class="info-label">விண்ணப்பதாரர் பெயர்</span><span class="info-value">${booking.applicantName}</span></div>
-              <div class="info-row"><span class="info-label">தொலைபேசி</span><span class="info-value">${booking.applicantPhone}</span></div>
-              ${booking.applicantEmail ? `<div class="info-row"><span class="info-label">மின்னஞ்சல்</span><span class="info-value">${booking.applicantEmail}</span></div>` : ''}
-              <div class="info-row"><span class="info-label">நிகழ்வு வகை</span><span class="info-value">${getEventTypeTamil(booking.eventType)}</span></div>
-              <div class="info-row"><span class="info-label">நிகழ்வு தேதி</span><span class="info-value">${format(new Date(booking.eventDate), "dd/MM/yyyy")}</span></div>
-              <div class="info-row"><span class="info-label">நேர இடைவெளி</span><span class="info-value">${booking.startTime} - ${booking.endTime}</span></div>
-              ${booking.expectedGuests ? `<div class="info-row"><span class="info-label">எதிர்பார்க்கப்படும் விருந்தினர்கள்</span><span class="info-value">${booking.expectedGuests}</span></div>` : ''}
-            </div>
-
-            <div class="section">
-              <div class="section-title">சேவைகள்</div>
-              <table class="services-table">
-                <thead><tr><th>சேவை</th><th style="text-align: right;">தொகை</th></tr></thead>
-                <tbody>
-                  ${booking.services.map(s => `<tr><td>${getServiceNameTamil(s.name)}</td><td style="text-align: right;">₹${s.rate.toLocaleString()}</td></tr>`).join('')}
-                  <tr class="total-row"><td>மொத்த தொகை</td><td style="text-align: right;">₹${booking.amount.toLocaleString()}</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="transaction-id">
-              <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
-              <div style="font-weight: bold;">${formattedReceiptNumber}</div>
-            </div>
-
-            <div class="footer">
-              <p>உங்கள் முன்பதிவுக்கு நன்றி!</p>
-              <p style="margin-top: 5px;">${headerSettings.footerMessage}</p>
+              <p>${headerSettings.footerMessage}</p>
+              <p style="margin-top: 3px;">${headerSettings.footerMessageEn}</p>
               <p style="margin-top: 10px; font-size: 10px;">உருவாக்கப்பட்ட தேதி: ${format(new Date(), "dd/MM/yyyy")}</p>
             </div>
           </div>
         </body>
       </html>
     `;
+  };
 
-    const blob = new Blob([htmlContent], { type: "text/html" });
+  const handlePrint = async () => {
+    const [regularBase64, boldBase64] = await Promise.all([
+      getTamilFontBase64(),
+      getTamilBoldFontBase64(),
+    ]);
+    const fontCSS = buildFontCSS(regularBase64, boldBase64);
+    const html = buildReceiptHTML(fontCSS);
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
+  const handleDownload = async () => {
+    const [regularBase64, boldBase64] = await Promise.all([
+      getTamilFontBase64(),
+      getTamilBoldFontBase64(),
+    ]);
+    const fontCSS = buildFontCSS(regularBase64, boldBase64);
+    const html = buildReceiptHTML(fontCSS);
+
+    const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -329,6 +308,10 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
             <div className="text-center border-b-2 border-dashed border-primary/30 pb-6 mb-6">
               <Building2 className="h-10 w-10 mx-auto mb-2 text-primary" />
               <h3 className="text-lg text-primary leading-relaxed">{headerSettings.organizationNameTa}</h3>
+              <p className="text-sm text-primary/80">{headerSettings.organizationNameEn}</p>
+              <p className="text-xs text-muted-foreground mt-1">{headerSettings.addressLine1}</p>
+              <p className="text-xs text-muted-foreground">{headerSettings.addressLine2}</p>
+              <p className="text-xs text-muted-foreground">📞 {headerSettings.phone}</p>
               <p className="text-sm text-muted-foreground uppercase tracking-widest mt-2">மஹால் முன்பதிவு ரசீது</p>
               <motion.div
                 initial={{ scale: 0 }}
@@ -439,7 +422,8 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
 
             {/* Footer */}
             <div className="text-center mt-6 pt-6 border-t-2 border-dashed border-primary/30">
-              <p className="text-sm text-muted-foreground">உங்கள் முன்பதிவுக்கு நன்றி!</p>
+              <p className="text-sm text-muted-foreground">{headerSettings.footerMessage}</p>
+              <p className="text-sm text-muted-foreground mt-1">{headerSettings.footerMessageEn}</p>
               <p className="text-xs text-muted-foreground mt-2">
                 உருவாக்கப்பட்ட தேதி: {format(new Date(), "dd/MM/yyyy")}
               </p>
