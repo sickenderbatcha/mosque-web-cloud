@@ -266,34 +266,34 @@ const RefundsTab = () => {
     ${headerSettings.phone ? `<div class="org-address">Phone: ${headerSettings.phone}</div>` : ""}
   </div>
 
-  <div class="voucher-title">பணத்திரும்ப வவுச்சர் (Refund Voucher)</div>
+  <div class="voucher-title">பணத்திரும்ப வவுச்சர்</div>
 
   <div class="info-row">
-    <span><span class="label">Voucher No:</span> REF-${refund.id.substring(0, 8).toUpperCase()}</span>
-    <span><span class="label">Date:</span> ${format(new Date(), "dd MMM yyyy")}</span>
+    <span><span class="label">வவுச்சர் எண்:</span> REF-${refund.id.substring(0, 8).toUpperCase()}</span>
+    <span><span class="label">தேதி:</span> ${format(new Date(), "dd MMM yyyy")}</span>
   </div>
 
   <table class="details-table">
-    <tr><th>Details</th><th>Information</th></tr>
-    <tr><td>Applicant Name</td><td>${refund.mahal_bookings?.applicant_name || "N/A"}</td></tr>
-    <tr><td>Phone</td><td>${refund.mahal_bookings?.applicant_phone || "N/A"}</td></tr>
-    <tr><td>Event Type</td><td>${refund.mahal_bookings?.event_type || "N/A"}</td></tr>
-    <tr><td>Event Date</td><td>${refund.mahal_bookings?.event_date ? format(new Date(refund.mahal_bookings.event_date), "dd MMM yyyy") : "-"}</td></tr>
-    <tr><td>Refund Reason</td><td>${refund.reason || "N/A"}</td></tr>
-    <tr><td>Refund Amount</td><td class="amount-highlight">₹${Number(refund.amount).toLocaleString()}</td></tr>
-    <tr><td>Payment Method</td><td>${paymentMethod.type}</td></tr>
-    <tr><td>Payment Details</td><td>${refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "Bank: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "Cash"}</td></tr>
-    <tr><td>Requested On</td><td>${format(new Date(refund.created_at), "dd MMM yyyy")}</td></tr>
-    <tr><td>Processed On</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd MMM yyyy, hh:mm a") : "-"}</td></tr>
-    ${refund.admin_notes ? `<tr><td>Admin Notes</td><td>${refund.admin_notes}</td></tr>` : ""}
+    <tr><th>விவரம்</th><th>தகவல்</th></tr>
+    <tr><td>விண்ணப்பதாரர் பெயர்</td><td>${refund.mahal_bookings?.applicant_name || "N/A"}</td></tr>
+    <tr><td>தொலைபேசி எண்</td><td>${refund.mahal_bookings?.applicant_phone || "N/A"}</td></tr>
+    <tr><td>நிகழ்வு வகை</td><td>${refund.mahal_bookings?.event_type || "N/A"}</td></tr>
+    <tr><td>நிகழ்வு தேதி</td><td>${refund.mahal_bookings?.event_date ? format(new Date(refund.mahal_bookings.event_date), "dd MMM yyyy") : "-"}</td></tr>
+    <tr><td>திரும்ப பெறும் காரணம்</td><td>${refund.reason || "N/A"}</td></tr>
+    <tr><td>திரும்ப பெறும் தொகை</td><td class="amount-highlight">₹${Number(refund.amount).toLocaleString()}</td></tr>
+    <tr><td>பணம் செலுத்தும் முறை</td><td>${paymentMethod.type}</td></tr>
+    <tr><td>பணம் செலுத்தும் விவரம்</td><td>${refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "வங்கி: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "ரொக்கம்"}</td></tr>
+    <tr><td>கோரிக்கை தேதி</td><td>${format(new Date(refund.created_at), "dd MMM yyyy")}</td></tr>
+    <tr><td>செயல்படுத்திய தேதி</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd MMM yyyy, hh:mm a") : "-"}</td></tr>
+    ${refund.admin_notes ? `<tr><td>நிர்வாக குறிப்புகள்</td><td>${refund.admin_notes}</td></tr>` : ""}
   </table>
 
   <div class="received-by">
     <div class="sign-block">
-      <div class="sign-line">Received By</div>
+      <div class="sign-line">பெறுநர் கையொப்பம்</div>
     </div>
     <div class="sign-block">
-      <div class="sign-line">Authorized Signatory</div>
+      <div class="sign-line">அங்கீகரிக்கப்பட்ட கையொப்பம்</div>
     </div>
   </div>
 
