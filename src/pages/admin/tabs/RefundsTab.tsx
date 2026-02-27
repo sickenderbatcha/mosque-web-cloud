@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Check, X, Eye, Loader2, Search, Filter } from "lucide-react";
+import { Check, X, Eye, Loader2, Search, Filter, Printer } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface RefundRequest {
@@ -39,6 +40,7 @@ interface RefundRequest {
 
 const RefundsTab = () => {
   const { user } = useAuth();
+  const { settings: headerSettings } = useReceiptHeaderSettings();
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRefund, setSelectedRefund] = useState<RefundRequest | null>(null);
@@ -193,6 +195,124 @@ const RefundsTab = () => {
     return { type: "Not provided", value: "-" };
   };
 
+  const printRefundVoucher = async (refund: RefundRequest) => {
+    // Load Tamil fonts
+    let regularBase64 = "";
+    let boldBase64 = "";
+    try {
+      const [regResp, boldResp] = await Promise.all([
+        fetch("/fonts/NotoSansTamil-Regular.ttf"),
+        fetch("/fonts/NotoSansTamil-Bold.ttf"),
+      ]);
+      const [regBuf, boldBuf] = await Promise.all([regResp.arrayBuffer(), boldResp.arrayBuffer()]);
+      const toBase64 = (buf: ArrayBuffer) => {
+        const bytes = new Uint8Array(buf);
+        let binary = "";
+        bytes.forEach((b) => (binary += String.fromCharCode(b)));
+        return btoa(binary);
+      };
+      regularBase64 = toBase64(regBuf);
+      boldBase64 = toBase64(boldBuf);
+    } catch (e) {
+      console.error("Failed to load Tamil fonts:", e);
+    }
+
+    const paymentMethod = getPaymentMethod(refund);
+    const voucherHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Refund Voucher</title>
+<style>
+  @font-face {
+    font-family: 'NotoSansTamil';
+    src: url(data:font/truetype;base64,${regularBase64}) format('truetype');
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: 'NotoSansTamil';
+    src: url(data:font/truetype;base64,${boldBase64}) format('truetype');
+    font-weight: 700;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'NotoSansTamil', 'Noto Sans Tamil', sans-serif; padding: 30px; color: #111; }
+  .voucher { border: 2px solid #333; padding: 24px; max-width: 700px; margin: 0 auto; }
+  .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 16px; margin-bottom: 16px; }
+  .org-name-ta { font-size: 20px; font-weight: 700; }
+  .org-name-en { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .org-address { font-size: 12px; color: #444; margin-top: 4px; }
+  .voucher-title { font-size: 18px; font-weight: 700; text-align: center; margin: 16px 0; text-decoration: underline; }
+  .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+  .info-row .label { font-weight: 700; min-width: 180px; }
+  .details-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .details-table th, .details-table td { border: 1px solid #666; padding: 8px 12px; text-align: left; font-size: 13px; }
+  .details-table th { background: #f0f0f0; font-weight: 700; }
+  .amount-highlight { font-size: 18px; font-weight: 700; }
+  .section-title { font-weight: 700; font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .received-by { margin-top: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .received-by .sign-block { text-align: center; }
+  .received-by .sign-line { border-top: 1px solid #333; width: 200px; margin-top: 40px; padding-top: 4px; }
+  .footer { text-align: center; margin-top: 20px; font-size: 11px; color: #666; border-top: 1px solid #ccc; padding-top: 8px; }
+  @media print { body { padding: 0; } .voucher { border: 2px solid #333; } }
+</style>
+</head>
+<body>
+<div class="voucher">
+  <div class="header">
+    <div class="org-name-ta">${headerSettings.organizationNameTa}</div>
+    <div class="org-name-en">${headerSettings.organizationNameEn}</div>
+    <div class="org-address">${headerSettings.addressLine1}${headerSettings.addressLine2 ? ", " + headerSettings.addressLine2 : ""}</div>
+    ${headerSettings.phone ? `<div class="org-address">Phone: ${headerSettings.phone}</div>` : ""}
+  </div>
+
+  <div class="voucher-title">பணத்திரும்ப வவுச்சர் (Refund Voucher)</div>
+
+  <div class="info-row">
+    <span><span class="label">Voucher No:</span> REF-${refund.id.substring(0, 8).toUpperCase()}</span>
+    <span><span class="label">Date:</span> ${format(new Date(), "dd MMM yyyy")}</span>
+  </div>
+
+  <table class="details-table">
+    <tr><th>Details</th><th>Information</th></tr>
+    <tr><td>Applicant Name</td><td>${refund.mahal_bookings?.applicant_name || "N/A"}</td></tr>
+    <tr><td>Phone</td><td>${refund.mahal_bookings?.applicant_phone || "N/A"}</td></tr>
+    <tr><td>Event Type</td><td>${refund.mahal_bookings?.event_type || "N/A"}</td></tr>
+    <tr><td>Event Date</td><td>${refund.mahal_bookings?.event_date ? format(new Date(refund.mahal_bookings.event_date), "dd MMM yyyy") : "-"}</td></tr>
+    <tr><td>Refund Reason</td><td>${refund.reason || "N/A"}</td></tr>
+    <tr><td>Refund Amount</td><td class="amount-highlight">₹${Number(refund.amount).toLocaleString()}</td></tr>
+    <tr><td>Payment Method</td><td>${paymentMethod.type}</td></tr>
+    <tr><td>Payment Details</td><td>${refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "Bank: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "Cash"}</td></tr>
+    <tr><td>Requested On</td><td>${format(new Date(refund.created_at), "dd MMM yyyy")}</td></tr>
+    <tr><td>Processed On</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd MMM yyyy, hh:mm a") : "-"}</td></tr>
+    ${refund.admin_notes ? `<tr><td>Admin Notes</td><td>${refund.admin_notes}</td></tr>` : ""}
+  </table>
+
+  <div class="received-by">
+    <div class="sign-block">
+      <div class="sign-line">Received By</div>
+    </div>
+    <div class="sign-block">
+      <div class="sign-line">Authorized Signatory</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>${headerSettings.footerMessage}</div>
+    <div>${headerSettings.footerMessageEn}</div>
+  </div>
+</div>
+<script>window.onload = function() { window.print(); }</script>
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(voucherHTML);
+      printWindow.document.close();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -332,6 +452,16 @@ const RefundsTab = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
+                        {refund.status === "approved" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => printRefundVoucher(refund)}
+                            title="Print Voucher"
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                        )}
                         {refund.status === "pending" && (
                           <>
                             <Button
