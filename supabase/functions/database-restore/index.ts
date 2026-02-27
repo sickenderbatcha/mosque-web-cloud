@@ -121,8 +121,8 @@ Deno.serve(async (req) => {
     let lastError = "";
     const batchSize = 500;
 
-    for (let i = 0; i < cleanedRows.length; i += batchSize) {
-      const batch = cleanedRows.slice(i, i + batchSize);
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
       const { error } = await adminClient.from(table).insert(batch);
 
       if (error) {
