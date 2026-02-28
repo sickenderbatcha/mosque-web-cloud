@@ -68,22 +68,29 @@ const handler = async (req: Request): Promise<Response> => {
       let receiptId: string;
       let orderNotes: Record<string, string>;
 
+      const buildSafeReceiptId = (prefix: string, rawId?: string) => {
+        const compactId = (rawId || `${Date.now()}`).replace(/[^a-zA-Z0-9]/g, "").slice(0, 24);
+        return `${prefix}${compactId}`.slice(0, 40);
+      };
+
       if (type === "donation") {
-        receiptId = `donation_${donationId || Date.now()}`;
+        receiptId = buildSafeReceiptId("don_", donationId);
         orderNotes = notes || { donationId: donationId || "" };
       } else if (type === "noc") {
-        receiptId = `noc_${nocCertificateId || Date.now()}`;
+        receiptId = buildSafeReceiptId("noc_", nocCertificateId);
         orderNotes = notes || { nocCertificateId: nocCertificateId || "" };
       } else if (type === "certificate") {
-        receiptId = `certificate_${certificatePaymentId || Date.now()}`;
+        receiptId = buildSafeReceiptId("cert_", certificatePaymentId);
         orderNotes = notes || { certificatePaymentId: certificatePaymentId || "" };
       } else if (type === "subscription") {
-        receiptId = `subscription_${subscriptionId || Date.now()}`;
+        receiptId = buildSafeReceiptId("sub_", subscriptionId);
         orderNotes = notes || { subscriptionId: subscriptionId || "" };
       } else {
-        receiptId = `booking_${bookingId || Date.now()}`;
+        receiptId = buildSafeReceiptId("book_", bookingId);
         orderNotes = notes || { bookingId: bookingId || "" };
       }
+
+      const finalReceipt = (receipt || receiptId).slice(0, 40);
 
       const orderResponse = await fetch("https://api.razorpay.com/v1/orders", {
         method: "POST",
@@ -94,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           amount: Math.round(amount * 100), // Razorpay expects amount in paise
           currency,
-          receipt: receipt || receiptId,
+          receipt: finalReceipt,
           notes: orderNotes,
         }),
       });
