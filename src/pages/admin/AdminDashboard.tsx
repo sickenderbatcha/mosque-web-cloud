@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup } from "lucide-react";
+import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package } from "lucide-react";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,7 @@ import OutsideMarriageRegisterTab from "./tabs/OutsideMarriageRegisterTab";
 import IssuedDocumentsTab from "./tabs/IssuedDocumentsTab";
 import PdfDocumentsTab from "./tabs/PdfDocumentsTab";
 import BackupRestoreTab from "./tabs/BackupRestoreTab";
+import AssetManagementTab from "./tabs/AssetManagementTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("donations");
@@ -284,6 +285,10 @@ const AdminDashboard = () => {
               <FilePlus2 className="h-4 w-4" />
               <span className="hidden sm:inline">PDF Docs</span>
             </TabsTrigger>
+            <TabsTrigger value="asset-management" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">Assets</span>
+            </TabsTrigger>
             <TabsTrigger value="backup-restore" className="flex items-center gap-2">
               <DatabaseBackup className="h-4 w-4" />
               <span className="hidden sm:inline">Backup</span>
@@ -393,6 +398,10 @@ const AdminDashboard = () => {
               pendingFile={pendingPdfFile}
               onPendingFileConsumed={() => setPendingPdfFile(null)}
             />
+          </TabsContent>
+
+          <TabsContent value="asset-management">
+            <AssetManagementTab />
           </TabsContent>
 
           <TabsContent value="backup-restore" forceMount className="data-[state=inactive]:hidden">
