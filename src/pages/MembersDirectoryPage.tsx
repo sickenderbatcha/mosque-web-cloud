@@ -50,9 +50,8 @@ const MembersDirectoryPage = () => {
 
       while (hasMore) {
         const { data, error } = await supabase
-          .from("gb_members")
+          .rpc("get_non_admin_gb_members")
           .select("id, member_id, full_name, father_name, phone, email, address, occupation, blood_group, photo_url, joined_at")
-          .eq("is_active", true)
           .order("member_id")
           .range(page * pageSize, (page + 1) * pageSize - 1);
 

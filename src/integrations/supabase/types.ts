@@ -2035,6 +2035,36 @@ export type Database = {
           status: Database["public"]["Enums"]["booking_status"]
         }[]
       }
+      get_non_admin_gb_members: {
+        Args: never
+        Returns: {
+          address: string | null
+          auth_user_id: string | null
+          blood_group: Database["public"]["Enums"]["blood_group"] | null
+          created_at: string
+          date_of_birth: string | null
+          date_of_marriage: string
+          email: string | null
+          family_name: string | null
+          father_name: string
+          full_name: string
+          id: string
+          is_active: boolean | null
+          joined_at: string | null
+          member_id: string
+          occupation: string | null
+          phone: string | null
+          photo_url: string | null
+          updated_at: string
+          user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "gb_members"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
