@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,18 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+
+  // Prevent browser back button when receipt action is required
+  useEffect(() => {
+    if (requireAction && !hasActioned) {
+      const handlePopState = (e: PopStateEvent) => {
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.history.pushState(null, "", window.location.href);
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [requireAction, hasActioned]);
 
   const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
 
