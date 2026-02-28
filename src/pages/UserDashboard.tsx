@@ -1008,8 +1008,8 @@ const UserDashboard = () => {
                             
                             {/* Action buttons - fully wrapped */}
                             <div className="flex flex-wrap items-center gap-2">
-                              {/* Receipt button for paid bookings */}
-                              {(booking.payment_status === "paid" || booking.payment_status === "completed") && booking.booking_amount && (
+                              {/* Receipt button for cash-paid bookings only (online payment receipts are shown at payment time) */}
+                              {booking.payment_status === "paid" && booking.booking_amount && (
                                 <Button
                                   size="sm"
                                   variant="outline"

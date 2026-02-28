@@ -93,6 +93,7 @@ serve(async (req) => {
 
     // ========================================
     // PART 1: Cancel expired cash payment requests for bookings
+    // (Only cash payment requests - online paid bookings are excluded)
     // ========================================
     const { data: expiredRequests, error: fetchError } = await supabase
       .from("cash_payment_requests")
@@ -129,7 +130,20 @@ serve(async (req) => {
             }
 
             // Cancel the associated booking if reference_id exists
+            // BUT skip if the booking already has a completed online payment
             if (request.reference_id) {
+              // Check if booking has completed online payment
+              const { data: bookingData } = await supabase
+                .from("mahal_bookings")
+                .select("payment_status")
+                .eq("id", request.reference_id)
+                .single();
+
+              if (bookingData?.payment_status === "completed") {
+                console.log(`Skipping booking ${request.reference_id} - online payment already completed`);
+                continue;
+              }
+
               const { error: cancelBookingError } = await supabase
                 .from("mahal_bookings")
                 .update({
@@ -182,12 +196,13 @@ serve(async (req) => {
 
     // ========================================
     // PART 2: Cancel pending bookings that haven't been approved within timeout
-    // (These may not have an associated cash payment request)
+    // (Only bookings WITHOUT completed online payment)
     // ========================================
     const { data: expiredBookings, error: bookingFetchError } = await supabase
       .from("mahal_bookings")
       .select("*")
       .eq("status", "pending")
+      .neq("payment_status", "completed")
       .lt("created_at", cutoffTime);
 
     if (bookingFetchError) {
