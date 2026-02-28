@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
@@ -94,12 +95,14 @@ interface BookingReceiptProps {
     services: { name: string; rate: number }[];
   };
   onClose: () => void;
+  requireAction?: boolean;
 }
 
-const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
+const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const { getReceiptNumber } = useReceiptNumberSettings();
+  const [hasActioned, setHasActioned] = useState(false);
 
   const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
 
@@ -245,6 +248,7 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
     printWindow.focus();
     setTimeout(() => {
       printWindow.print();
+      setHasActioned(true);
     }, 500);
   };
 
@@ -265,6 +269,7 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setHasActioned(true);
   };
 
   return (
@@ -281,21 +286,38 @@ const BookingReceipt = ({ booking, onClose }: BookingReceiptProps) => {
         className="relative w-full max-w-lg max-h-[90vh] overflow-auto"
       >
         <Card className="p-0 overflow-hidden shadow-lg">
+          {/* Mandatory action warning */}
+          {requireAction && !hasActioned && (
+            <div className="px-4 pt-3 pb-0">
+              <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 dark:text-amber-300 font-tamil text-sm">
+                  தயவுசெய்து ரசீதை அச்சிடவும் அல்லது பதிவிறக்கம் செய்யவும். / Please print or download the receipt before proceeding.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
           {/* Actions Bar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-muted/50 border-b">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={onClose} className="gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                disabled={requireAction && !hasActioned}
+                className="gap-2"
+              >
                 <ArrowLeft className="h-4 w-4" />
-                பின்செல்
+                {requireAction && !hasActioned ? "ரசீதை அச்சிடவும்" : "பின்செல்"}
               </Button>
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={handlePrint}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
               </Button>

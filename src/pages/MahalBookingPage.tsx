@@ -732,6 +732,7 @@ const MahalBookingPage = () => {
         {showReceipt && receiptData && (
           <BookingReceipt
             booking={receiptData}
+            requireAction
             onClose={() => {
               setShowReceipt(false);
               setReceiptData(null);
