@@ -155,6 +155,130 @@ export type Database = {
         }
         Relationships: []
       }
+      asset_locations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          name_tamil: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          name_tamil?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          name_tamil?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      asset_maintenance_logs: {
+        Row: {
+          asset_id: string
+          cost: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          maintenance_date: string
+          maintenance_type: string
+          performed_by: string | null
+        }
+        Insert: {
+          asset_id: string
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          maintenance_date?: string
+          maintenance_type: string
+          performed_by?: string | null
+        }
+        Update: {
+          asset_id?: string
+          cost?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          maintenance_date?: string
+          maintenance_type?: string
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_maintenance_logs_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          location_id: string
+          name: string
+          notes: string | null
+          purchase_date: string | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+          value: number | null
+          warranty_expiry_date: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location_id: string
+          name: string
+          notes?: string | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+          value?: number | null
+          warranty_expiry_date?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location_id?: string
+          name?: string
+          notes?: string | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+          value?: number | null
+          warranty_expiry_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "asset_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_otp_tokens: {
         Row: {
           attempts: number
