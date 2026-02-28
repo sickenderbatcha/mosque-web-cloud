@@ -353,6 +353,18 @@ const UserDashboard = () => {
     }
   };
 
+  const eventTypeTamil: Record<string, string> = {
+    "Wedding": "திருமணம்",
+    "Nikkah": "நிக்காஹ்",
+    "Walima": "வலீமா",
+    "Engagement": "நிச்சயதார்த்தம்",
+    "Reception": "வரவேற்பு",
+    "Meeting": "கூட்டம்",
+    "Other": "மற்றவை",
+  };
+
+  const getEventTypeTamil = (type: string) => eventTypeTamil[type] || type;
+
   const cancelBooking = async (bookingId: string) => {
     setCancellingBookingId(bookingId);
     try {
@@ -1087,7 +1099,7 @@ const UserDashboard = () => {
                                           This action cannot be undone.
                                         </span>
                                         <span className="block text-sm">
-                                          <strong>{booking.event_type}</strong> நிகழ்வுக்கான{" "}
+                                          <strong>{getEventTypeTamil(booking.event_type)}</strong> நிகழ்வுக்கான{" "}
                                           <strong>{formatDate(booking.event_date)}</strong> தேதியில் உள்ள முன்பதிவை ரத்து செய்ய விரும்புகிறீர்களா?
                                           இந்த செயலை மீண்டும் மாற்ற இயலாது.
                                         </span>
