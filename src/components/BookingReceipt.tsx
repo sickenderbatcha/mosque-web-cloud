@@ -104,16 +104,46 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
 
-  // Prevent browser back button when receipt action is required
+  // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
-    if (requireAction && !hasActioned) {
-      const handlePopState = (e: PopStateEvent) => {
-        window.history.pushState(null, "", window.location.href);
-      };
-      window.history.pushState(null, "", window.location.href);
-      window.addEventListener("popstate", handlePopState);
-      return () => window.removeEventListener("popstate", handlePopState);
-    }
+    if (!requireAction || hasActioned) return;
+
+    const lockedUrl = window.location.href;
+    window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+
+    const handlePopState = () => {
+      window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+    };
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingField =
+        !!target &&
+        (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable);
+
+      const isBackNavigationKey =
+        (event.altKey && event.key === "ArrowLeft") || (!isTypingField && event.key === "Backspace");
+
+      if (isBackNavigationKey) {
+        event.preventDefault();
+        window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [requireAction, hasActioned]);
 
   const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
