@@ -1319,7 +1319,11 @@ const DonationPage = () => {
       }
 
       // Online payment flow - First create donation with pending status
-      const { data: donationData, error: insertError } = await supabase.from("donations").insert({
+      // Important: don't use .select().single() here because public users can INSERT donations
+      // but are not allowed to SELECT donation rows.
+      const donationId = crypto.randomUUID();
+      const { error: insertError } = await supabase.from("donations").insert({
+        id: donationId,
         donor_name: isAnonymous ? "Anonymous" : donorName,
         donor_phone: phone,
         donor_email: email || null,
@@ -1330,7 +1334,7 @@ const DonationPage = () => {
         receipt_number: receiptNum,
         payment_method: "Online",
         payment_status: "pending",
-      }).select().single();
+      });
 
       if (insertError) throw insertError;
 
@@ -1338,10 +1342,10 @@ const DonationPage = () => {
       const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
         body: {
           amount: amount,
-          donationId: donationData.id,
+          donationId,
           type: "donation",
           notes: {
-            donationId: donationData.id,
+            donationId,
             donorName: isAnonymous ? "Anonymous" : donorName,
             donorPhone: phone,
             purpose: donationPurpose,
@@ -1353,7 +1357,7 @@ const DonationPage = () => {
         // Don't delete - keep for cash payment fallback
         const failReason = orderData?.error || orderError?.message || "Payment gateway unavailable";
         setCashRequestData({
-          donationId: donationData.id,
+          donationId,
           amount: amount,
           failureReason: failReason,
         });
@@ -1378,7 +1382,7 @@ const DonationPage = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                donationId: donationData.id,
+                donationId,
                 type: "donation",
               },
             });
@@ -1444,7 +1448,7 @@ const DonationPage = () => {
             });
             // Offer cash payment request
             setCashRequestData({
-              donationId: donationData.id,
+              donationId,
               amount: amount,
               failureReason: "Payment cancelled by user",
             });
@@ -1456,7 +1460,7 @@ const DonationPage = () => {
       const razorpay = new window.Razorpay(options);
       razorpay.on("payment.failed", function (response: any) {
         setCashRequestData({
-          donationId: donationData.id,
+          donationId,
           amount: amount,
           failureReason: response.error?.description || response.error?.reason || "Payment failed",
         });
