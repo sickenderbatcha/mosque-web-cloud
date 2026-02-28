@@ -185,7 +185,7 @@ const BookingsTab = () => {
   };
 
   const handlePrintReceipt = (booking: Booking) => {
-    if (booking.payment_status !== "paid") {
+    if (booking.payment_status !== "paid" && booking.payment_status !== "completed") {
       toast.error("Receipt can only be printed for paid bookings");
       return;
     }
