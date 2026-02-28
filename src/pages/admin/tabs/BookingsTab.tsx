@@ -472,7 +472,7 @@ const BookingsTab = () => {
                             <Ban className="h-4 w-4" />
                           </Button>
                         )}
-                        {booking.payment_status === "paid" && (
+                        {(booking.payment_status === "paid" || booking.payment_status === "completed") && (
                           <Button
                             size="sm"
                             variant="outline"
