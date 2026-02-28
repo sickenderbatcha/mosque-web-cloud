@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, ArrowLeft, Building2, Phone, User, Heart, IndianRupee, CheckCircle2, Mail } from "lucide-react";
+import { Download, Printer, ArrowLeft, Building2, Phone, User, Heart, IndianRupee, CheckCircle2, Mail, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
@@ -29,6 +30,7 @@ interface DonationReceiptProps {
     createdAt: string;
   };
   onClose: () => void;
+  requireAction?: boolean;
 }
 
 // Tamil translations for common donation purposes
@@ -107,10 +109,53 @@ const getPurposeTamil = (purpose: string): string => {
   return purpose;
 };
 
-const DonationReceipt = ({ donation, onClose }: DonationReceiptProps) => {
+const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const { getReceiptNumber } = useReceiptNumberSettings();
+  const [hasActioned, setHasActioned] = useState(false);
+
+  // Strictly prevent navigation until user prints/downloads at least once
+  useEffect(() => {
+    if (!requireAction || hasActioned) return;
+
+    const lockedUrl = window.location.href;
+    window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+
+    const handlePopState = () => {
+      window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+    };
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingField =
+        !!target &&
+        (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable);
+
+      const isBackNavigationKey =
+        (event.altKey && event.key === "ArrowLeft") || (!isTypingField && event.key === "Backspace");
+
+      if (isBackNavigationKey) {
+        event.preventDefault();
+        window.history.pushState({ receiptActionLocked: true }, "", lockedUrl);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [requireAction, hasActioned]);
 
   const formattedReceiptNumber = getReceiptNumber("donation", donation.receiptNumber);
 
@@ -121,6 +166,7 @@ const DonationReceipt = ({ donation, onClose }: DonationReceiptProps) => {
   };
 
   const handlePrint = () => {
+    setHasActioned(true);
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
@@ -230,6 +276,7 @@ const DonationReceipt = ({ donation, onClose }: DonationReceiptProps) => {
   };
 
   const handleDownload = () => {
+    setHasActioned(true);
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -325,10 +372,27 @@ const DonationReceipt = ({ donation, onClose }: DonationReceiptProps) => {
         className="relative w-full max-w-lg max-h-[90vh] overflow-auto"
       >
         <Card className="p-0 overflow-hidden shadow-lg">
+          {/* Receipt action required alert */}
+          {requireAction && !hasActioned && (
+            <Alert variant="destructive" className="rounded-none border-x-0 border-t-0">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="font-tamil">
+                தயவுசெய்து ரசீதை அச்சிடவும் அல்லது பதிவிறக்கம் செய்யவும். இதை செய்யாமல் திரும்ப செல்ல முடியாது.
+                <br />
+                <span className="text-xs">Please print or download the receipt before going back.</span>
+              </AlertDescription>
+            </Alert>
+          )}
           {/* Actions Bar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-muted/50 border-b">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={onClose} className="gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                disabled={requireAction && !hasActioned}
+                className="gap-2"
+              >
                 <ArrowLeft className="h-4 w-4" />
                 பின்செல்
               </Button>

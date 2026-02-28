@@ -1487,6 +1487,7 @@ const DonationPage = () => {
       {showDonationReceipt && donationReceiptData && (
         <DonationReceipt
           donation={donationReceiptData}
+          requireAction={donationReceiptData.paymentMethod === "Online"}
           onClose={() => {
             setShowDonationReceipt(false);
             setDonationReceiptData(null);
