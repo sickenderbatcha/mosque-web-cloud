@@ -1078,21 +1078,28 @@ const UserDashboard = () => {
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
+                                      <AlertDialogTitle>Cancel Booking? / முன்பதிவை ரத்து செய்யவா?</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Are you sure you want to cancel this booking for{" "}
-                                        <strong>{booking.event_type}</strong> on{" "}
-                                        <strong>{formatDate(booking.event_date)}</strong>?
-                                        This action cannot be undone.
+                                        <span className="block mb-1">
+                                          Are you sure you want to cancel this booking for{" "}
+                                          <strong>{booking.event_type}</strong> on{" "}
+                                          <strong>{formatDate(booking.event_date)}</strong>?
+                                          This action cannot be undone.
+                                        </span>
+                                        <span className="block text-sm">
+                                          <strong>{booking.event_type}</strong> நிகழ்வுக்கான{" "}
+                                          <strong>{formatDate(booking.event_date)}</strong> தேதியில் உள்ள முன்பதிவை ரத்து செய்ய விரும்புகிறீர்களா?
+                                          இந்த செயலை மீண்டும் மாற்ற இயலாது.
+                                        </span>
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+                                      <AlertDialogCancel>Keep Booking / முன்பதிவை வைத்திரு</AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() => cancelBooking(booking.id)}
                                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       >
-                                        Yes, Cancel Booking
+                                        Yes, Cancel / ஆம், ரத்து செய்
                                       </AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
