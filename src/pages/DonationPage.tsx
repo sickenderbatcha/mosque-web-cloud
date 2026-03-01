@@ -253,7 +253,9 @@ const SubscriptionForm = () => {
     // Find which selected months are already paid
     const paidMonthsList: string[] = [];
     for (const slot of paidSlots || []) {
-      const isInRange = monthsToCheck.some(m => m.year === slot.year && m.month === slot.month);
+      const slotYear = Number(slot.year);
+      const slotMonth = Number(slot.month);
+      const isInRange = monthsToCheck.some(m => m.year === slotYear && m.month === slotMonth);
       if (isInRange) {
         const monthName = MONTHS[slot.month - 1]?.label.split(" / ")[0];
         paidMonthsList.push(`${monthName} ${slot.year}`);
@@ -337,7 +339,7 @@ const SubscriptionForm = () => {
         .eq("is_paid", true);
 
       const paidSet = new Set(
-        (paidSlots || []).map((s) => `${s.year}-${s.month}`)
+        (paidSlots || []).map((s) => `${Number(s.year)}-${Number(s.month)}`)
       );
 
       const unpaid = allMonths.filter(
@@ -463,18 +465,17 @@ const SubscriptionForm = () => {
             description: `Subscription for the following month(s) is already paid: ${paidMonths.join(", ")}. Please select different months.`,
             variant: "destructive",
           });
-          // Move selection to next unpaid month (prevents repeated checkout block)
-          if (pendingMonths.length > 0) {
-            setFromMonth(String(pendingMonths[0].month).padStart(2, "0"));
-            setFromYear(String(pendingMonths[0].year));
-          } else {
-            const selectedStartMonth = parseInt(fromMonth, 10);
-            const selectedStartYear = parseInt(fromYear, 10);
-            const nextStart = new Date(selectedStartYear, selectedStartMonth - 1 + numberOfMonths, 1);
-            setFromMonth(String(nextStart.getMonth() + 1).padStart(2, "0"));
-            setFromYear(String(nextStart.getFullYear()));
-          }
+          // Auto-advance to next payable period to avoid getting stuck on already-paid month
+          const selectedStartMonth = parseInt(fromMonth, 10);
+          const selectedStartYear = parseInt(fromYear, 10);
+          const nextStart = new Date(selectedStartYear, selectedStartMonth - 1 + numberOfMonths, 1);
+          setFromMonth(String(nextStart.getMonth() + 1).padStart(2, "0"));
+          setFromYear(String(nextStart.getFullYear()));
           setNumberOfMonths(1);
+          toast({
+            title: "Next month selected",
+            description: "Already paid month skipped. Please click Pay again.",
+          });
           setLoading(false);
           return;
         }
