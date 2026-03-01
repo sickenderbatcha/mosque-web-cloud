@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, FileText, IndianRupee, Send, Printer, Banknote, CreditCard, AlertCircle, X } from "lucide-react";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
+import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import HeirCertificatePreview from "@/components/HeirCertificatePreview";
 import { generateHeirCertificatePdf, printHeirCertificate, HeirRecord } from "@/utils/heirCertificatePdf";
@@ -97,7 +98,8 @@ export default function HeirCertificatePage() {
     amount: number;
     failureReason?: string;
   } | null>(null);
-  
+  const [showCertReceipt, setShowCertReceipt] = useState<CertificateReceiptData | null>(null);
+
   // Heirs state managed separately for spreadsheet
   const [heirs, setHeirs] = useState<Heir[]>([
     { name: "", relationship: "", age: "", marriage_eligibility: "" }
@@ -306,6 +308,22 @@ export default function HeirCertificatePage() {
               payment_status: "completed",
             } as unknown as HeirRecord);
             toast.success("பணம் வெற்றிகரமாக செலுத்தப்பட்டது!");
+            // Show receipt with enforcement
+            setShowCertReceipt({
+              certificateType: "heir",
+              applicantName: heirData.applicant_name,
+              applicantPhone: heirData.applicant_phone || undefined,
+              applicantEmail: heirData.applicant_email || undefined,
+              subjectName: heirData.deceased_name,
+              amount: certificateFee,
+              receiptNumber: heirData.id.substring(0, 8).toUpperCase(),
+              paymentMethod: "online",
+              transactionId: response.razorpay_payment_id,
+              createdAt: heirData.created_at,
+              additionalInfo: {
+                "இறந்தவர் தந்தை பெயர்": heirData.deceased_father_name,
+              },
+            });
           } catch (err) {
             console.error("Payment verification error:", err);
             toast.error("பணம் செலுத்துதல் சரிபார்ப்பு பிழை");
@@ -918,6 +936,11 @@ export default function HeirCertificatePage() {
               setHeirs([{ name: "", relationship: "", age: "", marriage_eligibility: "" }]);
             }}
           />
+        )}
+
+        {/* Certificate Receipt Modal */}
+        {showCertReceipt && (
+          <CertificateReceipt data={showCertReceipt} requireAction onClose={() => setShowCertReceipt(null)} />
         )}
       </div>
     </Layout>

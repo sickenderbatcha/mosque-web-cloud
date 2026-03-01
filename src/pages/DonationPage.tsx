@@ -680,6 +680,7 @@ const SubscriptionForm = () => {
       {showReceipt && completedSubscription && (
         <SubscriptionReceipt
           subscription={completedSubscription}
+          requireAction
           onClose={() => {
             setShowReceipt(false);
             setCompletedSubscription(null);
