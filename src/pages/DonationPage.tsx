@@ -398,7 +398,7 @@ const SubscriptionForm = () => {
 
       if (fnData?.found) {
         setMemberName(fnData.full_name);
-        setMemberPhone(fnData.phone);
+        setMemberPhone(fnData.phone || "");
         setMemberAddress(fnData.address || "");
         setMemberFound(true);
         toast({
@@ -457,6 +457,7 @@ const SubscriptionForm = () => {
 
     try {
       const memberId = membershipNumber.trim();
+      const normalizedMemberPhone = typeof memberPhone === "string" ? memberPhone.trim() : "";
       let fromMonthNum = parseInt(fromMonth, 10);
       let fromYearNum = parseInt(fromYear, 10);
       let effectiveMonths = numberOfMonths;
@@ -566,7 +567,7 @@ const SubscriptionForm = () => {
         const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
           member_id: memberId,
           member_name: memberName,
-          member_phone: memberPhone,
+          member_phone: normalizedMemberPhone,
           member_address: memberAddress || null,
           subscription_type: subscriptionType,
           amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
@@ -618,7 +619,7 @@ const SubscriptionForm = () => {
       const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
         member_id: memberId,
         member_name: memberName,
-        member_phone: memberPhone,
+        member_phone: normalizedMemberPhone,
         member_address: memberAddress || null,
         subscription_type: subscriptionType,
         amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
@@ -736,7 +737,7 @@ const SubscriptionForm = () => {
         },
         prefill: {
           name: memberName,
-          contact: memberPhone,
+          contact: normalizedMemberPhone || undefined,
         },
         theme: {
           color: "#16a34a",
