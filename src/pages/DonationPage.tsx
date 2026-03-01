@@ -346,12 +346,20 @@ const SubscriptionForm = () => {
 
       setPendingMonths(unpaid);
 
-      // Auto-set form to pay pending months first (only if force setting is ON)
-      if (forcePendingEnabled && unpaid.length > 0) {
-        setFromMonth(String(unpaid[0].month).padStart(2, "0"));
-        setFromYear(String(unpaid[0].year));
-        setNumberOfMonths(unpaid.length);
-        setSubscriptionType("monthly");
+      // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
+      if (unpaid.length > 0) {
+        const selectedMonth = parseInt(fromMonth, 10);
+        const selectedYear = parseInt(fromYear, 10);
+        const selectedInUnpaid = unpaid.some(
+          (m) => m.month === selectedMonth && m.year === selectedYear
+        );
+
+        if (!selectedInUnpaid) {
+          setFromMonth(String(unpaid[0].month).padStart(2, "0"));
+          setFromYear(String(unpaid[0].year));
+          setNumberOfMonths(forcePendingEnabled ? unpaid.length : 1);
+          setSubscriptionType("monthly");
+        }
       }
     } catch (error) {
       console.error("Error checking pending months:", error);
@@ -455,9 +463,17 @@ const SubscriptionForm = () => {
             description: `Subscription for the following month(s) is already paid: ${paidMonths.join(", ")}. Please select different months.`,
             variant: "destructive",
           });
-          // Reset month selection to current month
-          setFromMonth(currentMonth);
-          setFromYear(String(currentYear));
+          // Move selection to next unpaid month (prevents repeated checkout block)
+          if (pendingMonths.length > 0) {
+            setFromMonth(String(pendingMonths[0].month).padStart(2, "0"));
+            setFromYear(String(pendingMonths[0].year));
+          } else {
+            const selectedStartMonth = parseInt(fromMonth, 10);
+            const selectedStartYear = parseInt(fromYear, 10);
+            const nextStart = new Date(selectedStartYear, selectedStartMonth - 1 + numberOfMonths, 1);
+            setFromMonth(String(nextStart.getMonth() + 1).padStart(2, "0"));
+            setFromYear(String(nextStart.getFullYear()));
+          }
           setNumberOfMonths(1);
           setLoading(false);
           return;
