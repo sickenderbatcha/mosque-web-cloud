@@ -1096,7 +1096,7 @@ const SubscriptionForm = () => {
                 variant="gold" 
                 size="lg" 
                 className="flex-1 min-w-0" 
-                disabled={loading || !memberFound || (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded) || validatingMonths}
+                disabled={loading || !memberFound || validatingMonths}
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -1877,7 +1877,7 @@ const DonationPage = () => {
                             variant="gold" 
                             size="lg" 
                             className="flex-1 min-w-0" 
-                            disabled={loading || (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded)}
+                            disabled={loading}
                           >
                             {loading ? (
                               <Loader2 className="h-5 w-5 animate-spin" />
