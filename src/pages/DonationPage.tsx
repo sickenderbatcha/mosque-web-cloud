@@ -1227,6 +1227,7 @@ const DonationPage = () => {
     paymentMethod: string;
     isAnonymous: boolean;
     createdAt: string;
+    razorpayPaymentId?: string;
   } | null>(null);
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
   const [cashRequestData, setCashRequestData] = useState<{
@@ -1526,6 +1527,7 @@ const DonationPage = () => {
               paymentMethod: "Online",
               isAnonymous,
               createdAt: new Date().toISOString(),
+              razorpayPaymentId: response.razorpay_payment_id,
             });
             setShowDonationReceipt(true);
 

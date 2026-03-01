@@ -28,6 +28,7 @@ interface DonationReceiptProps {
     paymentMethod: string;
     isAnonymous: boolean;
     createdAt: string;
+    razorpayPaymentId?: string;
   };
   onClose: () => void;
   requireAction?: boolean;
@@ -256,6 +257,7 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
             <div class="receipt-number">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண்</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
+              ${donation.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${donation.razorpayPaymentId}</div>` : ''}
             </div>
 
             <div class="footer">
@@ -335,6 +337,7 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
             <div class="receipt-number">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண்</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
+              ${donation.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${donation.razorpayPaymentId}</div>` : ''}
             </div>
 
             <div class="footer">
@@ -492,6 +495,9 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
             <div className="bg-muted p-3 rounded-lg text-center">
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண்</p>
               <p className="font-mono font-bold">{formattedReceiptNumber}</p>
+              {donation.razorpayPaymentId && (
+                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {donation.razorpayPaymentId}</p>
+              )}
             </div>
 
             {/* Footer */}
