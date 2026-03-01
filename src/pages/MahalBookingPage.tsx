@@ -333,7 +333,7 @@ const MahalBookingPage = () => {
               endTime: capturedFormData.endTime,
               expectedGuests: capturedFormData.expectedGuests || undefined,
               amount,
-              transactionId: response.razorpay_payment_id,
+              transactionId: bookingId ? String(bookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
             });
