@@ -1096,7 +1096,7 @@ const SubscriptionForm = () => {
                 variant="gold" 
                 size="lg" 
                 className="flex-1 min-w-0" 
-                disabled={loading || !memberFound || (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded) || (subscriptionType === "monthly" && paidMonthsWarning.length > 0) || validatingMonths}
+                disabled={loading || !memberFound || (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded) || validatingMonths}
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
