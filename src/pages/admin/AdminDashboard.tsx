@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package } from "lucide-react";
+import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet } from "lucide-react";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ import IssuedDocumentsTab from "./tabs/IssuedDocumentsTab";
 import PdfDocumentsTab from "./tabs/PdfDocumentsTab";
 import BackupRestoreTab from "./tabs/BackupRestoreTab";
 import AssetManagementTab from "./tabs/AssetManagementTab";
+import OnlinePaymentsTab from "./tabs/OnlinePaymentsTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("donations");
@@ -277,6 +278,10 @@ const AdminDashboard = () => {
               <Banknote className="h-4 w-4" />
               <span className="hidden sm:inline">Cash Requests</span>
             </TabsTrigger>
+            <TabsTrigger value="online-payments" className="flex items-center gap-2">
+              <Wallet className="h-4 w-4" />
+              <span className="hidden sm:inline">Online Payments</span>
+            </TabsTrigger>
             <TabsTrigger value="issued-documents" className="flex items-center gap-2">
               <Archive className="h-4 w-4" />
               <span className="hidden sm:inline">Issued Docs</span>
@@ -385,6 +390,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="cash-requests">
             <CashPaymentRequestsTab />
+          </TabsContent>
+
+          <TabsContent value="online-payments">
+            <OnlinePaymentsTab />
           </TabsContent>
 
           <TabsContent value="issued-documents">
