@@ -25,6 +25,57 @@ declare global {
   }
 }
 
+const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+let razorpayScriptPromise: Promise<boolean> | null = null;
+
+const loadRazorpayCheckout = (): Promise<boolean> => {
+  if (typeof window !== "undefined" && window.Razorpay) {
+    return Promise.resolve(true);
+  }
+
+  if (razorpayScriptPromise) {
+    return razorpayScriptPromise;
+  }
+
+  razorpayScriptPromise = new Promise<boolean>((resolve) => {
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_SCRIPT_SRC}"]`);
+
+    const handleLoad = () => resolve(!!window.Razorpay);
+    const handleError = () => {
+      console.error("Failed to load Razorpay checkout script");
+      resolve(false);
+    };
+
+    if (existingScript) {
+      if (existingScript.dataset.loaded === "true" || window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      existingScript.addEventListener("load", handleLoad, { once: true });
+      existingScript.addEventListener("error", handleError, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.loaded = "false";
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      handleLoad();
+    };
+    script.onerror = handleError;
+    document.body.appendChild(script);
+  }).finally(() => {
+    if (!window.Razorpay) {
+      razorpayScriptPromise = null;
+    }
+  });
+
+  return razorpayScriptPromise;
+};
+
 const MONTHS = [
   { value: "01", label: "January / ஜனவரி" },
   { value: "02", label: "February / பிப்ரவரி" },
@@ -130,16 +181,16 @@ const SubscriptionForm = () => {
 
   // Load Razorpay script
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    document.body.appendChild(script);
+    let isMounted = true;
+
+    loadRazorpayCheckout().then((loaded) => {
+      if (isMounted) {
+        setRazorpayLoaded(loaded);
+      }
+    });
 
     return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
+      isMounted = false;
     };
   }, []);
 
@@ -377,13 +428,17 @@ const SubscriptionForm = () => {
     }
 
     // For cash payments, skip Razorpay check
-    if (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded) {
-      toast({
-        title: "பிழை / Error",
-        description: "Payment gateway is loading. Please try again.",
-        variant: "destructive",
-      });
-      return;
+    if (!(isAdmin && paymentMethod === "cash")) {
+      const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
+      if (!isRazorpayReady || !window.Razorpay) {
+        toast({
+          title: "பிழை / Error",
+          description: "Payment gateway could not be loaded. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!razorpayLoaded) setRazorpayLoaded(true);
     }
 
     setLoading(true);
@@ -1198,16 +1253,16 @@ const DonationPage = () => {
 
   // Load Razorpay script
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    document.body.appendChild(script);
+    let isMounted = true;
+
+    loadRazorpayCheckout().then((loaded) => {
+      if (isMounted) {
+        setRazorpayLoaded(loaded);
+      }
+    });
 
     return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
+      isMounted = false;
     };
   }, []);
 
@@ -1244,13 +1299,17 @@ const DonationPage = () => {
     }
 
     // For cash payments, skip Razorpay check
-    if (!(isAdmin && paymentMethod === "cash") && !razorpayLoaded) {
-      toast({
-        title: "பிழை / Error",
-        description: "Payment gateway is loading. Please try again.",
-        variant: "destructive",
-      });
-      return;
+    if (!(isAdmin && paymentMethod === "cash")) {
+      const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
+      if (!isRazorpayReady || !window.Razorpay) {
+        toast({
+          title: "பிழை / Error",
+          description: "Payment gateway could not be loaded. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!razorpayLoaded) setRazorpayLoaded(true);
     }
 
     setLoading(true);
