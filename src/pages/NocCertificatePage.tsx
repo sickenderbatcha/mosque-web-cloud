@@ -28,6 +28,7 @@ import {
 import { Loader2, FileText, IndianRupee, X, Send, Printer, Mail, Phone, Banknote, CreditCard, AlertCircle } from "lucide-react";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { getCertificateAccessStatus } from "@/lib/certificatePayments";
+import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import NocCertificatePreview from "@/components/NocCertificatePreview";
 import { generateNocCertificatePdf, printNocCertificate, NocRecord } from "@/utils/nocCertificatePdf";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
@@ -87,6 +88,7 @@ export default function NocCertificatePage() {
     amount: number;
     failureReason?: string;
   } | null>(null);
+  const [showCertReceipt, setShowCertReceipt] = useState<CertificateReceiptData | null>(null);
 
   const certificateFee = Number(getSetting("certificate_fee_noc") || "100");
 
@@ -294,6 +296,23 @@ export default function NocCertificatePage() {
               payment_status: "completed",
             } as NocRecord);
             toast.success("பணம் வெற்றிகரமாக செலுத்தப்பட்டது!");
+            // Show receipt with enforcement
+            setShowCertReceipt({
+              certificateType: "noc",
+              applicantName: nocData.applicant_name,
+              applicantPhone: nocData.applicant_phone || undefined,
+              applicantEmail: nocData.applicant_email || undefined,
+              subjectName: nocData.partner_name,
+              amount: certificateFee,
+              receiptNumber: nocData.id.substring(0, 8).toUpperCase(),
+              paymentMethod: "online",
+              transactionId: response.razorpay_payment_id,
+              createdAt: nocData.created_at,
+              additionalInfo: {
+                "தந்தை பெயர்": nocData.father_name,
+                "பள்ளிவாசல்": nocData.mosque_to_submit,
+              },
+            });
           } catch (err) {
             console.error("Payment verification error:", err);
             toast.error("பணம் செலுத்துதல் சரிபார்ப்பு பிழை");
@@ -996,6 +1015,11 @@ export default function NocCertificatePage() {
               form.reset();
             }}
           />
+        )}
+
+        {/* Certificate Receipt Modal */}
+        {showCertReceipt && (
+          <CertificateReceipt data={showCertReceipt} requireAction onClose={() => setShowCertReceipt(null)} />
         )}
       </div>
     </Layout>

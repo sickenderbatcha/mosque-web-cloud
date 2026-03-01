@@ -189,6 +189,7 @@ const UserDashboard = () => {
     transactionId: string;
     services: { name: string; rate: number }[];
   } | null>(null);
+  const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
 
   // Fetch certificate fees from app_settings
   const { settings: certificateFees } = useAppSettings(["certificate_fee_noc", "certificate_fee_heir"]);
@@ -700,6 +701,21 @@ const UserDashboard = () => {
               },
             },
           }).catch(console.error);
+
+          // Show receipt with enforcement immediately after online payment
+          setBookingReceiptRequireAction(true);
+          setShowBookingReceipt({
+            applicantName: booking.applicant_name,
+            applicantPhone: booking.applicant_phone,
+            applicantEmail: booking.applicant_email || undefined,
+            eventType: booking.event_type,
+            eventDate: booking.event_date,
+            startTime: booking.start_time,
+            endTime: booking.end_time,
+            amount: booking.booking_amount || 0,
+            transactionId: response.razorpay_payment_id || `BK-${booking.id.substring(0, 8).toUpperCase()}`,
+            services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+          });
 
           // Refresh bookings data
           fetchData();
@@ -2414,7 +2430,14 @@ const UserDashboard = () => {
 
       {/* Booking Receipt Modal */}
       {showBookingReceipt && (
-        <BookingReceipt booking={showBookingReceipt} onClose={() => setShowBookingReceipt(null)} />
+        <BookingReceipt
+          booking={showBookingReceipt}
+          requireAction={bookingReceiptRequireAction}
+          onClose={() => {
+            setShowBookingReceipt(null);
+            setBookingReceiptRequireAction(false);
+          }}
+        />
       )}
     </div>
   );
