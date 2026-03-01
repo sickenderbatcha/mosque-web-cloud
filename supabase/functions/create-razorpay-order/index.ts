@@ -162,6 +162,21 @@ const handler = async (req: Request): Promise<Response> => {
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
+      // Helper to send admin notification for online payments
+      const notifyAdmin = async (title: string, message: string, referenceId: string, referenceType: string) => {
+        try {
+          await supabase.from("admin_notifications").insert({
+            type: "online_payment",
+            title,
+            message,
+            reference_id: referenceId,
+            reference_type: referenceType,
+          });
+        } catch (e) {
+          console.error("Failed to create admin notification:", e);
+        }
+      };
+
       if (type === "donation" && donationId) {
         // Update donation payment status
         const { error: updateError } = await supabase
@@ -178,6 +193,14 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update donation payment:", updateError);
         } else {
           console.log("Donation payment status updated:", donationId);
+          // Fetch donor info for notification
+          const { data: donationData } = await supabase.from("donations").select("donor_name, amount").eq("id", donationId).single();
+          await notifyAdmin(
+            "புதிய ஆன்லைன் நன்கொடை (New Online Donation)",
+            `${donationData?.donor_name || "Unknown"} அவர்களிடமிருந்து ₹${donationData?.amount || 0} நன்கொடை ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+            donationId,
+            "donations"
+          );
         }
       } else if (type === "noc" && nocCertificateId) {
         // Update NOC certificate payment status
@@ -194,6 +217,13 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update NOC certificate payment:", updateError);
         } else {
           console.log("NOC certificate payment status updated:", nocCertificateId);
+          const { data: nocData } = await supabase.from("noc_certificates").select("applicant_name").eq("id", nocCertificateId).single();
+          await notifyAdmin(
+            "புதிய ஆன்லைன் NOC கட்டணம் (New Online NOC Payment)",
+            `${nocData?.applicant_name || "Unknown"} அவர்களிடமிருந்து NOC சான்றிதழ் கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+            nocCertificateId,
+            "noc_certificates"
+          );
         }
       } else if (type === "certificate" && certificatePaymentId) {
         // Update certificate payment status
@@ -212,6 +242,13 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update certificate payment:", updateError);
         } else {
           console.log("Certificate payment status updated:", certificatePaymentId);
+          const { data: certData } = await supabase.from("certificate_payments").select("applicant_name, amount, certificate_type").eq("id", certificatePaymentId).single();
+          await notifyAdmin(
+            "புதிய ஆன்லைன் சான்றிதழ் கட்டணம் (New Online Certificate Payment)",
+            `${certData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${certData?.certificate_type || ""} சான்றிதழ் கட்டணம் ₹${certData?.amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+            certificatePaymentId,
+            "certificate_payments"
+          );
         }
       } else if (type === "subscription" && subscriptionId) {
         // Update subscription payment status
@@ -229,6 +266,13 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update subscription:", updateError);
         } else {
           console.log("Subscription payment status updated:", subscriptionId);
+          const { data: subData } = await supabase.from("subscriptions").select("member_name, total_amount, member_id").eq("id", subscriptionId).single();
+          await notifyAdmin(
+            "புதிய ஆன்லைன் சந்தா கட்டணம் (New Online Subscription Payment)",
+            `${subData?.member_name || "Unknown"} (${subData?.member_id || ""}) அவர்களிடமிருந்து ₹${subData?.total_amount || 0} சந்தா கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+            subscriptionId,
+            "subscriptions"
+          );
         }
       } else if (bookingId) {
         // Update booking payment status - use "completed" for online payments
@@ -244,6 +288,13 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update booking:", updateError);
         } else {
           console.log("Booking payment status updated to completed:", bookingId);
+          const { data: bookingData } = await supabase.from("mahal_bookings").select("applicant_name, booking_amount, event_type").eq("id", bookingId).single();
+          await notifyAdmin(
+            "புதிய ஆன்லைன் முன்பதிவு கட்டணம் (New Online Booking Payment)",
+            `${bookingData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${bookingData?.event_type || ""} முன்பதிவு கட்டணம் ₹${bookingData?.booking_amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+            bookingId,
+            "mahal_bookings"
+          );
         }
       }
 
