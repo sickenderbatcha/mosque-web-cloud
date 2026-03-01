@@ -456,18 +456,33 @@ const SubscriptionForm = () => {
     let createdSubscriptionId: string | undefined;
 
     try {
+      const memberId = membershipNumber.trim();
       let fromMonthNum = parseInt(fromMonth, 10);
       let fromYearNum = parseInt(fromYear, 10);
       let effectiveMonths = numberOfMonths;
+      let payableAmount = totalAmount;
+
+      // Deterministic path for members with forced pending subscriptions
+      if (subscriptionType === "monthly" && hasForcedPending && pendingMonths.length > 0) {
+        const firstPending = pendingMonths[0];
+        fromMonthNum = firstPending.month;
+        fromYearNum = firstPending.year;
+        effectiveMonths = 1;
+        payableAmount = monthlyAmount;
+
+        setFromMonth(String(firstPending.month).padStart(2, "0"));
+        setFromYear(String(firstPending.year));
+        setNumberOfMonths(1);
+      }
 
       // Check if any months are already paid in subscription_slots
-      if (subscriptionType === "monthly") {
-        const { hasPaidMonths, paidMonths } = await checkAlreadyPaidMonths(membershipNumber.trim());
+      if (subscriptionType === "monthly" && !(hasForcedPending && pendingMonths.length > 0)) {
+        const { hasPaidMonths, paidMonths } = await checkAlreadyPaidMonths(memberId);
         if (hasPaidMonths) {
           const { data: paidSlots, error: paidSlotsError } = await supabase
             .from("subscription_slots")
             .select("year, month")
-            .eq("member_id", membershipNumber.trim())
+            .eq("member_id", memberId)
             .eq("is_paid", true);
 
           if (paidSlotsError) {
@@ -501,6 +516,7 @@ const SubscriptionForm = () => {
           fromMonthNum = candidateMonth;
           fromYearNum = candidateYear;
           effectiveMonths = 1;
+          payableAmount = monthlyAmount;
           setFromMonth(String(candidateMonth).padStart(2, "0"));
           setFromYear(String(candidateYear));
           setNumberOfMonths(1);
@@ -518,7 +534,7 @@ const SubscriptionForm = () => {
         const { data: paidSlots, error: slotsError } = await supabase
           .from("subscription_slots")
           .select("year, month")
-          .eq("member_id", membershipNumber.trim())
+          .eq("member_id", memberId)
           .eq("is_paid", true)
           .eq("year", yearToCheck);
 
@@ -548,13 +564,13 @@ const SubscriptionForm = () => {
       // For cash payments (admin only), record directly without Razorpay
       if (isAdmin && paymentMethod === "cash") {
         const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
-          member_id: membershipNumber.trim(),
+          member_id: memberId,
           member_name: memberName,
           member_phone: memberPhone,
           member_address: memberAddress || null,
           subscription_type: subscriptionType,
           amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
-          total_amount: totalAmount,
+          total_amount: payableAmount,
           from_month: subscriptionType === "monthly" ? fromMonthNum : null,
           from_year: subscriptionType === "monthly" ? fromYearNum : null,
           to_month: subscriptionType === "monthly" ? toMonthNum : null,
@@ -577,8 +593,8 @@ const SubscriptionForm = () => {
         toast({
           title: "சந்தா பதிவு செய்யப்பட்டது! / Subscription Recorded!",
           description: subscriptionType === "monthly"
-            ? `Cash payment for ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${totalAmount}) recorded`
-            : `Cash payment for yearly subscription ${subscriptionYear} (₹${totalAmount}) recorded`,
+            ? `Cash payment for ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${payableAmount}) recorded`
+            : `Cash payment for yearly subscription ${subscriptionYear} (₹${payableAmount}) recorded`,
         });
 
         // Reset form
@@ -600,13 +616,13 @@ const SubscriptionForm = () => {
       
       // First, create subscription record with pending status
       const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
-        member_id: membershipNumber.trim(),
+        member_id: memberId,
         member_name: memberName,
         member_phone: memberPhone,
         member_address: memberAddress || null,
         subscription_type: subscriptionType,
         amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
-        total_amount: totalAmount,
+        total_amount: payableAmount,
         from_month: subscriptionType === "monthly" ? fromMonthNum : null,
         from_year: subscriptionType === "monthly" ? fromYearNum : null,
         to_month: subscriptionType === "monthly" ? toMonthNum : null,
@@ -623,7 +639,7 @@ const SubscriptionForm = () => {
       // Create Razorpay order
       const { data: orderData, error: orderError } = await supabase.functions.invoke("create-razorpay-order", {
         body: {
-          amount: totalAmount,
+          amount: payableAmount,
           subscriptionId: subscriptionData.id,
           type: "subscription",
           notes: {
@@ -640,7 +656,7 @@ const SubscriptionForm = () => {
         const failReason = orderData?.error || orderError?.message || "Payment gateway unavailable";
         setCashRequestData({
           subscriptionId: subscriptionData.id,
-          amount: totalAmount,
+          amount: payableAmount,
           failureReason: failReason,
         });
         setShowCashRequestDialog(true);
@@ -694,8 +710,8 @@ const SubscriptionForm = () => {
             toast({
               title: "பணம் செலுத்தப்பட்டது! / Payment Successful!",
               description: subscriptionType === "monthly"
-                ? `Subscription from ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${totalAmount}) completed`
-                : `Yearly subscription for ${subscriptionYear} (₹${totalAmount}) completed`,
+                ? `Subscription from ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${payableAmount}) completed`
+                : `Yearly subscription for ${subscriptionYear} (₹${payableAmount}) completed`,
             });
 
             // Reset form
@@ -736,7 +752,7 @@ const SubscriptionForm = () => {
             // Offer cash payment request
             setCashRequestData({
               subscriptionId: subscriptionData.id,
-              amount: totalAmount,
+              amount: payableAmount,
               failureReason: "Payment cancelled by user",
             });
             setShowCashRequestDialog(true);
@@ -748,7 +764,7 @@ const SubscriptionForm = () => {
       razorpay.on("payment.failed", function (response: any) {
         setCashRequestData({
           subscriptionId: subscriptionData.id,
-          amount: totalAmount,
+          amount: payableAmount,
           failureReason: response.error?.description || response.error?.reason || "Payment failed",
         });
         setShowCashRequestDialog(true);
