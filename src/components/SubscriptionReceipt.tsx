@@ -95,10 +95,8 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
     };
   }, [requireAction, hasActioned]);
 
-  const getTransactionId = () => {
-    const rawId = subscription.razorpay_payment_id || subscription.transaction_id || subscription.id.slice(0, 8).toUpperCase();
-    return getReceiptNumber("subscription", rawId);
-  };
+  const formattedReceiptNumber = getReceiptNumber("subscription", subscription.id.slice(0, 8).toUpperCase());
+  const razorpayRef = subscription.razorpay_payment_id || null;
 
   const getPeriodText = () => {
     if (subscription.subscription_type === "yearly") {
@@ -154,7 +152,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
       <!DOCTYPE html>
       <html>
         <head>
-          <title>சந்தா ரசீது - ${getTransactionId()}</title>
+          <title>சந்தா ரசீது - ${formattedReceiptNumber}</title>
           ${styles}
         </head>
         <body>
@@ -215,8 +213,9 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
             </div>
 
             <div class="transaction-id">
-              <div style="font-size: 10px; color: #666; margin-bottom: 5px;">பரிவர்த்தனை எண்</div>
-              <div style="font-weight: bold;">${getTransactionId()}</div>
+              <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
+              <div style="font-weight: bold;">${formattedReceiptNumber}</div>
+              ${razorpayRef ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${razorpayRef}</div>` : ''}
             </div>
 
             <div class="footer">
@@ -243,7 +242,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
       <html>
         <head>
           <meta charset="UTF-8">
-          <title>சந்தா ரசீது - ${getTransactionId()}</title>
+          <title>சந்தா ரசீது - ${formattedReceiptNumber}</title>
           <style>
             ${getTamilFontCSS()}
             * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -296,8 +295,9 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
             </div>
 
             <div class="transaction-id">
-              <div style="font-size: 10px; color: #666; margin-bottom: 5px;">பரிவர்த்தனை எண்</div>
-              <div style="font-weight: bold;">${getTransactionId()}</div>
+              <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
+              <div style="font-weight: bold;">${formattedReceiptNumber}</div>
+              ${razorpayRef ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${razorpayRef}</div>` : ''}
             </div>
 
             <div class="footer">
@@ -314,7 +314,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `subscription-receipt-${getTransactionId()}.html`;
+    a.download = `subscription-receipt-${formattedReceiptNumber}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -470,10 +470,12 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
               </p>
             </motion.div>
 
-            {/* Transaction ID */}
             <div className="bg-muted p-3 rounded-lg text-center">
-              <p className="text-xs text-muted-foreground mb-1">பரிவர்த்தனை எண்</p>
-              <p className="font-mono font-bold">{getTransactionId()}</p>
+              <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
+              <p className="font-mono font-bold">{formattedReceiptNumber}</p>
+              {razorpayRef && (
+                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {razorpayRef}</p>
+              )}
             </div>
 
             {/* Footer */}
