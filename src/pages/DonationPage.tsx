@@ -456,28 +456,59 @@ const SubscriptionForm = () => {
     let createdSubscriptionId: string | undefined;
 
     try {
+      let fromMonthNum = parseInt(fromMonth, 10);
+      let fromYearNum = parseInt(fromYear, 10);
+      let effectiveMonths = numberOfMonths;
+
       // Check if any months are already paid in subscription_slots
       if (subscriptionType === "monthly") {
         const { hasPaidMonths, paidMonths } = await checkAlreadyPaidMonths(membershipNumber.trim());
         if (hasPaidMonths) {
-          toast({
-            title: "ஏற்கனவே செலுத்தப்பட்டது / Already Paid",
-            description: `Subscription for the following month(s) is already paid: ${paidMonths.join(", ")}. Please select different months.`,
-            variant: "destructive",
-          });
-          // Auto-advance to next payable period to avoid getting stuck on already-paid month
-          const selectedStartMonth = parseInt(fromMonth, 10);
-          const selectedStartYear = parseInt(fromYear, 10);
-          const nextStart = new Date(selectedStartYear, selectedStartMonth - 1 + numberOfMonths, 1);
-          setFromMonth(String(nextStart.getMonth() + 1).padStart(2, "0"));
-          setFromYear(String(nextStart.getFullYear()));
+          const { data: paidSlots, error: paidSlotsError } = await supabase
+            .from("subscription_slots")
+            .select("year, month")
+            .eq("member_id", membershipNumber.trim())
+            .eq("is_paid", true);
+
+          if (paidSlotsError) {
+            throw paidSlotsError;
+          }
+
+          const paidSet = new Set((paidSlots || []).map((slot) => `${Number(slot.year)}-${Number(slot.month)}`));
+          let candidateMonth = fromMonthNum;
+          let candidateYear = fromYearNum;
+          let attempts = 0;
+
+          while (paidSet.has(`${candidateYear}-${candidateMonth}`) && attempts < 60) {
+            candidateMonth += 1;
+            if (candidateMonth > 12) {
+              candidateMonth = 1;
+              candidateYear += 1;
+            }
+            attempts += 1;
+          }
+
+          if (paidSet.has(`${candidateYear}-${candidateMonth}`)) {
+            toast({
+              title: "ஏற்கனவே செலுத்தப்பட்டது / Already Paid",
+              description: `Selected period has already been paid (${paidMonths.join(", ")}). Please choose another month.`,
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+
+          fromMonthNum = candidateMonth;
+          fromYearNum = candidateYear;
+          effectiveMonths = 1;
+          setFromMonth(String(candidateMonth).padStart(2, "0"));
+          setFromYear(String(candidateYear));
           setNumberOfMonths(1);
+
           toast({
-            title: "Next month selected",
-            description: "Already paid month skipped. Please click Pay again.",
+            title: "அடுத்த மாதம் தேர்ந்தெடுக்கப்பட்டது / Next month selected",
+            description: `${paidMonths.join(", ")} already paid. Proceeding with ${MONTHS[candidateMonth - 1]?.label.split(" / ")[0]} ${candidateYear}.`,
           });
-          setLoading(false);
-          return;
         }
       }
 
@@ -496,9 +527,9 @@ const SubscriptionForm = () => {
             .sort((a, b) => a.month - b.month)
             .map(s => MONTHS[s.month - 1]?.label.split(" / ")[0])
             .join(", ");
-          
+
           const unpaidCount = 12 - paidSlots.length;
-          
+
           toast({
             title: "வருட சந்தா செலுத்த இயலாது / Cannot Pay Yearly",
             description: `${yearToCheck} ஆம் ஆண்டில் ${paidMonthNames} மாதங்களுக்கு ஏற்கனவே சந்தா செலுத்தப்பட்டுள்ளது. மீதமுள்ள ${unpaidCount} மாதங்களுக்கு மாத சந்தா மூலம் செலுத்தவும். / Subscription for ${paidMonthNames} is already paid for ${yearToCheck}. Please pay monthly subscription for the remaining ${unpaidCount} month(s).`,
@@ -510,10 +541,9 @@ const SubscriptionForm = () => {
         }
       }
 
-      const fromMonthNum = parseInt(fromMonth);
-      const toMonthNum = parseInt(endPeriod.month);
-      const fromYearNum = parseInt(fromYear);
-      const toYearNum = parseInt(endPeriod.year);
+      const endDate = new Date(fromYearNum, fromMonthNum - 1 + effectiveMonths - 1, 1);
+      const toMonthNum = endDate.getMonth() + 1;
+      const toYearNum = endDate.getFullYear();
       
       // For cash payments (admin only), record directly without Razorpay
       if (isAdmin && paymentMethod === "cash") {
@@ -529,7 +559,7 @@ const SubscriptionForm = () => {
           from_year: subscriptionType === "monthly" ? fromYearNum : null,
           to_month: subscriptionType === "monthly" ? toMonthNum : null,
           to_year: subscriptionType === "monthly" ? toYearNum : null,
-          number_of_months: subscriptionType === "monthly" ? numberOfMonths : null,
+          number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
           subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
           payment_status: "completed",
           payment_method: "Cash",
@@ -547,7 +577,7 @@ const SubscriptionForm = () => {
         toast({
           title: "சந்தா பதிவு செய்யப்பட்டது! / Subscription Recorded!",
           description: subscriptionType === "monthly"
-            ? `Cash payment for ${fromMonthName} ${fromYear} to ${toMonthName} ${endPeriod.year} (₹${totalAmount}) recorded`
+            ? `Cash payment for ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${totalAmount}) recorded`
             : `Cash payment for yearly subscription ${subscriptionYear} (₹${totalAmount}) recorded`,
         });
 
@@ -581,7 +611,7 @@ const SubscriptionForm = () => {
         from_year: subscriptionType === "monthly" ? fromYearNum : null,
         to_month: subscriptionType === "monthly" ? toMonthNum : null,
         to_year: subscriptionType === "monthly" ? toYearNum : null,
-        number_of_months: subscriptionType === "monthly" ? numberOfMonths : null,
+        number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
         subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
         payment_status: "pending",
         payment_method: "Online",
@@ -621,7 +651,7 @@ const SubscriptionForm = () => {
       const fromMonthName = MONTHS[fromMonthNum - 1]?.label.split(" / ")[0];
       const toMonthName = MONTHS[toMonthNum - 1]?.label.split(" / ")[0];
       const periodDescription = subscriptionType === "monthly"
-        ? `${fromMonthName} ${fromYear} to ${toMonthName} ${endPeriod.year}`
+        ? `${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum}`
         : `Year ${subscriptionYear}`;
 
       // Open Razorpay checkout
@@ -664,7 +694,7 @@ const SubscriptionForm = () => {
             toast({
               title: "பணம் செலுத்தப்பட்டது! / Payment Successful!",
               description: subscriptionType === "monthly"
-                ? `Subscription from ${fromMonthName} ${fromYear} to ${toMonthName} ${endPeriod.year} (₹${totalAmount}) completed`
+                ? `Subscription from ${fromMonthName} ${fromYearNum} to ${toMonthName} ${toYearNum} (₹${totalAmount}) completed`
                 : `Yearly subscription for ${subscriptionYear} (₹${totalAmount}) completed`,
             });
 
