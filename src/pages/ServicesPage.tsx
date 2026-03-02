@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Search, Printer, Download, CreditCard, Loader2, IndianRupee, Check, Lock, ExternalLink } from "lucide-react";
+import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -736,14 +737,13 @@ const ServicesPage = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="flex gap-4">
+                      <div className="flex gap-4 items-end">
                         <div className="flex-1">
                           <Label htmlFor="marriageDate" className="font-tamil">திருமண தேதி</Label>
-                          <Input
-                            id="marriageDate"
-                            type="date"
+                          <IsoDatePicker
                             value={searchDate}
-                            onChange={(e) => setSearchDate(e.target.value)}
+                            onChange={(val) => setSearchDate(val)}
+                            placeholder="dd/mm/yyyy"
                           />
                         </div>
                         <div className="flex items-end">
@@ -934,14 +934,13 @@ const ServicesPage = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="flex gap-4">
+                      <div className="flex gap-4 items-end">
                         <div className="flex-1">
                           <Label htmlFor="deathDate" className="font-tamil">இறப்பு தேதி</Label>
-                          <Input
-                            id="deathDate"
-                            type="date"
+                          <IsoDatePicker
                             value={deathSearchDate}
-                            onChange={(e) => setDeathSearchDate(e.target.value)}
+                            onChange={(val) => setDeathSearchDate(val)}
+                            placeholder="dd/mm/yyyy"
                           />
                         </div>
                         <div className="flex items-end">
