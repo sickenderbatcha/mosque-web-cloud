@@ -612,7 +612,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறந்தவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil h-12 !text-[18px] leading-normal placeholder:font-tamil placeholder:!text-[18px] placeholder:leading-normal md:h-10 md:!text-base md:placeholder:!text-base" />
+                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -638,7 +638,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil h-12 !text-[18px] leading-normal placeholder:font-tamil placeholder:!text-[18px] placeholder:leading-normal md:h-10 md:!text-base md:placeholder:!text-base" />
+                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -664,7 +664,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">கணவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil h-12 !text-[18px] leading-normal placeholder:font-tamil placeholder:!text-[18px] placeholder:leading-normal md:h-10 md:!text-base md:placeholder:!text-base" />
+                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
