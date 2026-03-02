@@ -245,7 +245,7 @@ const NotificationsTab = () => {
                         </div>
                         <p className="text-sm text-muted-foreground break-words">{notification.message}</p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          {format(new Date(notification.created_at), "dd MMM yyyy, hh:mm a")}
+                          {format(new Date(notification.created_at), "dd/MM/yyyy, hh:mm a")}
                         </p>
                       </div>
                       {!notification.is_read && (

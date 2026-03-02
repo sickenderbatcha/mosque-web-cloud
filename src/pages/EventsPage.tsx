@@ -83,7 +83,7 @@ const EventsPage = () => {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return format(date, "dd MMMM yyyy");
+    return format(date, "dd/MM/yyyy");
   };
 
   const formatTime = (time: string | null) => {

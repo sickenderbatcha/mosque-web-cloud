@@ -212,7 +212,7 @@ const AssetManagementTab = () => {
     return <Badge className={s?.color || ""}>{s?.label || status}</Badge>;
   };
 
-  const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString("en-IN") : "—";
+  const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString("en-GB") : "—";
   const formatCurrency = (v: number) => `₹${v.toLocaleString("en-IN")}`;
 
   return (

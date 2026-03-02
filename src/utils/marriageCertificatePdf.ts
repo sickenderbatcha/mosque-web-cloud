@@ -560,7 +560,7 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   doc.setFont("helvetica", "italic");
   doc.setTextColor(100, 100, 100);
   doc.text(`Certificate No: ${serialNumber}`, pageWidth / 2, pageHeight - 15, { align: "center" });
-  doc.text(`Generated on: ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+  doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB")}`, pageWidth / 2, pageHeight - 10, { align: "center" });
   doc.setTextColor(0, 0, 0);
 
   // Save the PDF

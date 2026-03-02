@@ -203,7 +203,7 @@ const PhotoGalleryPage = () => {
                         {image.event_date && (
                           <p className="text-white/80 text-xs flex items-center gap-1 mt-1">
                             <Calendar className="h-3 w-3" />
-                            {format(new Date(image.event_date), "dd MMM yyyy")}
+                            {format(new Date(image.event_date), "dd/MM/yyyy")}
                           </p>
                         )}
                       </div>
@@ -296,7 +296,7 @@ const PhotoGalleryPage = () => {
                 {selectedImage.event_date && (
                   <p className="text-white/60 text-sm mt-2 flex items-center justify-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {format(new Date(selectedImage.event_date), "dd MMMM yyyy")}
+                    {format(new Date(selectedImage.event_date), "dd/MM/yyyy")}
                   </p>
                 )}
                 <p className="text-white/50 text-sm mt-4">

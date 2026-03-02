@@ -964,7 +964,7 @@ const MahalBookingPage = () => {
                               aria-describedby={errors.eventDate ? "eventDate-error" : undefined}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {formData.eventDate ? format(new Date(formData.eventDate), "PPP") : <span>Pick a date</span>}
+                              {formData.eventDate ? format(new Date(formData.eventDate), "dd/MM/yyyy") : <span>Pick a date</span>}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
@@ -1530,7 +1530,7 @@ const MahalBookingPage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground font-tamil">தேதி:</span>
-                    <span className="font-medium">{formData.eventDate ? format(new Date(formData.eventDate), "PPP") : ""}</span>
+                    <span className="font-medium">{formData.eventDate ? format(new Date(formData.eventDate), "dd/MM/yyyy") : ""}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground font-tamil">நேரம்:</span>

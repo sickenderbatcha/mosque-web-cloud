@@ -879,7 +879,7 @@ const MembersTab = () => {
     doc.setFontSize(18);
     doc.text("Members List", 14, 22);
     doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, 14, 30);
 
     autoTable(doc, {
       startY: 35,

@@ -496,7 +496,7 @@ const AboutGalleryTab = () => {
                     )}
                     {image.event_date && (
                       <p className="text-xs opacity-60 mt-1">
-                        {format(new Date(image.event_date), "dd MMM yyyy")}
+                        {format(new Date(image.event_date), "dd/MM/yyyy")}
                       </p>
                     )}
                   </div>

@@ -34,7 +34,7 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
   }
 
   const certDate = record.certificate_date 
-    ? new Date(record.certificate_date).toLocaleDateString("ta-IN")
+    ? new Date(record.certificate_date).toLocaleDateString("en-GB")
     : "...........................";
 
   return (
