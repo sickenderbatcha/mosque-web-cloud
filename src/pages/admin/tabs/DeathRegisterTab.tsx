@@ -638,7 +638,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil text-lg md:text-base h-12 md:h-10 placeholder:text-lg md:placeholder:text-base" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -664,7 +664,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">கணவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" />
+                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil text-lg md:text-base h-12 md:h-10 placeholder:text-lg md:placeholder:text-base" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
