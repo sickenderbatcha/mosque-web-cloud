@@ -15,6 +15,13 @@ const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
 const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
 const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
 
+function generateTempPassword(length = 10): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => chars[byte % chars.length]).join("");
+}
+
 async function sendSMS(to: string, message: string) {
   if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
     console.log("Twilio credentials not configured, skipping SMS");
@@ -22,7 +29,6 @@ async function sendSMS(to: string, message: string) {
   }
 
   try {
-    // Format phone number for India if needed
     let formattedPhone = to;
     if (!to.startsWith("+")) {
       formattedPhone = "+91" + to.replace(/^0+/, "");
@@ -145,11 +151,14 @@ serve(async (req) => {
         throw new Error("Member not found in records");
       }
 
-      // Create auth user with the stored password
+      // Generate a secure temporary password (never store plaintext passwords)
+      const tempPassword = generateTempPassword(12);
+
+      // Create auth user with the generated temporary password
       const userEmail = `${pendingUser.member_id.toLowerCase()}@mosque.local`;
       const { data: authData, error: createError } = await supabase.auth.admin.createUser({
         email: userEmail,
-        password: pendingUser.password_hash,
+        password: tempPassword,
         email_confirm: true,
         user_metadata: {
           full_name: pendingUser.full_name,
@@ -168,9 +177,9 @@ serve(async (req) => {
           const existingUser = listData.users.find((u: any) => u.email === userEmail);
           if (!existingUser) throw new Error("User email conflict but user not found");
           
-          // Update password to the new one from pending registration
+          // Update with new temporary password
           await supabase.auth.admin.updateUserById(existingUser.id, {
-            password: pendingUser.password_hash,
+            password: tempPassword,
             email_confirm: true,
             user_metadata: {
               full_name: pendingUser.full_name,
@@ -215,14 +224,13 @@ serve(async (req) => {
           is_read: true,
         });
 
-      // Send notifications to the user
+      // Send notifications with temp password to the user
       const safeName = pendingUser.full_name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const safeMemberId = pendingUser.member_id.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const safeNotes = adminNotes ? adminNotes.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
       
-      const approvalMessage = `Assalamu Alaikum ${pendingUser.full_name}! Your account registration has been approved. You can now login with your membership number: ${pendingUser.member_id}`;
+      const approvalMessage = `Assalamu Alaikum ${pendingUser.full_name}! Your account has been approved. Login with membership number: ${pendingUser.member_id} and temporary password: ${tempPassword} - Please change your password after first login.`;
       
-      // Send SMS
+      // Send SMS with temp password
       sendSMS(pendingUser.phone, approvalMessage);
       
       // Send email if available
@@ -234,12 +242,13 @@ serve(async (req) => {
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #16a34a;">Account Approved ✓</h2>
             <p>Assalamu Alaikum ${safeName},</p>
-            <p>We are pleased to inform you that your account registration has been <strong>approved</strong>.</p>
+            <p>Your account registration has been <strong>approved</strong>.</p>
             <p>You can now login to the mosque portal using:</p>
             <ul>
               <li><strong>Membership Number:</strong> ${safeMemberId}</li>
-              <li><strong>Password:</strong> The password you set during registration</li>
+              <li><strong>Temporary Password:</strong> ${tempPassword}</li>
             </ul>
+            <p style="color: #dc2626; font-weight: bold;">⚠️ Please change your password immediately after your first login.</p>
             <p>JazakAllah Khair,<br>Mosque Administration</p>
           </div>
           `
@@ -270,15 +279,17 @@ serve(async (req) => {
       
       // Send email if available
       if (member?.email) {
+        const safeName = pendingUser.full_name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeNotes = adminNotes ? adminNotes.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
         sendEmail(
           member.email,
           "Account Registration Update - Mosque Portal",
           `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #dc2626;">Registration Update</h2>
-            <p>Assalamu Alaikum ${pendingUser.full_name},</p>
+            <p>Assalamu Alaikum ${safeName},</p>
             <p>We regret to inform you that your account registration was not approved at this time.</p>
-            ${adminNotes ? `<p><strong>Reason:</strong> ${adminNotes}</p>` : ""}
+            ${safeNotes ? `<p><strong>Reason:</strong> ${safeNotes}</p>` : ""}
             <p>If you believe this is an error or need more information, please contact the mosque administration.</p>
             <p>JazakAllah Khair,<br>Mosque Administration</p>
           </div>
