@@ -612,7 +612,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறந்தவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil text-base" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
