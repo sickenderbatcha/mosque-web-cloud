@@ -604,7 +604,7 @@ export default function DeathRegisterTab() {
                   {/* Deceased Details */}
                   <div className="space-y-4">
                     <h3 className="font-tamil font-semibold text-lg border-b pb-2">இறந்தவர் விவரங்கள்</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="deceased_name"
@@ -612,7 +612,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறந்தவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
+                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -638,7 +638,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
+                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -664,7 +664,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">கணவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil h-12 tamil-mobile-name-input md:h-10" />
+                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -721,7 +721,7 @@ export default function DeathRegisterTab() {
                         control={form.control}
                         name="deceased_address"
                         render={({ field }) => (
-                          <FormItem className="col-span-2">
+                          <FormItem className="md:col-span-2">
                             <FormLabel className="font-tamil">முகவரி</FormLabel>
                             <FormControl>
                               <Input {...field} />
@@ -762,7 +762,7 @@ export default function DeathRegisterTab() {
                   {/* Death Details */}
                   <div className="space-y-4">
                     <h3 className="font-tamil font-semibold text-lg border-b pb-2">இறப்பு விவரங்கள்</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="death_date"
@@ -821,7 +821,7 @@ export default function DeathRegisterTab() {
                   {/* Burial Details */}
                   <div className="space-y-4">
                     <h3 className="font-tamil font-semibold text-lg border-b pb-2">அடக்க விவரங்கள்</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="burial_date"
@@ -880,7 +880,7 @@ export default function DeathRegisterTab() {
                   {/* Informant Details */}
                   <div className="space-y-4">
                     <h3 className="font-tamil font-semibold text-lg border-b pb-2">தெரிவிப்பவர் விவரங்கள்</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="informant_name"
@@ -939,7 +939,7 @@ export default function DeathRegisterTab() {
                   {/* Registrar */}
                   <div className="space-y-4">
                     <h3 className="font-tamil font-semibold text-lg border-b pb-2">பதிவாளர்</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-4 md:grid md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="registrar_name"
