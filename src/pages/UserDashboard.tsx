@@ -30,10 +30,16 @@ import { generateNocCertificatePdf, printNocCertificate, NocRecord } from "@/uti
 import NocCertificatePreview from "@/components/NocCertificatePreview";
 import { generateHeirCertificatePdf, printHeirCertificate, HeirRecord as HeirRecordType } from "@/utils/heirCertificatePdf";
 import HeirCertificatePreview from "@/components/HeirCertificatePreview";
-import { ScrollText } from "lucide-react";
+import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
+import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
+import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
+import DeathCertificatePreview from "@/components/DeathCertificatePreview";
+import MarriageCertificatePreview from "@/components/MarriageCertificatePreview";
+import OutsideMarriageCertificatePreview from "@/components/OutsideMarriageCertificatePreview";
 
 interface Booking {
   id: string;
@@ -122,6 +128,21 @@ interface HeirRequest {
   created_at: string;
 }
 
+interface CertificatePayment {
+  id: string;
+  certificate_type: string;
+  reference_id: string;
+  applicant_name: string;
+  applicant_phone: string;
+  applicant_email: string | null;
+  amount: number;
+  payment_status: string;
+  payment_method: string | null;
+  transaction_id: string | null;
+  razorpay_payment_id: string | null;
+  created_at: string;
+}
+
 const UserDashboard = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -130,6 +151,7 @@ const UserDashboard = () => {
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
   const [nocRequests, setNocRequests] = useState<NocRequest[]>([]);
   const [heirRequests, setHeirRequests] = useState<HeirRequest[]>([]);
+  const [certificatePayments, setCertificatePayments] = useState<CertificatePayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState({
@@ -172,6 +194,14 @@ const UserDashboard = () => {
   const [previewHeirRecord, setPreviewHeirRecord] = useState<HeirRecordType | null>(null);
   const [heirPreviewOpen, setHeirPreviewOpen] = useState(false);
 
+  // Certificate preview state (for marriage/death/outside_marriage)
+  const [certPreviewData, setCertPreviewData] = useState<{
+    type: "death" | "marriage" | "outside_marriage";
+    record: any;
+  } | null>(null);
+  const [certPreviewOpen, setCertPreviewOpen] = useState(false);
+  const [certPreviewLoading, setCertPreviewLoading] = useState<string | null>(null);
+
   // Certificate receipt state
   const [showCertReceipt, setShowCertReceipt] = useState<CertificateReceiptData | null>(null);
 
@@ -193,7 +223,7 @@ const UserDashboard = () => {
   const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
 
   // Fetch certificate fees from app_settings
-  const { settings: certificateFees } = useAppSettings(["certificate_fee_noc", "certificate_fee_heir"]);
+  const { settings: certificateFees } = useAppSettings(["certificate_fee_noc", "certificate_fee_heir", "certificate_fee_marriage", "certificate_fee_death", "certificate_fee_outside_marriage"]);
   const nocFee = parseFloat(certificateFees.certificate_fee_noc) || 100;
   const heirFee = parseFloat(certificateFees.certificate_fee_heir) || 100;
 
@@ -309,7 +339,7 @@ const UserDashboard = () => {
 
     setLoading(true);
     try {
-      const [bookingsRes, grievancesRes, registrationsRes, refundRes, nocRes, heirRes] = await Promise.all([
+      const [bookingsRes, grievancesRes, registrationsRes, refundRes, nocRes, heirRes, certPaymentsRes] = await Promise.all([
         supabase
           .from("mahal_bookings")
           .select("id, event_type, event_date, start_time, end_time, status, created_at, booking_amount, payment_status, applicant_name, applicant_phone, applicant_email")
@@ -340,6 +370,12 @@ const UserDashboard = () => {
           .select("id, applicant_name, applicant_email, applicant_phone, applicant_relationship, deceased_member_id, deceased_name, deceased_father_name, deceased_address, register_number, certificate_date, heirs, status, payment_status, admin_notes, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("certificate_payments")
+          .select("id, certificate_type, reference_id, applicant_name, applicant_phone, applicant_email, amount, payment_status, payment_method, transaction_id, razorpay_payment_id, created_at")
+          .eq("user_id", user.id)
+          .in("certificate_type", ["marriage", "death", "outside_marriage"])
+          .order("created_at", { ascending: false }),
       ]);
 
       setBookings(bookingsRes.data || []);
@@ -348,6 +384,7 @@ const UserDashboard = () => {
       setRefundRequests((refundRes.data as RefundRequest[]) || []);
       setNocRequests((nocRes.data as NocRequest[]) || []);
       setHeirRequests((heirRes.data as HeirRequest[]) || []);
+      setCertificatePayments((certPaymentsRes.data as CertificatePayment[]) || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -971,6 +1008,11 @@ const UserDashboard = () => {
                   <ScrollText className="h-4 w-4 mr-1 shrink-0" />
                   <span className="hidden lg:inline">வாரிசு</span>
                   <span className="lg:hidden">Heir</span>
+                </TabsTrigger>
+                <TabsTrigger value="certificates" className="font-tamil text-xs sm:text-sm px-2 py-2">
+                  <FileText className="h-4 w-4 mr-1 shrink-0" />
+                  <span className="hidden lg:inline">சான்றிதழ்கள்</span>
+                  <span className="lg:hidden">Certs</span>
                 </TabsTrigger>
                 <TabsTrigger value="grievances" className="font-tamil text-xs sm:text-sm px-2 py-2">
                   <MessageSquare className="h-4 w-4 mr-1 shrink-0" />
@@ -2004,6 +2046,253 @@ const UserDashboard = () => {
                         </Button>
                         <Button
                           onClick={() => generateHeirCertificatePdf(previewHeirRecord)}
+                          type="button"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download PDF
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </DialogContent>
+              </Dialog>
+
+              {/* Certificates Tab (Marriage, Death, Outside Marriage) */}
+              <TabsContent value="certificates" className="relative z-10">
+                <Card className="relative bg-card">
+                  <CardHeader>
+                    <div className="min-w-0">
+                      <CardTitle className="font-tamil break-words">சான்றிதழ் பணம் செலுத்தல்கள்</CardTitle>
+                      <CardDescription>Your marriage, death & outside marriage certificate payments</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {certificatePayments.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-muted-foreground font-tamil">சான்றிதழ் பணம் செலுத்தல்கள் இல்லை</p>
+                        <p className="text-sm text-muted-foreground">No certificate payments yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {certificatePayments.map((cp) => {
+                          const isPaid = cp.payment_status === "completed";
+                          const certTypeLabel = cp.certificate_type === "marriage" 
+                            ? "திருமணச்சான்றிதழ் (Marriage)" 
+                            : cp.certificate_type === "death" 
+                            ? "இறப்புச்சான்றிதழ் (Death)" 
+                            : "வெளியூர் திருமணச்சான்றிதழ் (Outside Marriage)";
+                          
+                          return (
+                            <div
+                              key={cp.id}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors gap-4"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                  <span className="font-semibold font-tamil">{certTypeLabel}</span>
+                                  {isPaid ? (
+                                    <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
+                                  ) : (
+                                    <Badge variant="secondary">நிலுவையில்</Badge>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                  <span>மனுதாரர்: {cp.applicant_name}</span>
+                                  <span className="font-semibold text-primary">₹{cp.amount}</span>
+                                  <span className="flex items-center gap-1">
+                                    <CalendarIcon className="h-3.5 w-3.5" />
+                                    {formatDate(cp.created_at)}
+                                  </span>
+                                </div>
+                                {cp.razorpay_payment_id && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Razorpay Ref: {cp.razorpay_payment_id}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {isPaid && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowCertReceipt({
+                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage",
+                                      applicantName: cp.applicant_name,
+                                      applicantPhone: cp.applicant_phone || undefined,
+                                      applicantEmail: cp.applicant_email || undefined,
+                                      subjectName: cp.applicant_name,
+                                      amount: cp.amount,
+                                      receiptNumber: cp.id.substring(0, 8).toUpperCase(),
+                                      paymentMethod: cp.payment_method || "online",
+                                      transactionId: cp.razorpay_payment_id || cp.transaction_id || undefined,
+                                      createdAt: cp.created_at,
+                                    })}
+                                  >
+                                    <Receipt className="h-4 w-4 mr-1" />
+                                    Receipt
+                                  </Button>
+                                )}
+                                {isPaid && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={certPreviewLoading === cp.id}
+                                      onClick={async () => {
+                                        setCertPreviewLoading(cp.id);
+                                        try {
+                                          const table = cp.certificate_type === "marriage" 
+                                            ? "marriage_registers" 
+                                            : cp.certificate_type === "death" 
+                                            ? "death_registers" 
+                                            : "outside_marriage_registers";
+                                          const { data } = await supabase
+                                            .from(table)
+                                            .select("*")
+                                            .eq("id", cp.reference_id)
+                                            .single();
+                                          if (data) {
+                                            setCertPreviewData({
+                                              type: cp.certificate_type as "death" | "marriage" | "outside_marriage",
+                                              record: data,
+                                            });
+                                            setCertPreviewOpen(true);
+                                          } else {
+                                            toast({ title: "Error", description: "Certificate record not found", variant: "destructive" });
+                                          }
+                                        } catch {
+                                          toast({ title: "Error", description: "Failed to load certificate", variant: "destructive" });
+                                        } finally {
+                                          setCertPreviewLoading(null);
+                                        }
+                                      }}
+                                    >
+                                      {certPreviewLoading === cp.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                      ) : (
+                                        <Eye className="h-4 w-4 mr-1" />
+                                      )}
+                                      Preview
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={async () => {
+                                        const table = cp.certificate_type === "marriage" 
+                                          ? "marriage_registers" 
+                                          : cp.certificate_type === "death" 
+                                          ? "death_registers" 
+                                          : "outside_marriage_registers";
+                                        const { data } = await supabase
+                                          .from(table)
+                                          .select("*")
+                                          .eq("id", cp.reference_id)
+                                          .single();
+                                        if (data) {
+                                          if (cp.certificate_type === "death") await printDeathCertificate(data as DeathRecord);
+                                          else if (cp.certificate_type === "marriage") await printMarriageCertificate(data as MarriageRecord);
+                                          else await printOutsideMarriageCertificate(data as OutsideMarriageRecord);
+                                        }
+                                      }}
+                                    >
+                                      <Printer className="h-4 w-4 mr-1" />
+                                      Print
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={async () => {
+                                        const table = cp.certificate_type === "marriage" 
+                                          ? "marriage_registers" 
+                                          : cp.certificate_type === "death" 
+                                          ? "death_registers" 
+                                          : "outside_marriage_registers";
+                                        const { data } = await supabase
+                                          .from(table)
+                                          .select("*")
+                                          .eq("id", cp.reference_id)
+                                          .single();
+                                        if (data) {
+                                          if (cp.certificate_type === "death") await generateDeathCertificatePdf(data as DeathRecord);
+                                          else if (cp.certificate_type === "marriage") await generateMarriageCertificatePdf(data as MarriageRecord);
+                                          else await generateOutsideMarriageCertificatePdf(data as OutsideMarriageRecord);
+                                        }
+                                      }}
+                                    >
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Download
+                                    </Button>
+                                  </>
+                                )}
+                                {!isPaid && (
+                                  <span className="text-xs text-muted-foreground italic">Payment pending</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Certificate Preview Dialog (Marriage/Death/Outside Marriage) */}
+              <Dialog open={certPreviewOpen} onOpenChange={setCertPreviewOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setCertPreviewOpen(false)}
+                      type="button"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <h2 className="font-tamil text-lg font-semibold">
+                      {certPreviewData?.type === "death" 
+                        ? "இறப்புச்சான்றிதழ் - Death Certificate"
+                        : certPreviewData?.type === "marriage"
+                        ? "திருமணச்சான்றிதழ் - Marriage Certificate"
+                        : "வெளியூர் திருமணச்சான்றிதழ் - Outside Marriage Certificate"}
+                    </h2>
+                  </div>
+                  
+                  {certPreviewData && (
+                    <>
+                      <div className="overflow-x-auto">
+                        {certPreviewData.type === "death" && (
+                          <DeathCertificatePreview record={certPreviewData.record as DeathRecord} />
+                        )}
+                        {certPreviewData.type === "marriage" && (
+                          <MarriageCertificatePreview record={certPreviewData.record as MarriageRecord} />
+                        )}
+                        {certPreviewData.type === "outside_marriage" && (
+                          <OutsideMarriageCertificatePreview record={certPreviewData.record as OutsideMarriageRecord} />
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-row gap-2 justify-end mt-4 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            if (certPreviewData.type === "death") await printDeathCertificate(certPreviewData.record as DeathRecord);
+                            else if (certPreviewData.type === "marriage") await printMarriageCertificate(certPreviewData.record as MarriageRecord);
+                            else await printOutsideMarriageCertificate(certPreviewData.record as OutsideMarriageRecord);
+                          }}
+                          type="button"
+                        >
+                          <Printer className="h-4 w-4 mr-2" />
+                          Print
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            if (certPreviewData.type === "death") await generateDeathCertificatePdf(certPreviewData.record as DeathRecord);
+                            else if (certPreviewData.type === "marriage") await generateMarriageCertificatePdf(certPreviewData.record as MarriageRecord);
+                            else await generateOutsideMarriageCertificatePdf(certPreviewData.record as OutsideMarriageRecord);
+                          }}
                           type="button"
                         >
                           <Download className="h-4 w-4 mr-2" />
