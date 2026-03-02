@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck } from "lucide-react";
+import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X } from "lucide-react";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface AppSetting {
   id: string;
@@ -77,6 +78,19 @@ const SettingsTab = () => {
   const [bookingAlertMessage, setBookingAlertMessage] = useState("தேதி கிடைக்கிறதா என்பது நிர்வாகத்தால் சரிபார்க்கப்படும். உங்கள் முன்பதிவு நிலை குறித்து தொலைபேசி வழியாக அறிவிக்கப்படும்.");
   const [savingAlertMessage, setSavingAlertMessage] = useState(false);
 
+  // Income categories state
+  const [incomeCategoriesDialogOpen, setIncomeCategoriesDialogOpen] = useState(false);
+  const [incomeCategories, setIncomeCategories] = useState<string[]>([
+    "நன்கொடை (Donation)",
+    "சந்தா (Subscription)",
+    "மஹால் முன்பதிவு (Mahal Booking)",
+    "மஹால் வாடகை (Hall Rent)",
+    "நிகழ்வு வருமானம் (Event Income)",
+    "இதர வருமானம் (Other Income)",
+  ]);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const [savingCategories, setSavingCategories] = useState(false);
+
 
   // Certificate image upload states
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -94,7 +108,54 @@ const SettingsTab = () => {
     fetchOtpSetting();
     fetchBookingAlertMessage();
     fetchForcePendingSetting();
+    fetchIncomeCategories();
   }, []);
+
+  const fetchIncomeCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "income_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setIncomeCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch income categories:", err);
+    }
+  };
+
+  const addIncomeCategory = () => {
+    const trimmed = newCategoryInput.trim();
+    if (!trimmed) return;
+    if (incomeCategories.includes(trimmed)) {
+      toast({ title: "Duplicate", description: "This category already exists.", variant: "destructive" });
+      return;
+    }
+    setIncomeCategories([...incomeCategories, trimmed]);
+    setNewCategoryInput("");
+  };
+
+  const removeIncomeCategory = (index: number) => {
+    setIncomeCategories(incomeCategories.filter((_, i) => i !== index));
+  };
+
+  const saveIncomeCategories = async () => {
+    setSavingCategories(true);
+    try {
+      await upsertAppSetting("income_categories", JSON.stringify(incomeCategories), "Configurable income categories for income management");
+      toast({ title: "Categories Saved", description: "Income categories updated successfully." });
+      setIncomeCategoriesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
+    } finally {
+      setSavingCategories(false);
+    }
+  };
 
    const fetchBookingTimeout = async () => {
      try {
@@ -834,6 +895,32 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Income Categories Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Income Categories (வருமான வகைகள்)
+          </CardTitle>
+          <CardDescription>
+            Configure income categories shown in the Income tab dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {incomeCategories.map((cat, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {cat}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setIncomeCategoriesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Categories
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Nonbu Kanji Donation Settings */}
       <Card>
         <CardHeader>
@@ -1501,6 +1588,47 @@ const SettingsTab = () => {
             </Button>
             <Button onClick={saveSubscriptionStart} disabled={saving}>
               {saving ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Income Categories Dialog */}
+      <Dialog open={incomeCategoriesDialogOpen} onOpenChange={setIncomeCategoriesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Income Categories (வருமான வகைகள்)</DialogTitle>
+            <DialogDescription>Add or remove income categories used in the Income tab.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={newCategoryInput}
+                onChange={(e) => setNewCategoryInput(e.target.value)}
+                placeholder="e.g., புதிய வகை (New Category)"
+                onKeyDown={(e) => e.key === "Enter" && addIncomeCategory()}
+              />
+              <Button size="sm" onClick={addIncomeCategory}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {incomeCategories.map((cat, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{cat}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeIncomeCategory(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIncomeCategoriesDialogOpen(false); fetchIncomeCategories(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveIncomeCategories} disabled={savingCategories}>
+              {savingCategories ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
