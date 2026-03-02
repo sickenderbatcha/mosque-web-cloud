@@ -268,7 +268,7 @@ const RefundsTab = () => {
 
   <div class="info-row">
     <span><span class="label">வவுச்சர் எண்:</span> REF-${refund.id.substring(0, 8).toUpperCase()}</span>
-    <span><span class="label">தேதி:</span> ${format(new Date(), "dd MMM yyyy")}</span>
+    <span><span class="label">தேதி:</span> ${format(new Date(), "dd/MM/yyyy")}</span>
   </div>
 
   <table class="details-table">
@@ -276,13 +276,13 @@ const RefundsTab = () => {
     <tr><td>விண்ணப்பதாரர் பெயர்</td><td>${refund.mahal_bookings?.applicant_name || "N/A"}</td></tr>
     <tr><td>தொலைபேசி எண்</td><td>${refund.mahal_bookings?.applicant_phone || "N/A"}</td></tr>
     <tr><td>நிகழ்வு வகை</td><td>${refund.mahal_bookings?.event_type || "N/A"}</td></tr>
-    <tr><td>நிகழ்வு தேதி</td><td>${refund.mahal_bookings?.event_date ? format(new Date(refund.mahal_bookings.event_date), "dd MMM yyyy") : "-"}</td></tr>
+    <tr><td>நிகழ்வு தேதி</td><td>${refund.mahal_bookings?.event_date ? format(new Date(refund.mahal_bookings.event_date), "dd/MM/yyyy") : "-"}</td></tr>
     <tr><td>திரும்ப பெறும் காரணம்</td><td>${refund.reason || "N/A"}</td></tr>
     <tr><td>திரும்ப பெறும் தொகை</td><td class="amount-highlight">₹${Number(refund.amount).toLocaleString()}</td></tr>
     <tr><td>பணம் செலுத்தும் முறை</td><td>${paymentMethod.type}</td></tr>
     <tr><td>பணம் செலுத்தும் விவரம்</td><td>${refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "வங்கி: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "ரொக்கம்"}</td></tr>
-    <tr><td>கோரிக்கை தேதி</td><td>${format(new Date(refund.created_at), "dd MMM yyyy")}</td></tr>
-    <tr><td>செயல்படுத்திய தேதி</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd MMM yyyy, hh:mm a") : "-"}</td></tr>
+    <tr><td>கோரிக்கை தேதி</td><td>${format(new Date(refund.created_at), "dd/MM/yyyy")}</td></tr>
+    <tr><td>செயல்படுத்திய தேதி</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd/MM/yyyy, hh:mm a") : "-"}</td></tr>
     ${refund.admin_notes ? `<tr><td>நிர்வாக குறிப்புகள்</td><td>${refund.admin_notes}</td></tr>` : ""}
   </table>
 
@@ -438,7 +438,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
                       <div>{refund.mahal_bookings?.event_type || "N/A"}</div>
                       <div className="text-sm text-muted-foreground">
                         {refund.mahal_bookings?.event_date
-                          ? format(new Date(refund.mahal_bookings.event_date), "dd MMM yyyy")
+                          ? format(new Date(refund.mahal_bookings.event_date), "dd/MM/yyyy")
                           : "-"}
                       </div>
                     </TableCell>
@@ -454,7 +454,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(refund.created_at), "dd MMM yyyy")}
+                      {format(new Date(refund.created_at), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>{getStatusBadge(refund.status)}</TableCell>
                     <TableCell>
@@ -554,7 +554,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
                   <Label className="text-muted-foreground">Event Date</Label>
                   <p className="font-medium">
                     {selectedRefund.mahal_bookings?.event_date 
-                      ? format(new Date(selectedRefund.mahal_bookings.event_date), "dd MMM yyyy")
+                      ? format(new Date(selectedRefund.mahal_bookings.event_date), "dd/MM/yyyy")
                       : "-"}
                   </p>
                 </div>
@@ -607,7 +607,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
 
               {selectedRefund.processed_at && (
                 <div className="text-sm text-muted-foreground">
-                  Processed on: {format(new Date(selectedRefund.processed_at), "dd MMM yyyy, hh:mm a")}
+                  Processed on: {format(new Date(selectedRefund.processed_at), "dd/MM/yyyy, hh:mm a")}
                 </div>
               )}
             </div>

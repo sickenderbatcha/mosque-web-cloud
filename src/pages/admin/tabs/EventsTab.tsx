@@ -319,7 +319,7 @@ const EventsTab = () => {
                       <div className="text-sm text-muted-foreground">{event.title_tamil}</div>
                     )}
                   </TableCell>
-                  <TableCell>{format(new Date(event.event_date), "dd MMM yyyy")}</TableCell>
+                  <TableCell>{format(new Date(event.event_date), "dd/MM/yyyy")}</TableCell>
                   <TableCell>
                     {event.start_time && event.end_time
                       ? `${event.start_time} - ${event.end_time}`

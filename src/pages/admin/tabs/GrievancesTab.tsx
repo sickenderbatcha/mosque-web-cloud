@@ -195,7 +195,7 @@ const GrievancesTab = () => {
                   <TableCell className="max-w-[200px] truncate">{grievance.subject}</TableCell>
                   <TableCell>{grievance.category || "-"}</TableCell>
                   <TableCell>{getStatusBadge(grievance.status)}</TableCell>
-                  <TableCell>{format(new Date(grievance.created_at), "dd MMM yyyy")}</TableCell>
+                  <TableCell>{format(new Date(grievance.created_at), "dd/MM/yyyy")}</TableCell>
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>

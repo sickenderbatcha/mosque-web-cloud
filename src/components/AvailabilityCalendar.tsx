@@ -230,7 +230,7 @@ const AvailabilityCalendar = ({ onDateSelect, selectedDate, refreshKey, isAdmin 
                       </HoverCardTrigger>
                       <HoverCardContent className="w-auto min-w-[180px] p-3" side="top" align="center">
                         <p className="text-xs font-semibold mb-2">
-                          {format(day, "MMM d, yyyy")} — {bookingsForDay.length} Bookings
+                          {format(day, "dd/MM/yyyy")} — {bookingsForDay.length} Bookings
                         </p>
                         <div className="space-y-1.5">
                           {bookingsForDay.map((b, i) => (
@@ -298,7 +298,7 @@ const AvailabilityCalendar = ({ onDateSelect, selectedDate, refreshKey, isAdmin 
                     .slice(0, 5)
                     .map((booking, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
-                        {format(new Date(booking.event_date), "MMM d")} - {booking.event_type}
+                        {format(new Date(booking.event_date), "dd/MM")} - {booking.event_type}
                       </Badge>
                     ))}
                 </div>

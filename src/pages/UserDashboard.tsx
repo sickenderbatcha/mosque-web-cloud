@@ -657,7 +657,7 @@ const UserDashboard = () => {
 
   const formatDate = (dateStr: string) => {
     try {
-      return format(new Date(dateStr), "dd MMM yyyy");
+      return format(new Date(dateStr), "dd/MM/yyyy");
     } catch {
       return dateStr;
     }
@@ -2472,7 +2472,7 @@ const UserDashboard = () => {
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {editBookingData.event_date ? (
-                        format(editBookingData.event_date, "PPP")
+                        format(editBookingData.event_date, "dd/MM/yyyy")
                       ) : (
                         <span>Pick a date</span>
                       )}

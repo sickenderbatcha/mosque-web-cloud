@@ -229,7 +229,7 @@ const UserApprovalTab = () => {
                     <TableCell>{user.full_name}</TableCell>
                     <TableCell>{user.phone}</TableCell>
                     <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell>{format(new Date(user.created_at), "dd MMM yyyy, hh:mm a")}</TableCell>
+                    <TableCell>{format(new Date(user.created_at), "dd/MM/yyyy, hh:mm a")}</TableCell>
                     <TableCell>
                       {user.status === "pending" ? (
                         <div className="flex gap-2 flex-wrap">
@@ -270,7 +270,7 @@ const UserApprovalTab = () => {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">
-                            {user.reviewed_at && format(new Date(user.reviewed_at), "dd MMM yyyy")}
+                            {user.reviewed_at && format(new Date(user.reviewed_at), "dd/MM/yyyy")}
                           </span>
                           <Button
                             size="sm"

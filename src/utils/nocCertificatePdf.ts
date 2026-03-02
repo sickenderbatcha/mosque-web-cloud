@@ -289,7 +289,7 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   // ==================== CERTIFICATE NUMBER & DATE ====================
   yPos = 85;
   const certNumber = await generateNocCertificateNumber();
-  const certDate = new Date().toLocaleDateString("ta-IN");
+  const certDate = new Date().toLocaleDateString("en-GB");
   
   addTamilText(doc, `எண்: ${certNumber}`, 20, yPos, 9, { fontWeight: "bold" });
   addTamilText(doc, `நாள்: ${certDate}`, pageWidth - 20, yPos, 9, { align: "right" });

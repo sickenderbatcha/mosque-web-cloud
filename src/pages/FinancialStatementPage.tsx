@@ -310,7 +310,7 @@ const FinancialStatementPage = () => {
 
       const incomeRowsHTML = incomeTransactions.map(item => `
         <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(item.date).toLocaleDateString("ta-IN")}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(item.date).toLocaleDateString("en-GB")}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.category}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.description}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; color: #16a34a;">₹${item.amount.toLocaleString()}</td>
@@ -319,7 +319,7 @@ const FinancialStatementPage = () => {
 
       const expenseRowsHTML = expenseTransactions.map(item => `
         <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(item.date).toLocaleDateString("ta-IN")}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(item.date).toLocaleDateString("en-GB")}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.category}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.description}</td>
           <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; color: #dc2626;">₹${item.amount.toLocaleString()}</td>
@@ -826,7 +826,7 @@ const FinancialStatementPage = () => {
                                   {detailedTransactions.map((transaction, index) => (
                                     <TableRow key={index}>
                                       <TableCell>
-                                        {new Date(transaction.date).toLocaleDateString("en-IN")}
+                                        {new Date(transaction.date).toLocaleDateString("en-GB")}
                                       </TableCell>
                                       <TableCell className="font-tamil">{transaction.category}</TableCell>
                                       <TableCell>

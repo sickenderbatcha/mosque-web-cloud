@@ -308,7 +308,7 @@ const DonationsTab = () => {
                         <TableCell>
                           <Badge variant="outline">{donation.payment_method || "N/A"}</Badge>
                         </TableCell>
-                        <TableCell>{format(new Date(donation.created_at), "dd MMM yyyy")}</TableCell>
+                        <TableCell>{format(new Date(donation.created_at), "dd/MM/yyyy")}</TableCell>
                         <TableCell>
                           <Button
                             size="sm"
@@ -390,7 +390,7 @@ const DonationsTab = () => {
                           <TableCell>
                             <Badge variant="outline">{subscription.payment_method || "Online"}</Badge>
                           </TableCell>
-                          <TableCell>{format(new Date(subscription.created_at), "dd MMM yyyy")}</TableCell>
+                          <TableCell>{format(new Date(subscription.created_at), "dd/MM/yyyy")}</TableCell>
                           <TableCell>
                             <Button
                               size="sm"

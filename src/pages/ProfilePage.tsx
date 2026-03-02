@@ -172,7 +172,7 @@ const ProfilePage = () => {
                   Member Since
                 </Label>
                 <Input
-                  value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
+                  value={user?.created_at ? new Date(user.created_at).toLocaleDateString("en-GB") : ""}
                   disabled
                   className="bg-muted"
                 />

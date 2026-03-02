@@ -1366,7 +1366,7 @@ const SuperAdminSettingsTab = () => {
                       {setting.description || "-"}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
-                      {format(new Date(setting.updated_at), "MMM d, yyyy")}
+                      {format(new Date(setting.updated_at), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

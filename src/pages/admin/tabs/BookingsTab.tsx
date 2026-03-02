@@ -430,7 +430,7 @@ const BookingsTab = () => {
                     </TableCell>
                     <TableCell>{booking.event_type}</TableCell>
                     <TableCell>
-                      <div>{format(new Date(booking.event_date), "dd MMM yyyy")}</div>
+                      <div>{format(new Date(booking.event_date), "dd/MM/yyyy")}</div>
                       <div className="text-sm text-muted-foreground">
                         {booking.start_time} - {booking.end_time}
                       </div>

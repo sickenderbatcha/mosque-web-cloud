@@ -130,7 +130,7 @@ export const generateHeirCertificatePdf = async (record: HeirRecord): Promise<vo
   // Use the configured certificate number, or fallback to register_number, or generate new
   const certNumber = record.register_number || await generateHeirCertificateNumber();
   const certDate = record.certificate_date 
-    ? new Date(record.certificate_date).toLocaleDateString("ta-IN")
+    ? new Date(record.certificate_date).toLocaleDateString("en-GB")
     : "...........................";
   
   addTamilText(doc, `எண்: ${certNumber}`, leftX, y, FS.regRow, "bold");
@@ -323,7 +323,7 @@ export const printHeirCertificate = async (record: HeirRecord): Promise<void> =>
   
   const certNumber = record.register_number || await generateHeirCertificateNumber();
   const certDate = record.certificate_date 
-    ? new Date(record.certificate_date).toLocaleDateString("ta-IN")
+    ? new Date(record.certificate_date).toLocaleDateString("en-GB")
     : "...........................";
   
   addTamilText(doc, `எண்: ${certNumber}`, leftX, y, FS.regRow, "bold");
