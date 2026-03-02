@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -508,13 +509,13 @@ export default function OutsideMarriageRegisterTab() {
       <Card>
         <CardHeader><CardTitle className="text-lg">மணமகன் விவரங்கள் / Groom Details</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField control={form.control} name="groom_name" render={({ field }) => (<FormItem><FormLabel>மணமகன் பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="groom_name" render={({ field }) => (<FormItem><FormLabel>மணமகன் பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="groom_name_en" render={({ field }) => (<FormItem><FormLabel>Groom Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="groom_father_name" render={({ field }) => (<FormItem><FormLabel>மணமகன் தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="groom_father_name" render={({ field }) => (<FormItem><FormLabel>மணமகன் தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="groom_father_name_en" render={({ field }) => (<FormItem><FormLabel>Groom Father Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="groom_category" render={({ field }) => (<FormItem><FormLabel>மணமகன் வகையரா</FormLabel><FormControl><Input maxLength={10} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="groom_category" render={({ field }) => (<FormItem><FormLabel>மணமகன் வகையரா</FormLabel><FormControl><TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="groom_age" render={({ field }) => (<FormItem><FormLabel>மணமகன் வயது</FormLabel><FormControl><Input type="number" min={18} max={100} {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="groom_madhab" render={({ field }) => (<FormItem><FormLabel>மணமகன் மத்ஹப்</FormLabel><FormControl><Input maxLength={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="groom_madhab" render={({ field }) => (<FormItem><FormLabel>மணமகன் மத்ஹப்</FormLabel><FormControl><TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="groom_address" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>மணமகன் முகவரி</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
         </CardContent>
       </Card>
@@ -523,13 +524,13 @@ export default function OutsideMarriageRegisterTab() {
       <Card>
         <CardHeader><CardTitle className="text-lg">மணமகள் விவரங்கள் / Bride Details</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField control={form.control} name="bride_name" render={({ field }) => (<FormItem><FormLabel>மணமகள் பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="bride_name" render={({ field }) => (<FormItem><FormLabel>மணமகள் பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="bride_name_en" render={({ field }) => (<FormItem><FormLabel>Bride Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="bride_father_name" render={({ field }) => (<FormItem><FormLabel>மணமகள் தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="bride_father_name" render={({ field }) => (<FormItem><FormLabel>மணமகள் தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="bride_father_name_en" render={({ field }) => (<FormItem><FormLabel>Bride Father Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="bride_category" render={({ field }) => (<FormItem><FormLabel>மணமகள் வகையரா</FormLabel><FormControl><Input maxLength={10} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="bride_category" render={({ field }) => (<FormItem><FormLabel>மணமகள் வகையரா</FormLabel><FormControl><TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="bride_age" render={({ field }) => (<FormItem><FormLabel>மணமகள் வயது</FormLabel><FormControl><Input type="number" min={18} max={100} {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="bride_madhab" render={({ field }) => (<FormItem><FormLabel>மணமகள் மத்ஹப்</FormLabel><FormControl><Input maxLength={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="bride_madhab" render={({ field }) => (<FormItem><FormLabel>மணமகள் மத்ஹப்</FormLabel><FormControl><TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="bride_address" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>மணமகள் முகவரி</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
         </CardContent>
       </Card>
@@ -538,10 +539,10 @@ export default function OutsideMarriageRegisterTab() {
       <Card>
         <CardHeader><CardTitle className="text-lg">ஒலி/வக்கீல் மற்றும் மகர் / Wali & Mahr</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField control={form.control} name="wali_name" render={({ field }) => (<FormItem><FormLabel>ஒலி/வக்கீல் பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="wali_name" render={({ field }) => (<FormItem><FormLabel>ஒலி/வக்கீல் பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="wali_name_en" render={({ field }) => (<FormItem><FormLabel>Wali Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="wali_father_name" render={({ field }) => (<FormItem><FormLabel>ஒலி/வக்கீல் தந்தை பெயர்</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="mahr" render={({ field }) => (<FormItem><FormLabel>மகர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="wali_father_name" render={({ field }) => (<FormItem><FormLabel>ஒலி/வக்கீல் தந்தை பெயர்</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="mahr" render={({ field }) => (<FormItem><FormLabel>மகர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="mahr_en" render={({ field }) => (<FormItem><FormLabel>Mahr (English)</FormLabel><FormControl><Input maxLength={50} placeholder="e.g. 16 Grms Gold chain" {...field} /></FormControl><FormMessage /></FormItem>)} />
         </CardContent>
       </Card>
@@ -550,17 +551,17 @@ export default function OutsideMarriageRegisterTab() {
       <Card>
         <CardHeader><CardTitle className="text-lg">சாட்சிகள் மற்றும் கத்திப் / Witnesses & Kathib</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField control={form.control} name="witness1_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-1 பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="witness1_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-1 பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="witness1_name_en" render={({ field }) => (<FormItem><FormLabel>Witness 1 Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="witness1_father_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-1 தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="witness1_father_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-1 தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="witness1_father_name_en" render={({ field }) => (<FormItem><FormLabel>Witness 1 Father Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="witness2_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-2 பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="witness2_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-2 பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="witness2_name_en" render={({ field }) => (<FormItem><FormLabel>Witness 2 Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="witness2_father_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-2 தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="witness2_father_name" render={({ field }) => (<FormItem><FormLabel>சாட்சி-2 தந்தை பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="witness2_father_name_en" render={({ field }) => (<FormItem><FormLabel>Witness 2 Father Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="kathib_thaib_name" render={({ field }) => (<FormItem><FormLabel>கத்திப்/தாயிப் பெயர் (தமிழ்)</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="kathib_thaib_name" render={({ field }) => (<FormItem><FormLabel>கத்திப்/தாயிப் பெயர் (தமிழ்)</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="kathib_name_en" render={({ field }) => (<FormItem><FormLabel>Kathib Name (English)</FormLabel><FormControl><Input maxLength={50} placeholder="For certificate" {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="kathib_thaib_father_name" render={({ field }) => (<FormItem><FormLabel>கத்திப்/தாயிப் தந்தை பெயர்</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="kathib_thaib_father_name" render={({ field }) => (<FormItem><FormLabel>கத்திப்/தாயிப் தந்தை பெயர்</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
         </CardContent>
       </Card>
 
@@ -568,8 +569,8 @@ export default function OutsideMarriageRegisterTab() {
       <Card>
         <CardHeader><CardTitle className="text-lg">பதிவு செய்தவர்</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField control={form.control} name="registrar_name" render={({ field }) => (<FormItem><FormLabel>பதிவு செய்தவரின் பெயர்</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="registrar_father_name" render={({ field }) => (<FormItem><FormLabel>பதிவு செய்தவரின் தந்தை பெயர்</FormLabel><FormControl><Input maxLength={50} {...field} /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="registrar_name" render={({ field }) => (<FormItem><FormLabel>பதிவு செய்தவரின் பெயர்</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="registrar_father_name" render={({ field }) => (<FormItem><FormLabel>பதிவு செய்தவரின் தந்தை பெயர்</FormLabel><FormControl><TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" /></FormControl><FormMessage /></FormItem>)} />
         </CardContent>
       </Card>
     </>
