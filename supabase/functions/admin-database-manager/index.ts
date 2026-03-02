@@ -14,6 +14,39 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
+// Allowlist of valid public table names - validated against information_schema at runtime
+async function validateTableName(conn: any, table: string): Promise<string | null> {
+  // First reject obviously bad input
+  if (!table || typeof table !== "string" || table.length > 63 || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(table)) {
+    return null;
+  }
+  // Validate against information_schema using parameterized query
+  const result = await conn.queryObject`
+    SELECT table_name FROM information_schema.tables 
+    WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name = ${table}
+  `;
+  if (result.rows.length === 0) return null;
+  return (result.rows[0] as any).table_name;
+}
+
+// Validate column name exists in a given table
+async function validateColumnName(conn: any, table: string, column: string): Promise<string | null> {
+  if (!column || typeof column !== "string" || column.length > 63 || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(column)) {
+    return null;
+  }
+  const result = await conn.queryObject`
+    SELECT column_name FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = ${table} AND column_name = ${column}
+  `;
+  if (result.rows.length === 0) return null;
+  return (result.rows[0] as any).column_name;
+}
+
+// Escape an identifier for safe use in SQL (double-quote and escape internal quotes)
+function escapeIdentifier(name: string): string {
+  return '"' + name.replace(/"/g, '""') + '"';
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,7 +78,6 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // Use direct postgres for all operations via the REST SQL endpoint
     const dbUrl = Deno.env.get("SUPABASE_DB_URL");
     if (!dbUrl) return jsonResponse({ error: "Database URL not configured" }, 500);
 
@@ -69,17 +101,19 @@ Deno.serve(async (req) => {
 
         case "get_columns": {
           const { table } = body;
-          if (!table) return jsonResponse({ error: "Table name required" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
+          
           const result = await conn.queryObject`
             SELECT column_name, data_type, is_nullable, column_default,
               (SELECT EXISTS(
                 SELECT 1 FROM information_schema.table_constraints tc
                 JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
-                WHERE tc.table_schema = 'public' AND tc.table_name = ${table}
+                WHERE tc.table_schema = 'public' AND tc.table_name = ${validatedTable}
                   AND tc.constraint_type = 'PRIMARY KEY' AND kcu.column_name = c.column_name
               )) as is_primary_key
             FROM information_schema.columns c
-            WHERE c.table_schema = 'public' AND c.table_name = ${table}
+            WHERE c.table_schema = 'public' AND c.table_name = ${validatedTable}
             ORDER BY c.ordinal_position
           `;
           return jsonResponse({ columns: result.rows });
@@ -87,45 +121,58 @@ Deno.serve(async (req) => {
 
         case "fetch_rows": {
           const { table, page = 1, pageSize = 50 } = body;
-          if (!table) return jsonResponse({ error: "Table name required" }, 400);
-          
-          // Sanitize table name
-          const validTable = await conn.queryObject`
-            SELECT table_name FROM information_schema.tables 
-            WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name = ${table}
-          `;
-          if (validTable.rows.length === 0) return jsonResponse({ error: "Invalid table" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
 
-          const offset = (page - 1) * pageSize;
-          const countResult = await conn.queryObject(`SELECT COUNT(*)::int as total FROM public."${table}"`);
+          const safePageSize = Math.min(Math.max(1, Number(pageSize) || 50), 200);
+          const safePage = Math.max(1, Number(page) || 1);
+          const offset = (safePage - 1) * safePageSize;
+
+          const countResult = await conn.queryObject(
+            `SELECT COUNT(*)::int as total FROM public.${escapeIdentifier(validatedTable)}`
+          );
           const total = (countResult.rows[0] as any).total;
 
-          // Determine order column dynamically
-          const orderColResult = await conn.queryObject(`
+          // Determine order column dynamically using parameterized query
+          const orderColResult = await conn.queryObject`
             SELECT column_name FROM information_schema.columns 
-            WHERE table_schema = 'public' AND table_name = '${table}' AND column_name IN ('created_at', 'id')
+            WHERE table_schema = 'public' AND table_name = ${validatedTable} AND column_name IN ('created_at', 'id')
             ORDER BY CASE column_name WHEN 'created_at' THEN 1 WHEN 'id' THEN 2 END LIMIT 1
-          `);
+          `;
           const orderCol = (orderColResult.rows[0] as any)?.column_name || 'id';
+          const validatedOrderCol = await validateColumnName(conn, validatedTable, orderCol);
+          if (!validatedOrderCol) return jsonResponse({ error: "Invalid order column" }, 400);
 
           const dataResult = await conn.queryObject(
-            `SELECT * FROM public."${table}" ORDER BY "${orderCol}" DESC NULLS LAST LIMIT ${pageSize} OFFSET ${offset}`
+            `SELECT * FROM public.${escapeIdentifier(validatedTable)} ORDER BY ${escapeIdentifier(validatedOrderCol)} DESC NULLS LAST LIMIT $1 OFFSET $2`,
+            [safePageSize, offset]
           );
-          return jsonResponse({ rows: dataResult.rows, total, page, pageSize });
+          return jsonResponse({ rows: dataResult.rows, total, page: safePage, pageSize: safePageSize });
         }
 
         case "update_row": {
           const { table, id, data } = body;
-          if (!table || !id || !data) return jsonResponse({ error: "Table, id, and data required" }, 400);
+          if (!id || !data) return jsonResponse({ error: "id and data required" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
           
-          const setClauses = Object.entries(data)
-            .filter(([key]) => key !== "id")
-            .map(([key, val], i) => `"${key}" = $${i + 2}`)
-            .join(", ");
-          const values = [id, ...Object.entries(data).filter(([key]) => key !== "id").map(([, val]) => val)];
+          // Validate all column names
+          const entries = Object.entries(data).filter(([key]) => key !== "id");
+          if (entries.length === 0) return jsonResponse({ error: "No data to update" }, 400);
+          
+          const validatedColumns: string[] = [];
+          const values: any[] = [id];
+          for (const [key, val] of entries) {
+            const validCol = await validateColumnName(conn, validatedTable, key);
+            if (!validCol) return jsonResponse({ error: `Invalid column: ${key}` }, 400);
+            validatedColumns.push(validCol);
+            values.push(val);
+          }
+          
+          const setClauses = validatedColumns.map((col, i) => `${escapeIdentifier(col)} = $${i + 2}`).join(", ");
           
           await conn.queryObject(
-            `UPDATE public."${table}" SET ${setClauses} WHERE id = $1`,
+            `UPDATE public.${escapeIdentifier(validatedTable)} SET ${setClauses} WHERE id = $1`,
             values
           );
           return jsonResponse({ success: true });
@@ -133,15 +180,25 @@ Deno.serve(async (req) => {
 
         case "insert_row": {
           const { table, data } = body;
-          if (!table || !data) return jsonResponse({ error: "Table and data required" }, 400);
+          if (!data) return jsonResponse({ error: "data required" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
           
           const keys = Object.keys(data);
-          const cols = keys.map(k => `"${k}"`).join(", ");
-          const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
-          const values = Object.values(data);
+          const validatedColumns: string[] = [];
+          const values: any[] = [];
+          for (const key of keys) {
+            const validCol = await validateColumnName(conn, validatedTable, key);
+            if (!validCol) return jsonResponse({ error: `Invalid column: ${key}` }, 400);
+            validatedColumns.push(validCol);
+            values.push(data[key]);
+          }
+          
+          const cols = validatedColumns.map(c => escapeIdentifier(c)).join(", ");
+          const placeholders = validatedColumns.map((_, i) => `$${i + 1}`).join(", ");
           
           const result = await conn.queryObject(
-            `INSERT INTO public."${table}" (${cols}) VALUES (${placeholders}) RETURNING *`,
+            `INSERT INTO public.${escapeIdentifier(validatedTable)} (${cols}) VALUES (${placeholders}) RETURNING *`,
             values
           );
           return jsonResponse({ row: result.rows[0] });
@@ -149,11 +206,13 @@ Deno.serve(async (req) => {
 
         case "delete_rows": {
           const { table, ids } = body;
-          if (!table || !ids?.length) return jsonResponse({ error: "Table and ids required" }, 400);
+          if (!ids?.length) return jsonResponse({ error: "ids required" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
           
           const placeholders = ids.map((_: any, i: number) => `$${i + 1}`).join(", ");
           await conn.queryObject(
-            `DELETE FROM public."${table}" WHERE id IN (${placeholders})`,
+            `DELETE FROM public.${escapeIdentifier(validatedTable)} WHERE id IN (${placeholders})`,
             ids
           );
           return jsonResponse({ success: true, deleted: ids.length });
@@ -163,27 +222,28 @@ Deno.serve(async (req) => {
           const { sql } = body;
           if (!sql?.trim()) return jsonResponse({ error: "SQL required" }, 400);
           
-          // Execute the SQL
+          // Execute the SQL (superadmin-only, already authenticated)
           const result = await conn.queryObject(sql);
           return jsonResponse({ 
             success: true, 
             rowCount: result.rowCount,
-            rows: result.rows?.slice(0, 100) // Limit returned rows
+            rows: result.rows?.slice(0, 100)
           });
         }
 
         case "export_sql": {
           const { table } = body;
-          if (!table) return jsonResponse({ error: "Table name required" }, 400);
+          const validatedTable = await validateTableName(conn, table);
+          if (!validatedTable) return jsonResponse({ error: "Invalid table name" }, 400);
           
-          const result = await conn.queryObject(`SELECT * FROM public."${table}"`);
-          if (!result.rows.length) return jsonResponse({ sql: `-- ${table}: No records\n` });
+          const result = await conn.queryObject(`SELECT * FROM public.${escapeIdentifier(validatedTable)}`);
+          if (!result.rows.length) return jsonResponse({ sql: `-- ${validatedTable}: No records\n` });
           
           const columns = Object.keys(result.rows[0] as any);
-          const colList = columns.map(c => `"${c}"`).join(", ");
+          const colList = columns.map(c => escapeIdentifier(c)).join(", ");
           
           const lines: string[] = [
-            `-- ${table}: ${result.rows.length} records`,
+            `-- ${validatedTable}: ${result.rows.length} records`,
             `-- Exported on ${new Date().toISOString()}`,
             "",
           ];
@@ -199,9 +259,9 @@ Deno.serve(async (req) => {
             }).join(", ");
             
             lines.push(
-              `INSERT INTO public."${table}" (${colList}) VALUES (${values}) ON CONFLICT ("id") DO UPDATE SET ${columns
+              `INSERT INTO public.${escapeIdentifier(validatedTable)} (${colList}) VALUES (${values}) ON CONFLICT ("id") DO UPDATE SET ${columns
                 .filter(c => c !== "id")
-                .map(c => `"${c}" = EXCLUDED."${c}"`)
+                .map(c => `${escapeIdentifier(c)} = EXCLUDED.${escapeIdentifier(c)}`)
                 .join(", ")};`
             );
           }
@@ -218,6 +278,6 @@ Deno.serve(async (req) => {
     }
   } catch (error: any) {
     console.error("Database manager error:", error);
-    return jsonResponse({ error: error.message || "Internal server error" }, 500);
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });
