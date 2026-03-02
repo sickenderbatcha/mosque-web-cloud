@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ interface Expense {
   created_at: string;
 }
 
-const EXPENSE_CATEGORIES = [
+const DEFAULT_EXPENSE_CATEGORIES = [
   "மின்சாரம் (Electricity)",
   "தண்ணீர் (Water)",
   "பராமரிப்பு (Maintenance)",
@@ -52,6 +52,7 @@ const ExpensesTab = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(DEFAULT_EXPENSE_CATEGORIES);
   const [formData, setFormData] = useState({
     amount: "",
     category: "",
@@ -67,8 +68,27 @@ const ExpensesTab = () => {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
+  const fetchExpenseCategories = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "expense_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setExpenseCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch expense categories:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchExpenses();
+    fetchExpenseCategories();
   }, []);
 
   const fetchExpenses = async () => {
@@ -211,7 +231,7 @@ const ExpensesTab = () => {
 
   // Use predefined categories and payment methods so all options are always visible
   const categories = useMemo(() => {
-    return EXPENSE_CATEGORIES.map(c => ({ label: c, value: c }));
+    return expenseCategories.map(c => ({ label: c, value: c }));
   }, []);
 
   const paymentMethods = useMemo(() => {
@@ -262,7 +282,7 @@ const ExpensesTab = () => {
                     <SelectValue placeholder="வகையை தேர்வு செய்க" />
                   </SelectTrigger>
                   <SelectContent>
-                    {EXPENSE_CATEGORIES.map((cat) => (
+                    {expenseCategories.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
