@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +29,12 @@ interface Income {
   created_at: string;
 }
 
-const INCOME_CATEGORIES = [
+const DEFAULT_INCOME_CATEGORIES = [
   "நன்கொடை (Donation)",
   "சந்தா (Subscription)",
   "மஹால் முன்பதிவு (Mahal Booking)",
   "மஹால் வாடகை (Hall Rent)",
   "நிகழ்வு வருமானம் (Event Income)",
-  "வட்டி வருமானம் (Interest Income)",
   "இதர வருமானம் (Other Income)",
 ];
 
@@ -52,6 +51,7 @@ const IncomeTab = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [incomeCategories, setIncomeCategories] = useState<string[]>(DEFAULT_INCOME_CATEGORIES);
   const [formData, setFormData] = useState({
     amount: "",
     category: "",
@@ -66,8 +66,27 @@ const IncomeTab = () => {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
+  const fetchIncomeCategories = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "income_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setIncomeCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch income categories:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchIncomes();
+    fetchIncomeCategories();
   }, []);
 
   const fetchIncomes = async () => {
@@ -277,7 +296,7 @@ const IncomeTab = () => {
                     <SelectValue placeholder="வகையை தேர்வு செய்க" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    {INCOME_CATEGORIES.map((cat) => (
+                    {incomeCategories.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
