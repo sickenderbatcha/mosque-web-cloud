@@ -6,6 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Generate a secure random password
+function generateSecurePassword(length = 16): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => chars[b % chars.length]).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,8 +29,12 @@ serve(async (req) => {
     // Security check using environment variable
     const expectedKey = Deno.env.get("SUPERADMIN_SETUP_SECRET_KEY");
     if (!expectedKey || secretKey !== expectedKey) {
+      console.error("Invalid setup key attempt for superadmin setup");
       throw new Error("Invalid setup key");
     }
+
+    // Generate a secure random password instead of using hardcoded one
+    const securePassword = generateSecurePassword();
 
     // Check if superadmin auth user already exists
     const { data: existingMember } = await supabase
@@ -32,10 +44,9 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingMember?.auth_user_id) {
-      // Superadmin exists, reset password instead
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         existingMember.auth_user_id,
-        { password: "supusr123" }
+        { password: securePassword }
       );
       
       if (updateError) {
@@ -43,7 +54,7 @@ serve(async (req) => {
       }
       
       return new Response(
-        JSON.stringify({ success: true, message: "Superadmin password reset to: supusr123" }),
+        JSON.stringify({ success: true, message: "Superadmin password has been reset.", password: securePassword }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -61,11 +72,10 @@ serve(async (req) => {
         date_of_marriage: "2024-01-01",
       }, { onConflict: "member_id" });
 
-    // Try to create auth user; if already exists, look it up instead
     let authUserId: string;
     const { data: authData, error: createError } = await supabase.auth.admin.createUser({
       email: "supusr@mosque.local",
-      password: "supusr123",
+      password: securePassword,
       email_confirm: true,
       user_metadata: {
         full_name: "Super Administrator",
@@ -82,18 +92,16 @@ serve(async (req) => {
       const existing = listData.users.find((u) => u.email === "supusr@mosque.local");
       if (!existing) throw new Error("Superadmin auth user not found after conflict");
       authUserId = existing.id;
-      await supabase.auth.admin.updateUserById(authUserId, { password: "supusr123" });
+      await supabase.auth.admin.updateUserById(authUserId, { password: securePassword });
     } else {
       authUserId = authData.user.id;
     }
 
-    // Link auth user to member
     await supabase
       .from("gb_members")
       .update({ auth_user_id: authUserId })
       .eq("member_id", "SUPUSR");
 
-    // Add superadmin role
     await supabase
       .from("user_roles")
       .upsert({
@@ -104,14 +112,15 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Superadmin user created successfully. Login with membership number: SUPUSR, password: supusr123" 
+        message: "Superadmin user created successfully. Login with membership number: SUPUSR",
+        password: securePassword
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in setup-superadmin function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Setup failed" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

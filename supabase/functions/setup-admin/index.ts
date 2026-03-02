@@ -6,6 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Generate a secure random password
+function generateSecurePassword(length = 16): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => chars[b % chars.length]).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,8 +29,13 @@ serve(async (req) => {
     // Security check using environment variable
     const expectedKey = Deno.env.get("ADMIN_SETUP_SECRET_KEY");
     if (!expectedKey || secretKey !== expectedKey) {
+      // Don't reveal whether the key exists or not
+      console.error("Invalid setup key attempt for admin setup");
       throw new Error("Invalid setup key");
     }
+
+    // Generate a secure random password instead of using hardcoded one
+    const securePassword = generateSecurePassword();
 
     // Check if admin auth user already exists
     const { data: existingMember } = await supabase
@@ -35,7 +48,7 @@ serve(async (req) => {
       // Admin exists, reset password instead
       const { error: updateError } = await supabase.auth.admin.updateUserById(
         existingMember.auth_user_id,
-        { password: "admin123" }
+        { password: securePassword }
       );
       
       if (updateError) {
@@ -43,7 +56,7 @@ serve(async (req) => {
       }
       
       return new Response(
-        JSON.stringify({ success: true, message: "Admin password reset to: admin123" }),
+        JSON.stringify({ success: true, message: "Admin password has been reset.", password: securePassword }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -63,7 +76,7 @@ serve(async (req) => {
     let authUserId: string;
     const { data: authData, error: createError } = await supabase.auth.admin.createUser({
       email: "admin@mosque.local",
-      password: "admin123",
+      password: securePassword,
       email_confirm: true,
       user_metadata: {
         full_name: "System Administrator",
@@ -82,7 +95,7 @@ serve(async (req) => {
       if (!existing) throw new Error("Admin auth user not found after conflict");
       authUserId = existing.id;
       // Reset password
-      await supabase.auth.admin.updateUserById(authUserId, { password: "admin123" });
+      await supabase.auth.admin.updateUserById(authUserId, { password: securePassword });
     } else {
       authUserId = authData.user.id;
     }
@@ -104,14 +117,15 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Admin user created successfully. Login with membership number: ADMIN, password: admin123" 
+        message: "Admin user created successfully. Login with membership number: ADMIN",
+        password: securePassword
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in setup-admin function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Setup failed" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
