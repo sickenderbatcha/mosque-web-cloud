@@ -10,6 +10,7 @@ import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import {
   Form,
   FormControl,
@@ -549,7 +550,7 @@ export default function HeirCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">மனுதாரர் பெயர் *</FormLabel>
                           <FormControl>
-                            <Input {...field} disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -661,7 +662,7 @@ export default function HeirCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">இறந்தவர் பெயர் *</FormLabel>
                           <FormControl>
-                            <Input {...field} disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -675,7 +676,7 @@ export default function HeirCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">இறந்தவர் தந்தை பெயர் *</FormLabel>
                           <FormControl>
-                            <Input {...field} disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -689,7 +690,7 @@ export default function HeirCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">தெரு / முகவரி *</FormLabel>
                           <FormControl>
-                            <Input {...field} disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

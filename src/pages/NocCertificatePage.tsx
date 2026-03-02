@@ -10,6 +10,7 @@ import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import {
   Form,
   FormControl,
@@ -543,9 +544,12 @@ export default function NocCertificatePage() {
                           <FormLabel className="font-tamil">மனுதாரர் பெயர் *</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Input
-                                {...field}
-                                placeholder="மனுதாரர் பெயர்"
+                              <TamilInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                placeholder="Type in English, auto-converts to Tamil"
                                 disabled={isPaid}
                               />
                               {fetchingMember && (
@@ -633,9 +637,12 @@ export default function NocCertificatePage() {
                           <FormLabel className="font-tamil">தந்தை பெயர் *</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Input
-                                {...field}
-                                placeholder="தந்தை பெயர்"
+                              <TamilInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                placeholder="Type in English, auto-converts to Tamil"
                                 disabled={isPaid}
                               />
                               {fetchingFather && (
@@ -657,7 +664,7 @@ export default function NocCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">வகையரா *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="வகையரா" disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -706,7 +713,7 @@ export default function NocCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">துணை பெயர் *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="துணை பெயர்" disabled={isPaid} />
+                            <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" disabled={isPaid} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -720,9 +727,12 @@ export default function NocCertificatePage() {
                         <FormItem>
                           <FormLabel className="font-tamil">துணை தந்தை பெயர் *</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="துணை தந்தை பெயர்"
+                            <TamilInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              placeholder="Type in English, auto-converts to Tamil"
                               disabled={isPaid}
                             />
                           </FormControl>
@@ -800,9 +810,12 @@ export default function NocCertificatePage() {
                       <FormItem>
                         <FormLabel className="font-tamil">சமர்ப்பிக்கும் பள்ளிவாசல் *</FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="பள்ளிவாசல் பெயர்"
+                          <TamilInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            placeholder="Type in English, auto-converts to Tamil"
                             disabled={isPaid}
                           />
                         </FormControl>
@@ -818,9 +831,12 @@ export default function NocCertificatePage() {
                       <FormItem>
                         <FormLabel className="font-tamil">சமர்ப்பிக்கும் முகவரி *</FormLabel>
                         <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="முழு முகவரி"
+                          <TamilInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            placeholder="Type in English, auto-converts to Tamil"
                             disabled={isPaid}
                           />
                         </FormControl>

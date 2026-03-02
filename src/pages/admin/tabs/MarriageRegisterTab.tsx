@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -1187,7 +1188,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகன் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1213,7 +1214,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகன் தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1239,7 +1240,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகன் வகையரா</FormLabel>
                             <FormControl>
-                              <Input maxLength={10} {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1265,7 +1266,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகன் மத்ஹப்</FormLabel>
                             <FormControl>
-                              <Input maxLength={5} {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1308,7 +1309,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகள் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1334,7 +1335,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகள் தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1360,7 +1361,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகள் வகையரா</FormLabel>
                             <FormControl>
-                              <Input maxLength={10} {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1386,7 +1387,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மணமகள் மத்ஹப்</FormLabel>
                             <FormControl>
-                              <Input maxLength={5} {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1420,7 +1421,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>ஒலி/வக்கீல் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1446,7 +1447,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>ஒலி/வக்கீல் தந்தை பெயர்</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1459,7 +1460,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>மகர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1494,7 +1495,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>சாட்சி-1 பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1520,7 +1521,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>சாட்சி-1 தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1546,7 +1547,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>சாட்சி-2 பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1572,7 +1573,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>சாட்சி-2 தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1598,7 +1599,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>கத்திப்/தாயிப் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1624,7 +1625,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>கத்திப்/தாயிப் தந்தை பெயர்</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1646,7 +1647,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>பதிவு செய்தவரின் பெயர்</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1659,7 +1660,7 @@ export default function MarriageRegisterTab() {
                           <FormItem>
                             <FormLabel>பதிவு செய்தவரின் தந்தை பெயர்</FormLabel>
                             <FormControl>
-                              <Input maxLength={50} {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
