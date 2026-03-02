@@ -91,6 +91,23 @@ const SettingsTab = () => {
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [savingCategories, setSavingCategories] = useState(false);
 
+  // Expense categories state
+  const [expenseCategoriesDialogOpen, setExpenseCategoriesDialogOpen] = useState(false);
+  const [expenseCategories, setExpenseCategories] = useState<string[]>([
+    "மின்சாரம் (Electricity)",
+    "தண்ணீர் (Water)",
+    "பராமரிப்பு (Maintenance)",
+    "சம்பளம் (Salary)",
+    "நிகழ்வு செலவுகள் (Event Expenses)",
+    "அலுவலக பொருட்கள் (Office Supplies)",
+    "பயண செலவுகள் (Travel)",
+    "தொலைபேசி/இணையம் (Phone/Internet)",
+    "வாடகை (Rent)",
+    "இதர செலவுகள் (Other Expenses)",
+  ]);
+  const [newExpenseCategoryInput, setNewExpenseCategoryInput] = useState("");
+  const [savingExpenseCategories, setSavingExpenseCategories] = useState(false);
+
 
   // Certificate image upload states
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -109,6 +126,7 @@ const SettingsTab = () => {
     fetchBookingAlertMessage();
     fetchForcePendingSetting();
     fetchIncomeCategories();
+    fetchExpenseCategories();
   }, []);
 
   const fetchIncomeCategories = async () => {
@@ -154,6 +172,52 @@ const SettingsTab = () => {
       toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
     } finally {
       setSavingCategories(false);
+    }
+  };
+
+  const fetchExpenseCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "expense_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setExpenseCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch expense categories:", err);
+    }
+  };
+
+  const addExpenseCategory = () => {
+    const trimmed = newExpenseCategoryInput.trim();
+    if (!trimmed) return;
+    if (expenseCategories.includes(trimmed)) {
+      toast({ title: "Duplicate", description: "This category already exists.", variant: "destructive" });
+      return;
+    }
+    setExpenseCategories([...expenseCategories, trimmed]);
+    setNewExpenseCategoryInput("");
+  };
+
+  const removeExpenseCategory = (index: number) => {
+    setExpenseCategories(expenseCategories.filter((_, i) => i !== index));
+  };
+
+  const saveExpenseCategories = async () => {
+    setSavingExpenseCategories(true);
+    try {
+      await upsertAppSetting("expense_categories", JSON.stringify(expenseCategories), "Configurable expense categories for expense management");
+      toast({ title: "Categories Saved", description: "Expense categories updated successfully." });
+      setExpenseCategoriesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
+    } finally {
+      setSavingExpenseCategories(false);
     }
   };
 
@@ -921,6 +985,32 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Expense Categories Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Expense Categories (செலவு வகைகள்)
+          </CardTitle>
+          <CardDescription>
+            Configure expense categories shown in the Expenses tab dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {expenseCategories.map((cat, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {cat}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setExpenseCategoriesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Categories
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Nonbu Kanji Donation Settings */}
       <Card>
         <CardHeader>
@@ -1629,6 +1719,47 @@ const SettingsTab = () => {
             </Button>
             <Button onClick={saveIncomeCategories} disabled={savingCategories}>
               {savingCategories ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Expense Categories Dialog */}
+      <Dialog open={expenseCategoriesDialogOpen} onOpenChange={setExpenseCategoriesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Expense Categories (செலவு வகைகள்)</DialogTitle>
+            <DialogDescription>Add or remove expense categories used in the Expenses tab.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={newExpenseCategoryInput}
+                onChange={(e) => setNewExpenseCategoryInput(e.target.value)}
+                placeholder="e.g., புதிய வகை (New Category)"
+                onKeyDown={(e) => e.key === "Enter" && addExpenseCategory()}
+              />
+              <Button size="sm" onClick={addExpenseCategory}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {expenseCategories.map((cat, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{cat}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeExpenseCategory(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setExpenseCategoriesDialogOpen(false); fetchExpenseCategories(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveExpenseCategories} disabled={savingExpenseCategories}>
+              {savingExpenseCategories ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
