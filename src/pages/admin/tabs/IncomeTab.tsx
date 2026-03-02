@@ -341,10 +341,10 @@ const IncomeTab = () => {
               </div>
               <div>
                 <Label>விவரம் (Description)</Label>
-                <Textarea
+                <TamilInput
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={2}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Type in English, auto-converts to Tamil"
                 />
               </div>
               <Button type="submit" className="w-full">
