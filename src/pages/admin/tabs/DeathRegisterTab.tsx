@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import {
   Form,
@@ -612,7 +613,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறந்தவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="இறந்தவர் பெயர்" className="font-tamil" />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -638,7 +639,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தந்தை பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="தந்தை பெயர்" className="font-tamil" />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -664,7 +665,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">கணவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="திருமணமான பெண்களுக்கு மட்டும்" className="font-tamil" />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -724,7 +725,7 @@ export default function DeathRegisterTab() {
                           <FormItem className="md:col-span-2">
                             <FormLabel className="font-tamil">முகவரி</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -737,7 +738,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தொழில்</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -796,7 +797,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறப்பு இடம்</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -809,7 +810,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">இறப்பு காரணம்</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -855,7 +856,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">அடக்க இடம் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -888,7 +889,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">தெரிவிப்பவர் பெயர் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -914,7 +915,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">உறவுமுறை</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="மகன் / மகள் / மனைவி / ..." />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="மகன் / மகள் / மனைவி / ..." />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -947,7 +948,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">பதிவாளர் பெயர்</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -960,7 +961,7 @@ export default function DeathRegisterTab() {
                           <FormItem>
                             <FormLabel className="font-tamil">பதிவாளர் தந்தை பெயர்</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <TamilInput value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} placeholder="Type in English, auto-converts to Tamil" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
