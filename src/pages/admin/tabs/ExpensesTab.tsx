@@ -248,8 +248,8 @@ const ExpensesTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">செலவு மேலாண்மை (Expenses Management)</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold">செலவு மேலாண்மை (Expenses Management)</h2>
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
