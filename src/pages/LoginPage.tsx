@@ -27,11 +27,6 @@ const loginSchema = z.object({
 
 const signupSchema = z.object({
   memberId: z.string().min(1, "Membership number is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
 });
 
 const LoginPage = () => {
@@ -255,14 +250,13 @@ const LoginPage = () => {
           return;
         }
 
-        // Create pending user registration
+        // Create pending user registration (password is NOT stored - a temporary password will be generated on approval)
         const { error: insertError } = await supabase
           .from("pending_users")
           .insert({
             member_id: formData.memberId,
             full_name: memberDetails.full_name,
             phone: memberDetails.phone,
-            password_hash: formData.password, // Will be used by admin to create account
           });
 
         if (insertError) {
@@ -643,38 +637,20 @@ const LoginPage = () => {
                 </p>
               )}
 
-              <div>
-                <Label htmlFor="password" className="font-tamil">
-                  கடவுச்சொல்
-                </Label>
-                <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    className="pl-10"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              {isSignUp && (
+              {!isSignUp && (
                 <div>
-                  <Label htmlFor="confirmPassword" className="font-tamil">
-                    கடவுச்சொல் உறுதிப்படுத்து
+                  <Label htmlFor="password" className="font-tamil">
+                    கடவுச்சொல்
                   </Label>
                   <div className="relative mt-1">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="confirmPassword"
+                      id="password"
                       type="password"
-                      placeholder="Confirm Password"
+                      placeholder="Password"
                       className="pl-10"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required
                     />
                   </div>
@@ -683,7 +659,7 @@ const LoginPage = () => {
 
               {isSignUp && (
                 <p className="text-xs text-muted-foreground">
-                  Note: Your registration will require admin approval before you can login.
+                  Note: Your registration will require admin approval. A temporary password will be sent to your registered phone number via SMS after approval.
                 </p>
               )}
 

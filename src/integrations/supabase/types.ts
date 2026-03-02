@@ -1796,7 +1796,7 @@ export type Database = {
           full_name: string
           id: string
           member_id: string
-          password_hash: string
+          password_hash: string | null
           phone: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -1808,7 +1808,7 @@ export type Database = {
           full_name: string
           id?: string
           member_id: string
-          password_hash: string
+          password_hash?: string | null
           phone: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1820,7 +1820,7 @@ export type Database = {
           full_name?: string
           id?: string
           member_id?: string
-          password_hash?: string
+          password_hash?: string | null
           phone?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
