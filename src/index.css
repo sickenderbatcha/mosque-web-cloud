@@ -249,4 +249,20 @@
   .animation-delay-300 { animation-delay: 300ms; }
   .animation-delay-400 { animation-delay: 400ms; }
   .animation-delay-500 { animation-delay: 500ms; }
+
+  /* Tamil name inputs in Death Register: force equal visual size to English on mobile */
+  @media (max-width: 767px) {
+    .tamil-mobile-name-input {
+      font-size: 1.125rem !important;
+      line-height: 1.5rem !important;
+      font-family: var(--font-tamil) !important;
+    }
+
+    .tamil-mobile-name-input::placeholder {
+      font-size: 1.125rem !important;
+      line-height: 1.5rem !important;
+      font-family: var(--font-tamil) !important;
+      opacity: 1;
+    }
+  }
 }
