@@ -5,6 +5,7 @@ import { clearCertificateImagesCache } from "@/lib/certificateImages";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -1692,11 +1693,10 @@ const SettingsTab = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Input
+              <TamilInput
                 value={newCategoryInput}
-                onChange={(e) => setNewCategoryInput(e.target.value)}
-                placeholder="e.g., புதிய வகை (New Category)"
-                onKeyDown={(e) => e.key === "Enter" && addIncomeCategory()}
+                onChange={(value) => setNewCategoryInput(value)}
+                placeholder="Type in English, auto-converts to Tamil"
               />
               <Button size="sm" onClick={addIncomeCategory}>
                 <Plus className="h-4 w-4" />
@@ -1733,11 +1733,10 @@ const SettingsTab = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Input
+              <TamilInput
                 value={newExpenseCategoryInput}
-                onChange={(e) => setNewExpenseCategoryInput(e.target.value)}
-                placeholder="e.g., புதிய வகை (New Category)"
-                onKeyDown={(e) => e.key === "Enter" && addExpenseCategory()}
+                onChange={(value) => setNewExpenseCategoryInput(value)}
+                placeholder="Type in English, auto-converts to Tamil"
               />
               <Button size="sm" onClick={addExpenseCategory}>
                 <Plus className="h-4 w-4" />
