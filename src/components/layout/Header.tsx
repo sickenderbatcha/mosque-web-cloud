@@ -55,7 +55,7 @@ const Header = () => {
 
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
-  const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "14" : fontSettings.header_font_en_desktop || "16"}px`;
+  const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "20" : fontSettings.header_font_en_desktop || "30"}px`;
 
   const menuItems = allMenuItems.filter((item) => isVisible(item.visKey));
   const onlineServicesItems = allOnlineServicesItems.filter((item) => isVisible(item.visKey));
