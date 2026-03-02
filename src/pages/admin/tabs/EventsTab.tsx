@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
@@ -224,10 +225,10 @@ const EventsTab = () => {
                 </div>
                 <div>
                   <Label>Title (Tamil)</Label>
-                  <Input
+                  <TamilInput
                     value={formData.title_tamil}
-                    onChange={(e) => setFormData({ ...formData, title_tamil: e.target.value })}
-                    placeholder="நிகழ்வு தலைப்பு"
+                    onChange={(value) => setFormData({ ...formData, title_tamil: value })}
+                    placeholder="Type in English, auto-converts to Tamil"
                   />
                 </div>
               </div>
