@@ -183,7 +183,7 @@ const Header = () => {
       {/* Bismillah */}
       <div className="w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 py-1.5 text-center">
         <span
-          className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm"
+          className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
           dir="rtl"
           style={{ fontSize: getBismillahSize() }}>
 
@@ -199,7 +199,7 @@ const Header = () => {
             <h1 className="font-bold font-tamil text-primary leading-tight" style={{ fontSize: getTamilSize() }}>
               இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்
             </h1>
-            <p className="text-muted-foreground mt-1 font-display text-2xl" style={{ fontSize: getEnglishSize() }}>
+            <p className="text-muted-foreground mt-1 font-display text-3xl" style={{ fontSize: getEnglishSize() }}>
               Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal
             </p>
           </Link>
