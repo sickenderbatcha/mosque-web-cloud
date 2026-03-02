@@ -265,4 +265,35 @@
       opacity: 1;
     }
   }
+
+  /* react-transliterate suggestion dropdown styling */
+  .rtl-container {
+    position: relative !important;
+  }
+
+  .rtl-container ul {
+    background: hsl(var(--popover)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow-md) !important;
+    z-index: 50 !important;
+    font-family: var(--font-tamil) !important;
+    padding: 0.25rem !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+  }
+
+  .rtl-container ul li {
+    padding: 0.5rem 0.75rem !important;
+    cursor: pointer !important;
+    border-radius: calc(var(--radius) - 4px) !important;
+    color: hsl(var(--popover-foreground)) !important;
+    font-size: 0.95rem !important;
+  }
+
+  .rtl-container ul li:hover,
+  .rtl-container ul li.active {
+    background: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+  }
 }
