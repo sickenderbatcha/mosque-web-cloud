@@ -1140,9 +1140,12 @@ export default function MarriageRegisterTab() {
                           <FormItem className="md:col-span-3">
                             <FormLabel>திருமண நிகழ்விடம் (தமிழ்)</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="திருமண நடைபெற்ற இடத்தின் முகவரி (தமிழில்)" 
-                                {...field} 
+                              <TamilInput 
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                placeholder="Type in English, auto-converts to Tamil"
                               />
                             </FormControl>
                             <FormMessage />

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -360,7 +361,7 @@ const AssetManagementTab = () => {
             <SheetTitle>{editingAsset ? "Edit Asset / சொத்தை திருத்து" : "Add New Asset / புதிய சொத்து சேர்"}</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 mt-6">
-            <div><Label>Name / பெயர் *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div><Label>Name / பெயர் *</Label><TamilInput value={form.name} onChange={value => setForm(f => ({ ...f, name: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
             <div><Label>Category / வகை *</Label>
               <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -383,7 +384,7 @@ const AssetManagementTab = () => {
               </Select>
             </div>
             <div><Label>Warranty Expiry / உத்தரவாத காலாவதி</Label><Input type="date" value={form.warranty_expiry_date} onChange={e => setForm(f => ({ ...f, warranty_expiry_date: e.target.value }))} /></div>
-            <div><Label>Notes / குறிப்புகள்</Label><Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} /></div>
+            <div><Label>Notes / குறிப்புகள்</Label><TamilInput value={form.notes || ""} onChange={value => setForm(f => ({ ...f, notes: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
             <Button className="w-full" onClick={handleSave}>{editingAsset ? "Update Asset / புதுப்பி" : "Add Asset / சேர்"}</Button>
           </div>
         </SheetContent>
@@ -411,7 +412,7 @@ const AssetManagementTab = () => {
                   </div>
                   <div><Label>Date / தேதி</Label><Input type="date" value={maintenanceForm.maintenance_date} onChange={e => setMaintenanceForm(f => ({ ...f, maintenance_date: e.target.value }))} /></div>
                   <div><Label>Cost (₹)</Label><Input type="number" value={maintenanceForm.cost} onChange={e => setMaintenanceForm(f => ({ ...f, cost: e.target.value }))} /></div>
-                  <div><Label>Performed By / செய்தவர்</Label><Input value={maintenanceForm.performed_by} onChange={e => setMaintenanceForm(f => ({ ...f, performed_by: e.target.value }))} /></div>
+                  <div><Label>Performed By / செய்தவர்</Label><TamilInput value={maintenanceForm.performed_by || ""} onChange={value => setMaintenanceForm(f => ({ ...f, performed_by: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
                 </div>
                 <div><Label>Description / விவரம்</Label><Textarea value={maintenanceForm.description} onChange={e => setMaintenanceForm(f => ({ ...f, description: e.target.value }))} rows={2} /></div>
                 <Button size="sm" onClick={handleAddMaintenance}>Save / சேமி</Button>

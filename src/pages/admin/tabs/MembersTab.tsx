@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -1258,15 +1259,15 @@ const MembersTab = () => {
                   </div>
                   <div>
                     <Label htmlFor="full_name">முழு பெயர் / Full Name *</Label>
-                    <Input id="full_name" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
+                    <TamilInput name="full_name" value={formData.full_name} onChange={(value) => setFormData({ ...formData, full_name: value })} placeholder="Type in English, auto-converts to Tamil" />
                   </div>
                   <div>
                     <Label htmlFor="father_name">தந்தை பெயர் / Father's Name *</Label>
-                    <Input id="father_name" value={formData.father_name} onChange={(e) => setFormData({ ...formData, father_name: e.target.value })} required />
+                    <TamilInput name="father_name" value={formData.father_name} onChange={(value) => setFormData({ ...formData, father_name: value })} placeholder="Type in English, auto-converts to Tamil" />
                   </div>
                   <div>
                     <Label htmlFor="family_name">வகையரா / Family Name *</Label>
-                    <Input id="family_name" value={formData.family_name} onChange={(e) => setFormData({ ...formData, family_name: e.target.value })} required />
+                    <TamilInput name="family_name" value={formData.family_name} onChange={(value) => setFormData({ ...formData, family_name: value })} placeholder="Type in English, auto-converts to Tamil" />
                   </div>
                   <div>
                     <Label htmlFor="phone">தொலைபேசி / Phone *</Label>
@@ -1278,7 +1279,7 @@ const MembersTab = () => {
                   </div>
                   <div>
                     <Label htmlFor="occupation">தொழில் / Occupation</Label>
-                    <Input id="occupation" value={formData.occupation} onChange={(e) => setFormData({ ...formData, occupation: e.target.value })} />
+                    <TamilInput name="occupation" value={formData.occupation} onChange={(value) => setFormData({ ...formData, occupation: value })} placeholder="Type in English, auto-converts to Tamil" />
                   </div>
                   <div>
                     <Label htmlFor="blood_group">இரத்த வகை / Blood Group</Label>

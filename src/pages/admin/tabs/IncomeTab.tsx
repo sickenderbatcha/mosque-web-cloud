@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -284,11 +285,10 @@ const IncomeTab = () => {
               </div>
               <div>
                 <Label>ஆதாரம் (Source) *</Label>
-                <Input
+                <TamilInput
                   value={formData.source}
-                  onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                  required
-                  placeholder="நன்கொடையாளர் / உறுப்பினர் பெயர்"
+                  onChange={(value) => setFormData({ ...formData, source: value })}
+                  placeholder="Type in English, auto-converts to Tamil"
                 />
               </div>
               <div>

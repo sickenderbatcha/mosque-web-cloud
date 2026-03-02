@@ -3,6 +3,7 @@ import { Plus, Trash2, Edit, Loader2, Bell, AlertTriangle, Info, PartyPopper, Ey
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -330,11 +331,11 @@ const AnnouncementsTab = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="title_tamil">Title (Tamil)</Label>
-                <Input
-                  id="title_tamil"
+                <TamilInput
+                  name="title_tamil"
                   value={formData.title_tamil}
-                  onChange={(e) => setFormData({ ...formData, title_tamil: e.target.value })}
-                  placeholder="தலைப்பை உள்ளிடவும்"
+                  onChange={(value) => setFormData({ ...formData, title_tamil: value })}
+                  placeholder="Type in English, auto-converts to Tamil"
                 />
               </div>
 
