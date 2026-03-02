@@ -34,7 +34,7 @@ const CERTIFICATE_TYPE_ENGLISH: Record<string, string> = {
 };
 
 export interface CertificateReceiptData {
-  certificateType: "marriage" | "death" | "noc" | "heir";
+  certificateType: "marriage" | "death" | "noc" | "heir" | "outside_marriage";
   applicantName: string;
   applicantPhone?: string;
   applicantEmail?: string;
