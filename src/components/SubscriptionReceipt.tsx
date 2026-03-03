@@ -50,7 +50,7 @@ interface SubscriptionReceiptProps {
 const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: SubscriptionReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
+  const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
 
   // Strictly prevent navigation until user prints/downloads at least once
@@ -95,7 +95,16 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = getReceiptNumber("subscription", subscription.id.slice(0, 8).toUpperCase());
+  // Sequential receipt number state
+  const fallbackReceiptNumber = getReceiptNumber("subscription", subscription.id.slice(0, 8).toUpperCase());
+  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
+
+  useEffect(() => {
+    setFormattedReceiptNumber(fallbackReceiptNumber);
+    getSequentialReceiptNumber("subscription", subscription.id, subscription.id.slice(0, 8).toUpperCase())
+      .then(setFormattedReceiptNumber);
+  }, [subscription.id, fallbackReceiptNumber]);
+
   const razorpayRef = subscription.razorpay_payment_id || null;
 
   const getPeriodText = () => {
