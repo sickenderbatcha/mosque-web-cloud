@@ -1,12 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, ArrowLeft, Building2, Phone, User, Calendar, IndianRupee, CheckCircle2, CreditCard, MapPin, AlertCircle } from "lucide-react";
+import { Download, Printer, ArrowLeft, Building2, Phone, User, Calendar, IndianRupee, CheckCircle2, CreditCard, MapPin, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -50,8 +50,39 @@ interface SubscriptionReceiptProps {
 const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: SubscriptionReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState<string>("");
+  const [receiptLoading, setReceiptLoading] = useState(true);
+
+  // Fetch sequential receipt number from income table
+  useEffect(() => {
+    const fetchReceiptNumber = async () => {
+      setReceiptLoading(true);
+      const maxRetries = 5;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const { data } = await supabase
+          .from("income")
+          .select("receipt_number")
+          .eq("reference_id", subscription.id)
+          .eq("reference_type", "subscription")
+          .maybeSingle();
+
+        if (data?.receipt_number) {
+          setReceiptNumber(data.receipt_number);
+          setReceiptLoading(false);
+          return;
+        }
+        // Wait 1s before retry
+        if (attempt < maxRetries - 1) {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+      // Fallback: use UUID slice
+      setReceiptNumber(`SUB-${subscription.id.slice(0, 8).toUpperCase()}`);
+      setReceiptLoading(false);
+    };
+    fetchReceiptNumber();
+  }, [subscription.id]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -95,7 +126,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = getReceiptNumber("subscription", subscription.id.slice(0, 8).toUpperCase());
+  const formattedReceiptNumber = receiptNumber;
   const razorpayRef = subscription.razorpay_payment_id || null;
 
   const getPeriodText = () => {
@@ -363,12 +394,12 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
               <h2 className="font-semibold font-tamil">சந்தா ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
             </div>
