@@ -38,7 +38,8 @@ interface SubscriptionReceiptProps {
     to_year?: number | null;
     number_of_months?: number | null;
     subscription_year?: number | null;
-    payment_status: string;
+    payment_status: string | null;
+    payment_method?: string | null;
     razorpay_payment_id?: string | null;
     transaction_id?: string | null;
     created_at: string;
