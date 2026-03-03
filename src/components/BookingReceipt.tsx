@@ -95,6 +95,7 @@ interface BookingReceiptProps {
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
     bookingId?: string; // Full UUID for sequential receipt number lookup
+    receiptNumber?: string; // Authoritative receipt number from backend verify response
   };
   onClose: () => void;
   requireAction?: boolean;
@@ -108,11 +109,20 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
 
   // Sequential receipt number state
   const fallbackReceiptNumber = getReceiptNumber("booking", booking.transactionId);
-  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
-  const [isReceiptResolving, setIsReceiptResolving] = useState(!!booking.bookingId);
+  const initialReceiptNumber = booking.receiptNumber || fallbackReceiptNumber;
+  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(initialReceiptNumber);
+  const [isReceiptResolving, setIsReceiptResolving] = useState(!!booking.bookingId && !booking.receiptNumber);
 
   useEffect(() => {
     let isMounted = true;
+
+    if (booking.receiptNumber) {
+      setFormattedReceiptNumber(booking.receiptNumber);
+      setIsReceiptResolving(false);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     if (!booking.bookingId) {
       setFormattedReceiptNumber(fallbackReceiptNumber);
@@ -134,7 +144,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     return () => {
       isMounted = false;
     };
-  }, [booking.bookingId, booking.transactionId, fallbackReceiptNumber]);
+  }, [booking.bookingId, booking.receiptNumber, booking.transactionId, fallbackReceiptNumber, getSequentialReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {

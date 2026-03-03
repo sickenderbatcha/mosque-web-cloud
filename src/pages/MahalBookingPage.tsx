@@ -87,6 +87,7 @@ const MahalBookingPage = () => {
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
     bookingId?: string;
+    receiptNumber?: string;
   } | null>(null);
 
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -343,6 +344,7 @@ const MahalBookingPage = () => {
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
               bookingId: resolvedBookingId ? String(resolvedBookingId) : undefined,
+              receiptNumber: typeof verifyData?.receiptNumber === "string" ? verifyData.receiptNumber : undefined,
             });
             setShowReceipt(true);
 
