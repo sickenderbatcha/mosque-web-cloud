@@ -318,6 +318,8 @@ export default function HeirCertificatePage() {
               subjectName: heirData.deceased_name,
               amount: certificateFee,
               receiptNumber: heirData.id.substring(0, 8).toUpperCase(),
+              referenceId: heirData.id,
+              referenceType: "heir_certificate",
               paymentMethod: "online",
               transactionId: response.razorpay_payment_id,
               createdAt: heirData.created_at,
