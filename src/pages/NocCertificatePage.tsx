@@ -306,6 +306,8 @@ export default function NocCertificatePage() {
               subjectName: nocData.partner_name,
               amount: certificateFee,
               receiptNumber: nocData.id.substring(0, 8).toUpperCase(),
+              referenceId: nocData.id,
+              referenceType: "noc_certificate",
               paymentMethod: "online",
               transactionId: response.razorpay_payment_id,
               createdAt: nocData.created_at,

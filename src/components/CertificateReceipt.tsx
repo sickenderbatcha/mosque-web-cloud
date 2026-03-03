@@ -1,13 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, ArrowLeft, Building2, FileText, IndianRupee, CheckCircle2, User, Phone, Mail, Calendar, AlertCircle } from "lucide-react";
+import { Download, Printer, ArrowLeft, Building2, FileText, IndianRupee, CheckCircle2, User, Phone, Mail, Calendar, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
-import { ReceiptType } from "@/lib/receiptNumberSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -38,13 +37,15 @@ export interface CertificateReceiptData {
   applicantName: string;
   applicantPhone?: string;
   applicantEmail?: string;
-  subjectName?: string; // Deceased name for death/heir, Groom/Bride for marriage
+  subjectName?: string;
   amount: number;
   receiptNumber: string;
+  referenceId: string;
+  referenceType: string;
   paymentMethod: string;
   transactionId?: string;
   createdAt: string;
-  additionalInfo?: Record<string, string>; // For certificate-specific fields
+  additionalInfo?: Record<string, string>;
 }
 
 interface CertificateReceiptProps {
@@ -56,8 +57,38 @@ interface CertificateReceiptProps {
 const CertificateReceipt = ({ data, onClose, requireAction = false }: CertificateReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState<string>("");
+  const [receiptLoading, setReceiptLoading] = useState(true);
+
+  // Fetch sequential receipt number from income table
+  useEffect(() => {
+    const fetchReceiptNumber = async () => {
+      setReceiptLoading(true);
+      const maxRetries = 5;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const { data: incomeData } = await supabase
+          .from("income")
+          .select("receipt_number")
+          .eq("reference_id", data.referenceId)
+          .eq("reference_type", data.referenceType)
+          .maybeSingle();
+
+        if (incomeData?.receipt_number) {
+          setReceiptNumber(incomeData.receipt_number);
+          setReceiptLoading(false);
+          return;
+        }
+        if (attempt < maxRetries - 1) {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+      // Fallback
+      setReceiptNumber(data.receiptNumber);
+      setReceiptLoading(false);
+    };
+    fetchReceiptNumber();
+  }, [data.referenceId, data.referenceType, data.receiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -101,13 +132,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
     };
   }, [requireAction, hasActioned]);
 
-  // Map certificate type to receipt type
-  const receiptType: ReceiptType = data.certificateType === "noc"
-    ? "certificate_noc"
-    : data.certificateType === "heir"
-    ? "certificate_heir"
-    : "certificate_general";
-  const formattedReceiptNumber = getReceiptNumber(receiptType, data.receiptNumber);
+  const formattedReceiptNumber = receiptNumber;
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === "cash") return "ரொக்கம்";
@@ -387,12 +412,12 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
               <h2 className="font-semibold font-tamil text-sm">{certificateTypeTamil} கட்டண ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
             </div>

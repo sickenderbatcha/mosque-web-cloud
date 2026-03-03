@@ -1753,6 +1753,8 @@ const UserDashboard = () => {
                                       subjectName: noc.partner_name,
                                       amount: nocFee,
                                       receiptNumber: noc.id.substring(0, 8).toUpperCase(),
+                                      referenceId: noc.id,
+                                      referenceType: "noc_certificate",
                                       paymentMethod: "online",
                                       createdAt: noc.created_at,
                                       additionalInfo: {
@@ -1951,6 +1953,8 @@ const UserDashboard = () => {
                                       subjectName: heir.deceased_name,
                                       amount: heirFee,
                                       receiptNumber: heir.id.substring(0, 8).toUpperCase(),
+                                      referenceId: heir.id,
+                                      referenceType: "heir_certificate",
                                       paymentMethod: "online",
                                       createdAt: heir.created_at,
                                       additionalInfo: {
@@ -2125,6 +2129,8 @@ const UserDashboard = () => {
                                       subjectName: cp.applicant_name,
                                       amount: cp.amount,
                                       receiptNumber: cp.id.substring(0, 8).toUpperCase(),
+                                      referenceId: cp.id,
+                                      referenceType: "certificate_payment",
                                       paymentMethod: cp.payment_method || "online",
                                       transactionId: cp.razorpay_payment_id || cp.transaction_id || undefined,
                                       createdAt: cp.created_at,
