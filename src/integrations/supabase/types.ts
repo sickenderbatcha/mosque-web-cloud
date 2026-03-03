@@ -1913,6 +1913,9 @@ export type Database = {
           processed_at: string | null
           processed_by: string | null
           reason: string | null
+          refund_additional_info: string | null
+          refund_payment_type: string | null
+          refund_reference_number: string | null
           status: string
           upi_id: string | null
           user_id: string
@@ -1929,6 +1932,9 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           reason?: string | null
+          refund_additional_info?: string | null
+          refund_payment_type?: string | null
+          refund_reference_number?: string | null
           status?: string
           upi_id?: string | null
           user_id: string
@@ -1945,6 +1951,9 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           reason?: string | null
+          refund_additional_info?: string | null
+          refund_payment_type?: string | null
+          refund_reference_number?: string | null
           status?: string
           upi_id?: string | null
           user_id?: string

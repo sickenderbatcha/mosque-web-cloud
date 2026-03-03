@@ -27,6 +27,9 @@ interface RefundRequest {
   bank_account_number: string | null;
   bank_ifsc: string | null;
   upi_id: string | null;
+  refund_payment_type: string | null;
+  refund_reference_number: string | null;
+  refund_additional_info: string | null;
   created_at: string;
   processed_at: string | null;
   mahal_bookings: {
@@ -48,6 +51,9 @@ const RefundsTab = () => {
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [refundPaymentType, setRefundPaymentType] = useState("");
+  const [refundReferenceNumber, setRefundReferenceNumber] = useState("");
+  const [refundAdditionalInfo, setRefundAdditionalInfo] = useState("");
   const [processing, setProcessing] = useState(false);
   
   // Filter states
@@ -106,6 +112,9 @@ const RefundsTab = () => {
     setSelectedRefund(refund);
     setActionType(action);
     setAdminNotes(refund.admin_notes || "");
+    setRefundPaymentType("");
+    setRefundReferenceNumber("");
+    setRefundAdditionalInfo("");
     setActionDialogOpen(true);
   };
 
@@ -116,14 +125,22 @@ const RefundsTab = () => {
     try {
       const newStatus = actionType === "approve" ? "approved" : "rejected";
       
+      const updateData: Record<string, any> = {
+        status: newStatus,
+        admin_notes: adminNotes || null,
+        processed_at: new Date().toISOString(),
+        processed_by: user.id,
+      };
+
+      if (actionType === "approve") {
+        updateData.refund_payment_type = refundPaymentType || null;
+        updateData.refund_reference_number = refundReferenceNumber || null;
+        updateData.refund_additional_info = refundAdditionalInfo || null;
+      }
+
       const { error } = await supabase
         .from("refund_requests")
-        .update({
-          status: newStatus,
-          admin_notes: adminNotes || null,
-          processed_at: new Date().toISOString(),
-          processed_by: user.id,
-        })
+        .update(updateData)
         .eq("id", selectedRefund.id);
 
       if (error) throw error;
@@ -179,7 +196,20 @@ const RefundsTab = () => {
   };
 
   const getPaymentMethod = (refund: RefundRequest) => {
-    // Check if no payment details provided - means cash refund
+    // Use admin-selected payment type if available (approved refunds)
+    if (refund.refund_payment_type) {
+      const typeLabels: Record<string, string> = {
+        cash: "ரொக்கம் (Cash)",
+        cheque: "காசோலை (Cheque)",
+        bank_transfer: "வங்கி பரிமாற்றம் (Bank Transfer)",
+        upi: "UPI",
+      };
+      return {
+        type: typeLabels[refund.refund_payment_type] || refund.refund_payment_type,
+        value: refund.refund_reference_number || "-",
+      };
+    }
+    // Fallback to user-provided payment details
     if (!refund.upi_id && !refund.bank_account_number) {
       return { type: "ரொக்கம் (Cash)", value: "In person at Masjid office" };
     }
@@ -280,7 +310,8 @@ const RefundsTab = () => {
     <tr><td>திரும்ப பெறும் காரணம்</td><td>${refund.reason || "N/A"}</td></tr>
     <tr><td>திரும்ப பெறும் தொகை</td><td class="amount-highlight">₹${Number(refund.amount).toLocaleString()}</td></tr>
     <tr><td>பணம் செலுத்தும் முறை</td><td>${paymentMethod.type}</td></tr>
-    <tr><td>பணம் செலுத்தும் விவரம்</td><td>${refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "வங்கி: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "ரொக்கம்"}</td></tr>
+    <tr><td>பணம் செலுத்தும் விவரம்</td><td>${paymentMethod.value !== "-" ? paymentMethod.value : refund.upi_id ? "UPI: " + refund.upi_id : refund.bank_account_number ? "வங்கி: " + (refund.bank_account_name || "") + " - " + refund.bank_account_number + (refund.bank_ifsc ? " (IFSC: " + refund.bank_ifsc + ")" : "") : "ரொக்கம்"}</td></tr>
+    ${refund.refund_additional_info ? `<tr><td>கூடுதல் தகவல்</td><td>${refund.refund_additional_info}</td></tr>` : ""}
     <tr><td>கோரிக்கை தேதி</td><td>${format(new Date(refund.created_at), "dd/MM/yyyy")}</td></tr>
     <tr><td>செயல்படுத்திய தேதி</td><td>${refund.processed_at ? format(new Date(refund.processed_at), "dd/MM/yyyy, hh:mm a") : "-"}</td></tr>
     ${refund.admin_notes ? `<tr><td>நிர்வாக குறிப்புகள்</td><td>${refund.admin_notes}</td></tr>` : ""}
@@ -571,8 +602,37 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
                 </div>
               )}
 
+              {selectedRefund.refund_payment_type && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Refund Payment Details (Admin)</h4>
+                  <div className="grid grid-cols-2 gap-4 p-3 bg-muted rounded-lg">
+                    <div>
+                      <Label className="text-muted-foreground">Payment Type</Label>
+                      <p className="font-medium">
+                        {selectedRefund.refund_payment_type === "cash" ? "ரொக்கம் (Cash)" :
+                         selectedRefund.refund_payment_type === "cheque" ? "காசோலை (Cheque)" :
+                         selectedRefund.refund_payment_type === "bank_transfer" ? "வங்கி பரிமாற்றம் (Bank Transfer)" :
+                         selectedRefund.refund_payment_type === "upi" ? "UPI" : selectedRefund.refund_payment_type}
+                      </p>
+                    </div>
+                    {selectedRefund.refund_reference_number && (
+                      <div>
+                        <Label className="text-muted-foreground">Reference Number</Label>
+                        <p className="font-medium">{selectedRefund.refund_reference_number}</p>
+                      </div>
+                    )}
+                    {selectedRefund.refund_additional_info && (
+                      <div className="col-span-2">
+                        <Label className="text-muted-foreground">Additional Info</Label>
+                        <p className="font-medium">{selectedRefund.refund_additional_info}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Payment Details for Refund</h4>
+                <h4 className="font-medium mb-3">User Provided Payment Details</h4>
                 {selectedRefund.upi_id ? (
                   <div className="p-3 bg-muted rounded-lg">
                     <Label className="text-muted-foreground">UPI ID</Label>
@@ -644,12 +704,60 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
                 </div>
               </div>
 
+              {actionType === "approve" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>பணம் செலுத்தும் முறை (Payment Type) <span className="text-destructive">*</span></Label>
+                    <Select value={refundPaymentType} onValueChange={setRefundPaymentType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">ரொக்கம் (Cash)</SelectItem>
+                        <SelectItem value="cheque">காசோலை (Cheque)</SelectItem>
+                        <SelectItem value="bank_transfer">வங்கி பரிமாற்றம் (Bank Transfer)</SelectItem>
+                        <SelectItem value="upi">UPI</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {(refundPaymentType === "cheque" || refundPaymentType === "bank_transfer" || refundPaymentType === "upi") && (
+                    <div className="space-y-2">
+                      <Label>
+                        {refundPaymentType === "cheque" ? "காசோலை எண் (Cheque Number)" :
+                         refundPaymentType === "bank_transfer" ? "பரிவர்த்தனை குறிப்பு (Transaction Reference)" :
+                         "UPI பரிவர்த்தனை ID (UPI Transaction ID)"}
+                      </Label>
+                      <Input
+                        value={refundReferenceNumber}
+                        onChange={(e) => setRefundReferenceNumber(e.target.value)}
+                        placeholder={
+                          refundPaymentType === "cheque" ? "Enter cheque number..." :
+                          refundPaymentType === "bank_transfer" ? "Enter transaction reference..." :
+                          "Enter UPI transaction ID..."
+                        }
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>கூடுதல் தகவல் (Additional Info) <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                    <Textarea
+                      value={refundAdditionalInfo}
+                      onChange={(e) => setRefundAdditionalInfo(e.target.value)}
+                      placeholder="Bank name, branch, cheque date, etc..."
+                      rows={2}
+                    />
+                  </div>
+                </>
+              )}
+
               <div className="space-y-2">
                 <Label>Admin Notes {actionType === "reject" && <span className="text-destructive">*</span>}</Label>
                 <Textarea
                   placeholder={
                     actionType === "approve"
-                      ? "Optional: Add transaction ID or reference number..."
+                      ? "Optional: Any additional admin notes..."
                       : "Provide reason for rejection..."
                   }
                   value={adminNotes}
@@ -665,7 +773,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
             </Button>
             <Button
               onClick={processRefund}
-              disabled={processing || (actionType === "reject" && !adminNotes.trim())}
+              disabled={processing || (actionType === "reject" && !adminNotes.trim()) || (actionType === "approve" && !refundPaymentType)}
               className={actionType === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
               variant={actionType === "reject" ? "destructive" : "default"}
             >
