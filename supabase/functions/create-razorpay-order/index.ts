@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
       };
 
       // Fallback guard: ensure booking income row exists and always has sequential receipt number
-      const ensureBookingIncome = async (bookingId: string) => {
+      const ensureBookingIncome = async (bookingId: string): Promise<string | null> => {
         try {
           const { data: existingIncome } = await supabase
             .from("income")
@@ -197,11 +197,11 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (bookingError || !bookingData) {
             console.error("Unable to fetch booking for income sync:", bookingError);
-            return;
+            return null;
           }
 
           // Existing income row is valid and already has sequential receipt number
-          if (existingIncome?.receipt_number) return;
+          if (existingIncome?.receipt_number) return existingIncome.receipt_number;
 
           const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
             p_receipt_type: "booking",
@@ -209,7 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (receiptError || typeof nextReceipt !== "string") {
             console.error("Unable to generate sequential booking receipt number:", receiptError);
-            return;
+            return null;
           }
 
           if (existingIncome?.id) {
@@ -228,8 +228,9 @@ const handler = async (req: Request): Promise<Response> => {
 
             if (updateIncomeError) {
               console.error("Failed to update booking income fallback record:", updateIncomeError);
+              return null;
             }
-            return;
+            return nextReceipt;
           }
 
           const { error: insertIncomeError } = await supabase.from("income").insert({
@@ -246,11 +247,17 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (insertIncomeError) {
             console.error("Failed to insert booking income fallback record:", insertIncomeError);
+            return null;
           }
+
+          return nextReceipt;
         } catch (e) {
           console.error("Unexpected error in ensureBookingIncome:", e);
+          return null;
         }
       };
+
+      let verifiedReceiptNumber: string | null = null;
 
       if (type === "donation" && donationId) {
         // Update donation payment status
@@ -363,7 +370,19 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update booking:", updateError);
         } else {
           console.log("Booking payment status updated to completed:", bookingId);
-          await ensureBookingIncome(bookingId);
+          verifiedReceiptNumber = await ensureBookingIncome(bookingId);
+          if (!verifiedReceiptNumber) {
+            const { data: incomeRow } = await supabase
+              .from("income")
+              .select("receipt_number")
+              .eq("reference_id", bookingId)
+              .eq("reference_type", "booking")
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            verifiedReceiptNumber = incomeRow?.receipt_number ?? null;
+          }
+
           const { data: bookingData } = await supabase.from("mahal_bookings").select("applicant_name, booking_amount, event_type").eq("id", bookingId).single();
           await notifyAdmin(
             "புதிய ஆன்லைன் முன்பதிவு கட்டணம் (New Online Booking Payment)",
@@ -379,6 +398,7 @@ const handler = async (req: Request): Promise<Response> => {
           verified: true,
           paymentId: razorpay_payment_id,
           orderId: razorpay_order_id,
+          receiptNumber: verifiedReceiptNumber,
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
