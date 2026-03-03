@@ -23,7 +23,7 @@ export const ensureBookingReceiptNumberWithRetry = async (
     });
 
     const receiptNumber = result.data?.receiptNumber;
-    if (!result.error && typeof receiptNumber === "string" && /\d{4}-\d{4}$/.test(receiptNumber)) {
+    if (!result.error && typeof receiptNumber === "string" && receiptNumber.trim().length > 0) {
       return receiptNumber;
     }
 

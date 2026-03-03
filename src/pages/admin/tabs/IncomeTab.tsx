@@ -27,6 +27,7 @@ interface Income {
   reference_id: string | null;
   reference_type: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 const DEFAULT_INCOME_CATEGORIES = [
@@ -218,24 +219,43 @@ const IncomeTab = () => {
 
   const totalIncome = incomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
 
-  // Filtered incomes
+  // Filtered + sorted incomes (newest activity first)
   const filteredIncomes = useMemo(() => {
-    return incomes.filter((income) => {
-      const searchLower = searchValue.toLowerCase();
-      const matchesSearch = !searchValue ||
-        income.source.toLowerCase().includes(searchLower) ||
-        income.category.toLowerCase().includes(searchLower) ||
-        income.receipt_number?.toLowerCase().includes(searchLower) ||
-        income.description?.toLowerCase().includes(searchLower);
+    const getReceiptSequence = (receiptNumber: string | null) => {
+      if (!receiptNumber) return -1;
+      const match = receiptNumber.match(/-(\d{4})$/);
+      return match ? Number.parseInt(match[1], 10) : -1;
+    };
 
-      const matchesCategory = !filterValues.category || filterValues.category === "all" ||
-        income.category === filterValues.category;
+    return incomes
+      .filter((income) => {
+        const searchLower = searchValue.toLowerCase();
+        const matchesSearch = !searchValue ||
+          income.source.toLowerCase().includes(searchLower) ||
+          income.category.toLowerCase().includes(searchLower) ||
+          income.receipt_number?.toLowerCase().includes(searchLower) ||
+          income.description?.toLowerCase().includes(searchLower);
 
-      const matchesPaymentMethod = !filterValues.payment_method || filterValues.payment_method === "all" ||
-        income.payment_method === filterValues.payment_method;
+        const matchesCategory = !filterValues.category || filterValues.category === "all" ||
+          income.category === filterValues.category;
 
-      return matchesSearch && matchesCategory && matchesPaymentMethod;
-    });
+        const matchesPaymentMethod = !filterValues.payment_method || filterValues.payment_method === "all" ||
+          income.payment_method === filterValues.payment_method;
+
+        return matchesSearch && matchesCategory && matchesPaymentMethod;
+      })
+      .sort((a, b) => {
+        const latestA = Math.max(new Date(a.updated_at).getTime(), new Date(a.created_at).getTime());
+        const latestB = Math.max(new Date(b.updated_at).getTime(), new Date(b.created_at).getTime());
+
+        if (latestA !== latestB) return latestB - latestA;
+
+        const receiptSeqA = getReceiptSequence(a.receipt_number);
+        const receiptSeqB = getReceiptSequence(b.receipt_number);
+        if (receiptSeqA !== receiptSeqB) return receiptSeqB - receiptSeqA;
+
+        return new Date(b.income_date).getTime() - new Date(a.income_date).getTime();
+      });
   }, [incomes, searchValue, filterValues]);
 
   // Get unique categories and payment methods

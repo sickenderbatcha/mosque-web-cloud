@@ -77,6 +77,48 @@ const getSequentialReceiptNumber = async (
   return nextReceipt;
 };
 
+const RECEIPT_PREFIX_SETTING_KEYS: Record<string, string> = {
+  booking: "receipt_num_prefix_booking",
+  donation: "receipt_num_prefix_donation",
+  subscription: "receipt_num_prefix_subscription",
+  cash_payment: "receipt_num_prefix_cash_payment",
+  certificate_noc: "receipt_num_prefix_cert_noc",
+  certificate_heir: "receipt_num_prefix_cert_heir",
+  certificate_general: "receipt_num_prefix_cert_general",
+};
+
+const DEFAULT_RECEIPT_PREFIXES: Record<string, string> = {
+  booking: "BK-",
+  donation: "DON-",
+  subscription: "SUB-",
+  cash_payment: "CASH-",
+  certificate_noc: "NOC-",
+  certificate_heir: "HEIR-",
+  certificate_general: "CERT-",
+};
+
+const getLegacyReceiptFallback = async (
+  supabase: ReturnType<typeof createClient>,
+  receiptType: string,
+  referenceId: string,
+): Promise<string> => {
+  const settingKey = RECEIPT_PREFIX_SETTING_KEYS[receiptType];
+  const defaultPrefix = DEFAULT_RECEIPT_PREFIXES[receiptType] || "REC-";
+
+  if (!settingKey) {
+    return `${defaultPrefix}${referenceId.slice(0, 8).toUpperCase()}`;
+  }
+
+  const { data } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", settingKey)
+    .maybeSingle();
+
+  const prefix = data?.value || defaultPrefix;
+  return `${prefix}${referenceId.slice(0, 8).toUpperCase()}`;
+};
+
 const ensureIncomeRecord = async (
   supabase: ReturnType<typeof createClient>,
   params: EnsureIncomeParams,
@@ -106,12 +148,20 @@ const ensureIncomeRecord = async (
     .limit(1)
     .maybeSingle();
 
-  const hasSequentialReceipt =
-    typeof existingIncome?.receipt_number === "string" && /-\d{4}-\d{4}$/.test(existingIncome.receipt_number);
+  const existingReceipt =
+    typeof existingIncome?.receipt_number === "string" && existingIncome.receipt_number.trim().length > 0
+      ? existingIncome.receipt_number.trim()
+      : null;
+
+  const hasSequentialReceipt = !!existingReceipt && /-\d{4}-\d{4}$/.test(existingReceipt);
 
   let resolvedReceiptNumber: string | null = hasSequentialReceipt
-    ? existingIncome!.receipt_number
+    ? existingReceipt
     : await getSequentialReceiptNumber(supabase, receiptType);
+
+  if (!resolvedReceiptNumber) {
+    resolvedReceiptNumber = existingReceipt ?? await getLegacyReceiptFallback(supabase, receiptType, referenceId);
+  }
 
   if (!resolvedReceiptNumber) return null;
 
@@ -125,6 +175,7 @@ const ensureIncomeRecord = async (
     receipt_number: resolvedReceiptNumber,
     reference_id: referenceId,
     reference_type: referenceType,
+    updated_at: new Date().toISOString(),
   };
 
   if (existingIncome?.id) {
