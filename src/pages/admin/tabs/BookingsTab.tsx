@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Check, X, Printer, Ban } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
+import { ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,7 @@ const BookingsTab = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedReceiptNumber, setSelectedReceiptNumber] = useState<string | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   
   // Filter states
@@ -184,11 +186,19 @@ const BookingsTab = () => {
     }
   };
 
-  const handlePrintReceipt = (booking: Booking) => {
+  const handlePrintReceipt = async (booking: Booking) => {
     if (booking.payment_status !== "paid" && booking.payment_status !== "completed") {
       toast.error("Receipt can only be printed for paid bookings");
       return;
     }
+
+    const receiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
+    if (!receiptNumber) {
+      toast.error("Unable to load new-format receipt number. Please try again.");
+      return;
+    }
+
+    setSelectedReceiptNumber(receiptNumber);
     setSelectedBooking(booking);
     setShowReceipt(true);
   };
@@ -288,10 +298,12 @@ const BookingsTab = () => {
             transactionId: selectedBooking.id.slice(0, 8).toUpperCase(),
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
             bookingId: selectedBooking.id,
+            receiptNumber: selectedReceiptNumber || undefined,
           }}
           onClose={() => {
             setShowReceipt(false);
             setSelectedBooking(null);
+            setSelectedReceiptNumber(null);
           }}
         />
       )}
@@ -477,7 +489,9 @@ const BookingsTab = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handlePrintReceipt(booking)}
+                            onClick={() => {
+                              void handlePrintReceipt(booking);
+                            }}
                             title="Print Receipt"
                           >
                             <Printer className="h-4 w-4" />
