@@ -106,10 +106,14 @@ const ensureIncomeRecord = async (
     .limit(1)
     .maybeSingle();
 
-  if (existingIncome?.receipt_number) return existingIncome.receipt_number;
+  const hasSequentialReceipt =
+    typeof existingIncome?.receipt_number === "string" && /-\d{4}-\d{4}$/.test(existingIncome.receipt_number);
 
-  const receiptNumber = await getSequentialReceiptNumber(supabase, receiptType);
-  if (!receiptNumber) return null;
+  let resolvedReceiptNumber: string | null = hasSequentialReceipt
+    ? existingIncome!.receipt_number
+    : await getSequentialReceiptNumber(supabase, receiptType);
+
+  if (!resolvedReceiptNumber) return null;
 
   const payload = {
     amount,
@@ -118,7 +122,7 @@ const ensureIncomeRecord = async (
     description,
     income_date: new Date().toISOString().slice(0, 10),
     payment_method: paymentMethod ?? "Online",
-    receipt_number: receiptNumber,
+    receipt_number: resolvedReceiptNumber,
     reference_id: referenceId,
     reference_type: referenceType,
   };
@@ -134,7 +138,7 @@ const ensureIncomeRecord = async (
       return null;
     }
 
-    return receiptNumber;
+    return resolvedReceiptNumber;
   }
 
   const { error: insertIncomeError } = await supabase.from("income").insert(payload);
@@ -143,7 +147,7 @@ const ensureIncomeRecord = async (
     return null;
   }
 
-  return receiptNumber;
+  return resolvedReceiptNumber;
 };
 
 const ensureBookingIncomeSync = async (supabase: ReturnType<typeof createClient>, bookingId: string): Promise<string | null> => {
