@@ -31,6 +31,88 @@ interface VerifyPaymentRequest {
   type?: "booking" | "subscription" | "certificate" | "noc" | "donation";
 }
 
+interface EnsureBookingIncomeRequest {
+  bookingId?: string;
+}
+
+const ensureBookingIncomeSync = async (supabase: ReturnType<typeof createClient>, bookingId: string): Promise<string | null> => {
+  try {
+    const { data: existingIncome } = await supabase
+      .from("income")
+      .select("id, receipt_number")
+      .eq("reference_id", bookingId)
+      .eq("reference_type", "booking")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingIncome?.receipt_number) return existingIncome.receipt_number;
+
+    const { data: bookingData, error: bookingError } = await supabase
+      .from("mahal_bookings")
+      .select("id, booking_amount, applicant_name, event_type, event_date, payment_status")
+      .eq("id", bookingId)
+      .maybeSingle();
+
+    if (bookingError || !bookingData) {
+      console.error("Unable to fetch booking for income sync:", bookingError);
+      return null;
+    }
+
+    const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
+      p_receipt_type: "booking",
+    });
+
+    if (receiptError || typeof nextReceipt !== "string") {
+      console.error("Unable to generate sequential booking receipt number:", receiptError);
+      return null;
+    }
+
+    if (existingIncome?.id) {
+      const { error: updateIncomeError } = await supabase
+        .from("income")
+        .update({
+          amount: bookingData.booking_amount,
+          category: "மஹால் முன்பதிவு (Mahal Booking)",
+          source: bookingData.applicant_name,
+          description: `${bookingData.event_type} - ${bookingData.event_date}`,
+          income_date: new Date().toISOString().slice(0, 10),
+          payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
+          receipt_number: nextReceipt,
+        })
+        .eq("id", existingIncome.id);
+
+      if (updateIncomeError) {
+        console.error("Failed to update booking income fallback record:", updateIncomeError);
+        return null;
+      }
+      return nextReceipt;
+    }
+
+    const { error: insertIncomeError } = await supabase.from("income").insert({
+      amount: bookingData.booking_amount,
+      category: "மஹால் முன்பதிவு (Mahal Booking)",
+      source: bookingData.applicant_name,
+      description: `${bookingData.event_type} - ${bookingData.event_date}`,
+      income_date: new Date().toISOString().slice(0, 10),
+      payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
+      receipt_number: nextReceipt,
+      reference_id: bookingId,
+      reference_type: "booking",
+    });
+
+    if (insertIncomeError) {
+      console.error("Failed to insert booking income fallback record:", insertIncomeError);
+      return null;
+    }
+
+    return nextReceipt;
+  } catch (e) {
+    console.error("Unexpected error in ensureBookingIncomeSync:", e);
+    return null;
+  }
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -59,6 +141,33 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
     const action = (url.searchParams.get("action") || payload?.action || "create").toString();
+
+    if (action === "ensure_booking_income") {
+      const { bookingId }: EnsureBookingIncomeRequest = payload;
+      if (!bookingId) {
+        return new Response(
+          JSON.stringify({ error: "bookingId is required", success: false }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const receiptNumber = await ensureBookingIncomeSync(supabase, bookingId);
+
+      if (!receiptNumber) {
+        return new Response(
+          JSON.stringify({ error: "Unable to sync booking income", success: false }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, bookingId, receiptNumber }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     if (action === "create") {
       const { amount, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, currency = "INR", receipt, notes, type = "booking" }: CreateOrderRequest = payload;
