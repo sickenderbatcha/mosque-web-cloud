@@ -34,8 +34,7 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
-import { lookupReceiptNumberByType } from "@/lib/receiptNumberSettings";
-import { verifyRazorpayPaymentWithRetry } from "@/lib/paymentVerification";
+import { verifyRazorpayPaymentWithRetry, ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
@@ -717,6 +716,20 @@ const UserDashboard = () => {
             return;
           }
 
+          const confirmedReceiptNumber =
+            typeof verifyData?.receiptNumber === "string"
+              ? verifyData.receiptNumber
+              : await ensureBookingReceiptNumberWithRetry(booking.id);
+
+          if (!confirmedReceiptNumber) {
+            toast({
+              title: "ரசீது எண் உருவாக்கம் தோல்வி / Receipt Number Sync Failed",
+              description: "Payment verified, but receipt/income sync failed. Please contact admin.",
+              variant: "destructive",
+            });
+            return;
+          }
+
           toast({
             title: "பணம் செலுத்தப்பட்டது! / Payment Successful!",
             description: "Your booking payment has been confirmed.",
@@ -755,7 +768,7 @@ const UserDashboard = () => {
             services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
             razorpayPaymentId: response.razorpay_payment_id || undefined,
             bookingId: booking.id,
-            receiptNumber: typeof verifyData?.receiptNumber === "string" ? verifyData.receiptNumber : undefined,
+            receiptNumber: confirmedReceiptNumber,
           });
 
           // Refresh bookings data
@@ -794,9 +807,18 @@ const UserDashboard = () => {
   };
 
   const generateReceipt = async (booking: Booking) => {
+    const sequentialReceiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
+    if (!sequentialReceiptNumber) {
+      toast({
+        title: "ரசீது எண் கிடைக்கவில்லை / Receipt Number Missing",
+        description: "Unable to fetch sequential receipt number. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const doc = new jsPDF();
-    const sequentialReceiptNumber = await lookupReceiptNumberByType("booking", booking.id);
-    const receiptNumber = sequentialReceiptNumber || `BK-${booking.id.slice(0, 8).toUpperCase()}`;
+    const receiptNumber = sequentialReceiptNumber;
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Header background
@@ -898,7 +920,16 @@ const UserDashboard = () => {
   };
 
   const openBookingReceipt = async (booking: Booking) => {
-    const sequentialReceiptNumber = await lookupReceiptNumberByType("booking", booking.id);
+    const sequentialReceiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
+
+    if (!sequentialReceiptNumber) {
+      toast({
+        title: "ரசீது எண் கிடைக்கவில்லை / Receipt Number Missing",
+        description: "Unable to fetch sequential receipt number. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setShowBookingReceipt({
       applicantName: booking.applicant_name,
@@ -912,7 +943,7 @@ const UserDashboard = () => {
       transactionId: booking.id.substring(0, 8).toUpperCase(),
       services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
       bookingId: booking.id,
-      receiptNumber: sequentialReceiptNumber || undefined,
+      receiptNumber: sequentialReceiptNumber,
     });
   };
 

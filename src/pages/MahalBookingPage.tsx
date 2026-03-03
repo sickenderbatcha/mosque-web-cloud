@@ -23,7 +23,7 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import OTPVerificationDialog from "@/components/OTPVerificationDialog";
-import { verifyRazorpayPaymentWithRetry } from "@/lib/paymentVerification";
+import { verifyRazorpayPaymentWithRetry, ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 
 declare global {
   interface Window {
@@ -326,6 +326,22 @@ const MahalBookingPage = () => {
                 ? bookingId
                 : (bookingId as any)?.id || (bookingId as any)?.booking_id || undefined;
 
+            const confirmedReceiptNumber =
+              typeof verifyData?.receiptNumber === "string"
+                ? verifyData.receiptNumber
+                : resolvedBookingId
+                ? await ensureBookingReceiptNumberWithRetry(String(resolvedBookingId))
+                : null;
+
+            if (!confirmedReceiptNumber) {
+              toast({
+                title: "ரசீது எண் உருவாக்கம் தோல்வி / Receipt Number Sync Failed",
+                description: "Payment verified, but receipt/income sync failed. Please contact admin.",
+                variant: "destructive",
+              });
+              return;
+            }
+
             // Set receipt data
             setReceiptData({
               applicantName: capturedFormData.applicantName,
@@ -337,11 +353,11 @@ const MahalBookingPage = () => {
               endTime: capturedFormData.endTime,
               expectedGuests: capturedFormData.expectedGuests || undefined,
               amount,
-              transactionId: resolvedBookingId ? String(resolvedBookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
+              transactionId: response.razorpay_payment_id,
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
               bookingId: resolvedBookingId ? String(resolvedBookingId) : undefined,
-              receiptNumber: typeof verifyData?.receiptNumber === "string" ? verifyData.receiptNumber : undefined,
+              receiptNumber: confirmedReceiptNumber,
             });
             setShowReceipt(true);
 

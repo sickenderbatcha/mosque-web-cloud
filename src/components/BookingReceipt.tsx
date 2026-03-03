@@ -109,9 +109,10 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
 
   // Sequential receipt number state
   const fallbackReceiptNumber = getReceiptNumber("booking", booking.transactionId);
-  const initialReceiptNumber = booking.receiptNumber || fallbackReceiptNumber;
+  const initialReceiptNumber = booking.receiptNumber || (booking.bookingId ? "" : fallbackReceiptNumber);
   const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(initialReceiptNumber);
   const [isReceiptResolving, setIsReceiptResolving] = useState(!!booking.bookingId && !booking.receiptNumber);
+  const hasSequentialReceipt = /\d{4}-\d{4}$/.test(formattedReceiptNumber);
 
   useEffect(() => {
     let isMounted = true;
@@ -132,10 +133,16 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
       };
     }
 
+    setFormattedReceiptNumber("");
     setIsReceiptResolving(true);
     getSequentialReceiptNumber("booking", booking.bookingId, booking.transactionId)
       .then((number) => {
-        if (isMounted) setFormattedReceiptNumber(number);
+        if (!isMounted) return;
+        if (typeof number === "string" && /\d{4}-\d{4}$/.test(number)) {
+          setFormattedReceiptNumber(number);
+        } else {
+          setFormattedReceiptNumber("");
+        }
       })
       .finally(() => {
         if (isMounted) setIsReceiptResolving(false);
@@ -402,11 +409,11 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={isReceiptResolving}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={isReceiptResolving || !hasSequentialReceipt}>
                 <Printer className="h-4 w-4 mr-2" />
                 {isReceiptResolving ? "ரசீது எண் ஏற்றுகிறது..." : "அச்சிடு"}
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={isReceiptResolving}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={isReceiptResolving || !hasSequentialReceipt}>
                 <Download className="h-4 w-4 mr-2" />
                 {isReceiptResolving ? "காத்திருங்கள்..." : "பதிவிறக்கம்"}
               </Button>
@@ -528,11 +535,19 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
             {/* Transaction ID */}
             <div className="bg-muted p-3 rounded-lg text-center">
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
-              <p className="font-mono font-bold">{formattedReceiptNumber}</p>
+              <p className="font-mono font-bold">{isReceiptResolving ? "Resolving..." : formattedReceiptNumber || "Unavailable"}</p>
               {booking.razorpayPaymentId && (
                 <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {booking.razorpayPaymentId}</p>
               )}
             </div>
+            {!isReceiptResolving && !hasSequentialReceipt && (
+              <Alert className="mt-3 border-destructive/50">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  Sequential receipt/income sync is incomplete. Please retry after a moment.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Footer */}
             {/* Note */}

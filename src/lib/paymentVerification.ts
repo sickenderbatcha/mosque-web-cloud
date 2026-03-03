@@ -8,6 +8,33 @@ interface VerifyBookingPaymentPayload {
   type: "booking";
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const ensureBookingReceiptNumberWithRetry = async (
+  bookingId: string,
+  maxAttempts = 4
+): Promise<string | null> => {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const result = await supabase.functions.invoke("create-razorpay-order", {
+      body: {
+        action: "ensure_booking_income",
+        bookingId,
+      },
+    });
+
+    const receiptNumber = result.data?.receiptNumber;
+    if (!result.error && typeof receiptNumber === "string" && /\d{4}-\d{4}$/.test(receiptNumber)) {
+      return receiptNumber;
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await sleep(700 * (attempt + 1));
+    }
+  }
+
+  return null;
+};
+
 export const verifyRazorpayPaymentWithRetry = async (
   payload: VerifyBookingPaymentPayload,
   maxAttempts = 3
@@ -23,13 +50,25 @@ export const verifyRazorpayPaymentWithRetry = async (
     });
 
     if (!result.error && result.data?.verified) {
+      if (typeof result.data?.receiptNumber !== "string") {
+        const ensuredReceipt = await ensureBookingReceiptNumberWithRetry(payload.bookingId);
+        if (ensuredReceipt) {
+          return {
+            ...result,
+            data: {
+              ...result.data,
+              receiptNumber: ensuredReceipt,
+            },
+          };
+        }
+      }
       return result;
     }
 
     lastError = result.error || new Error(result.data?.error || "Payment verification failed");
 
     if (attempt < maxAttempts - 1) {
-      await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)));
+      await sleep(700 * (attempt + 1));
     }
   }
 
