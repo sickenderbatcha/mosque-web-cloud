@@ -35,6 +35,7 @@ import CertificateReceipt, { CertificateReceiptData } from "@/components/Certifi
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { lookupReceiptNumberByType } from "@/lib/receiptNumberSettings";
+import { verifyRazorpayPaymentWithRetry } from "@/lib/paymentVerification";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
@@ -699,18 +700,13 @@ const UserDashboard = () => {
         description: `Mahal Booking - ${booking.event_type}`,
         order_id: orderData.orderId,
         handler: async (response: any) => {
-          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
-            "create-razorpay-order?action=verify",
-            {
-              body: {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                bookingId: booking.id,
-                type: "booking",
-              },
-            }
-          );
+          const { data: verifyData, error: verifyError } = await verifyRazorpayPaymentWithRetry({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            bookingId: booking.id,
+            type: "booking",
+          });
 
           if (verifyError || !verifyData?.verified) {
             toast({
@@ -898,6 +894,25 @@ const UserDashboard = () => {
     toast({
       title: "Receipt Downloaded",
       description: `Receipt #${receiptNumber} has been downloaded.`,
+    });
+  };
+
+  const openBookingReceipt = async (booking: Booking) => {
+    const sequentialReceiptNumber = await lookupReceiptNumberByType("booking", booking.id);
+
+    setShowBookingReceipt({
+      applicantName: booking.applicant_name,
+      applicantPhone: booking.applicant_phone,
+      applicantEmail: booking.applicant_email || undefined,
+      eventType: booking.event_type,
+      eventDate: booking.event_date,
+      startTime: booking.start_time,
+      endTime: booking.end_time,
+      amount: booking.booking_amount || 0,
+      transactionId: booking.id.substring(0, 8).toUpperCase(),
+      services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+      bookingId: booking.id,
+      receiptNumber: sequentialReceiptNumber || undefined,
     });
   };
 
@@ -1093,19 +1108,7 @@ const UserDashboard = () => {
                                   size="sm"
                                   variant="outline"
                                   className="h-auto py-1.5 px-2 text-xs sm:text-sm"
-                                  onClick={() => setShowBookingReceipt({
-                                    applicantName: booking.applicant_name,
-                                    applicantPhone: booking.applicant_phone,
-                                    applicantEmail: booking.applicant_email || undefined,
-                                    eventType: booking.event_type,
-                                    eventDate: booking.event_date,
-                                    startTime: booking.start_time,
-                                    endTime: booking.end_time,
-                                    amount: booking.booking_amount || 0,
-                                    transactionId: booking.id.substring(0, 8).toUpperCase(),
-                                    services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-                                    bookingId: booking.id,
-                                  })}
+                                  onClick={() => openBookingReceipt(booking)}
                                 >
                                   <Receipt className="h-3.5 w-3.5 mr-1 shrink-0" />
                                   Receipt

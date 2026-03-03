@@ -50,10 +50,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const url = new URL(req.url);
-    const action = url.searchParams.get("action") || "create";
+    let payload: any = {};
+    if (req.method !== "GET") {
+      try {
+        payload = await req.json();
+      } catch {
+        payload = {};
+      }
+    }
+    const action = (url.searchParams.get("action") || payload?.action || "create").toString();
 
     if (action === "create") {
-      const { amount, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, currency = "INR", receipt, notes, type = "booking" }: CreateOrderRequest = await req.json();
+      const { amount, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, currency = "INR", receipt, notes, type = "booking" }: CreateOrderRequest = payload;
 
       // Input validation
       if (!amount || typeof amount !== "number" || amount <= 0 || amount > 10000000) {
@@ -128,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     } else if (action === "verify") {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, type = "booking" }: VerifyPaymentRequest = await req.json();
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, type = "booking" }: VerifyPaymentRequest = payload;
 
       // Verify signature
       const crypto = await import("https://deno.land/std@0.190.0/crypto/mod.ts");
