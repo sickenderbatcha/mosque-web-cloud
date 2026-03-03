@@ -219,6 +219,7 @@ const UserDashboard = () => {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
+    bookingId?: string;
   } | null>(null);
   const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
 
@@ -754,6 +755,7 @@ const UserDashboard = () => {
             transactionId: booking.id.substring(0, 8).toUpperCase(),
             services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
             razorpayPaymentId: response.razorpay_payment_id || undefined,
+            bookingId: booking.id,
           });
 
           // Refresh bookings data
@@ -1097,6 +1099,7 @@ const UserDashboard = () => {
                                     amount: booking.booking_amount || 0,
                                     transactionId: `BK-${booking.id.substring(0, 8).toUpperCase()}`,
                                     services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+                                    bookingId: booking.id,
                                   })}
                                 >
                                   <Receipt className="h-3.5 w-3.5 mr-1 shrink-0" />

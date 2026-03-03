@@ -86,6 +86,7 @@ const MahalBookingPage = () => {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
+    bookingId?: string;
   } | null>(null);
 
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -336,6 +337,7 @@ const MahalBookingPage = () => {
               transactionId: bookingId ? String(bookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
+              bookingId: bookingId ? String(bookingId) : undefined,
             });
             setShowReceipt(true);
 
@@ -605,6 +607,7 @@ const MahalBookingPage = () => {
           amount: totalAmount,
           transactionId: `CASH-${Date.now()}`,
           services: selectedServicesList,
+          bookingId: bookingId || undefined,
         });
         setShowReceipt(true);
 
