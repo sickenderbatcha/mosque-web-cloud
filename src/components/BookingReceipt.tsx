@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,7 @@ interface BookingReceiptProps {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
+    bookingId?: string; // Full UUID for sequential receipt number lookup
   };
   onClose: () => void;
   requireAction?: boolean;
@@ -102,8 +103,20 @@ interface BookingReceiptProps {
 const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
+  const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+
+  // Sequential receipt number state
+  const fallbackReceiptNumber = getReceiptNumber("booking", booking.transactionId);
+  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
+
+  useEffect(() => {
+    setFormattedReceiptNumber(fallbackReceiptNumber);
+    if (booking.bookingId) {
+      getSequentialReceiptNumber("booking", booking.bookingId, booking.transactionId)
+        .then(setFormattedReceiptNumber);
+    }
+  }, [booking.bookingId, booking.transactionId, fallbackReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -147,7 +160,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
+  // Receipt number is now managed via useEffect above
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `

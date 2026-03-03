@@ -4,6 +4,7 @@ import {
   ReceiptNumberSettings,
   DEFAULT_RECEIPT_NUMBER_SETTINGS,
   formatReceiptNumber,
+  lookupReceiptNumberByType,
   ReceiptType,
 } from "@/lib/receiptNumberSettings";
 
@@ -91,9 +92,29 @@ export const useReceiptNumberSettings = () => {
     };
   }, [fetchSettings]);
 
+  /**
+   * Get a receipt number using local prefix + uniqueId (fallback format).
+   * Use this when the sequential number from DB is not available.
+   */
   const getReceiptNumber = (type: ReceiptType, uniqueId: string) => {
     return formatReceiptNumber(type, uniqueId, settings);
   };
 
-  return { settings, isLoading, getReceiptNumber };
+  /**
+   * Look up the sequential receipt number from the income table.
+   * Returns the DB-assigned sequential number (e.g., BK-2026-0001),
+   * or falls back to prefix+uniqueId if not found.
+   */
+  const getSequentialReceiptNumber = async (
+    type: ReceiptType,
+    referenceId: string,
+    fallbackUniqueId?: string
+  ): Promise<string> => {
+    const dbNumber = await lookupReceiptNumberByType(type, referenceId);
+    if (dbNumber) return dbNumber;
+    // Fallback to old format
+    return formatReceiptNumber(type, fallbackUniqueId || referenceId.slice(0, 8).toUpperCase(), settings);
+  };
+
+  return { settings, isLoading, getReceiptNumber, getSequentialReceiptNumber };
 };
