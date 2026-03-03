@@ -101,7 +101,9 @@ const IncomeTab = () => {
       const { data, error } = await supabase
         .from("income")
         .select("*")
+        .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false })
+        .order("receipt_number", { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) {
