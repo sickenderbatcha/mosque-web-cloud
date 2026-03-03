@@ -120,6 +120,8 @@ export const lookupReceiptNumber = async (
       .select("receipt_number")
       .eq("reference_id", referenceId)
       .eq("reference_type", referenceType)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) {

@@ -285,7 +285,7 @@ const BookingsTab = () => {
             endTime: selectedBooking.end_time,
             expectedGuests: selectedBooking.expected_guests?.toString(),
             amount: Number(selectedBooking.booking_amount || 0),
-            transactionId: `BK-${selectedBooking.id.slice(0, 8).toUpperCase()}`,
+            transactionId: selectedBooking.id.slice(0, 8).toUpperCase(),
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
             bookingId: selectedBooking.id,
           }}
@@ -374,7 +374,7 @@ const BookingsTab = () => {
             <CardContent>
               <div className="text-2xl font-bold text-primary">
                 ₹{bookings
-                  .filter((b) => b.payment_status === "paid")
+                  .filter((b) => b.payment_status === "paid" || b.payment_status === "completed")
                   .reduce((sum, b) => sum + Number(b.booking_amount || 0), 0)
                   .toLocaleString()}
               </div>
