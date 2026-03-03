@@ -110,9 +110,16 @@ export const useReceiptNumberSettings = () => {
     referenceId: string,
     fallbackUniqueId?: string
   ): Promise<string> => {
-    const dbNumber = await lookupReceiptNumberByType(type, referenceId);
-    if (dbNumber) return dbNumber;
-    // Fallback to old format
+    // Retry a few times to handle post-payment trigger/ledger propagation delays
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const dbNumber = await lookupReceiptNumberByType(type, referenceId);
+      if (dbNumber) return dbNumber;
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+
+    // Fallback to old format only if sequential number is still unavailable
     return formatReceiptNumber(type, fallbackUniqueId || referenceId.slice(0, 8).toUpperCase(), settings);
   };
 
