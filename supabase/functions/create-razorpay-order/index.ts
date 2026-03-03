@@ -177,6 +177,59 @@ const handler = async (req: Request): Promise<Response> => {
         }
       };
 
+      // Fallback guard: ensure booking income row exists even if trigger timing misses
+      const ensureBookingIncome = async (bookingId: string) => {
+        try {
+          const { data: existingIncome } = await supabase
+            .from("income")
+            .select("id")
+            .eq("reference_id", bookingId)
+            .eq("reference_type", "booking")
+            .limit(1)
+            .maybeSingle();
+
+          if (existingIncome) return;
+
+          const { data: bookingData, error: bookingError } = await supabase
+            .from("mahal_bookings")
+            .select("id, booking_amount, applicant_name, event_type, event_date, payment_status")
+            .eq("id", bookingId)
+            .maybeSingle();
+
+          if (bookingError || !bookingData) {
+            console.error("Unable to fetch booking for income insertion:", bookingError);
+            return;
+          }
+
+          const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
+            p_receipt_type: "booking",
+          });
+
+          if (receiptError || typeof nextReceipt !== "string") {
+            console.error("Unable to generate sequential booking receipt number:", receiptError);
+            return;
+          }
+
+          const { error: insertIncomeError } = await supabase.from("income").insert({
+            amount: bookingData.booking_amount,
+            category: "மஹால் முன்பதிவு (Mahal Booking)",
+            source: bookingData.applicant_name,
+            description: `${bookingData.event_type} - ${bookingData.event_date}`,
+            income_date: new Date().toISOString().slice(0, 10),
+            payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
+            receipt_number: nextReceipt,
+            reference_id: bookingId,
+            reference_type: "booking",
+          });
+
+          if (insertIncomeError) {
+            console.error("Failed to insert booking income fallback record:", insertIncomeError);
+          }
+        } catch (e) {
+          console.error("Unexpected error in ensureBookingIncome:", e);
+        }
+      };
+
       if (type === "donation" && donationId) {
         // Update donation payment status
         const { error: updateError } = await supabase
@@ -288,6 +341,7 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update booking:", updateError);
         } else {
           console.log("Booking payment status updated to completed:", bookingId);
+          await ensureBookingIncome(bookingId);
           const { data: bookingData } = await supabase.from("mahal_bookings").select("applicant_name, booking_amount, event_type").eq("id", bookingId).single();
           await notifyAdmin(
             "புதிய ஆன்லைன் முன்பதிவு கட்டணம் (New Online Booking Payment)",
