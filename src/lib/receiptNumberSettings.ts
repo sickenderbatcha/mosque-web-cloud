@@ -121,15 +121,14 @@ export const lookupReceiptNumber = async (
       .eq("reference_id", referenceId)
       .eq("reference_type", referenceType)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
     if (error) {
       console.error("Error looking up receipt number:", error);
       return null;
     }
 
-    return data?.receipt_number || null;
+    return data?.[0]?.receipt_number || null;
   } catch (error) {
     console.error("Error looking up receipt number:", error);
     return null;
