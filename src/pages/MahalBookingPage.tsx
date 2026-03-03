@@ -323,6 +323,11 @@ const MahalBookingPage = () => {
               },
             }).catch(console.error);
 
+            const resolvedBookingId =
+              typeof bookingId === "string"
+                ? bookingId
+                : (bookingId as any)?.id || (bookingId as any)?.booking_id || undefined;
+
             // Set receipt data
             setReceiptData({
               applicantName: capturedFormData.applicantName,
@@ -334,10 +339,10 @@ const MahalBookingPage = () => {
               endTime: capturedFormData.endTime,
               expectedGuests: capturedFormData.expectedGuests || undefined,
               amount,
-              transactionId: bookingId ? String(bookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
+              transactionId: resolvedBookingId ? String(resolvedBookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
-              bookingId: bookingId ? String(bookingId) : undefined,
+              bookingId: resolvedBookingId ? String(resolvedBookingId) : undefined,
             });
             setShowReceipt(true);
 
