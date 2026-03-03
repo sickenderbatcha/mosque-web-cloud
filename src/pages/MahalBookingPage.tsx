@@ -83,7 +83,7 @@ const MahalBookingPage = () => {
     endTime: string;
     expectedGuests?: string;
     amount: number;
-    transactionId: string;
+    bookingId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
   } | null>(null);
@@ -333,7 +333,7 @@ const MahalBookingPage = () => {
               endTime: capturedFormData.endTime,
               expectedGuests: capturedFormData.expectedGuests || undefined,
               amount,
-              transactionId: bookingId ? String(bookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
+              bookingId: bookingId ? String(bookingId) : "",
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
             });
@@ -603,7 +603,7 @@ const MahalBookingPage = () => {
           endTime: formData.endTime,
           expectedGuests: formData.expectedGuests || undefined,
           amount: totalAmount,
-          transactionId: `CASH-${Date.now()}`,
+          bookingId: bookingId ? String(bookingId) : "",
           services: selectedServicesList,
         });
         setShowReceipt(true);
