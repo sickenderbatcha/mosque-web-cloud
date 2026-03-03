@@ -34,6 +34,7 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { lookupReceiptNumberByType } from "@/lib/receiptNumberSettings";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
@@ -220,6 +221,7 @@ const UserDashboard = () => {
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
     bookingId?: string;
+    receiptNumber?: string;
   } | null>(null);
   const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
 
@@ -705,6 +707,7 @@ const UserDashboard = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 bookingId: booking.id,
+                type: "booking",
               },
             }
           );
@@ -756,6 +759,7 @@ const UserDashboard = () => {
             services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
             razorpayPaymentId: response.razorpay_payment_id || undefined,
             bookingId: booking.id,
+            receiptNumber: typeof verifyData?.receiptNumber === "string" ? verifyData.receiptNumber : undefined,
           });
 
           // Refresh bookings data
@@ -793,9 +797,10 @@ const UserDashboard = () => {
     }
   };
 
-  const generateReceipt = (booking: Booking) => {
+  const generateReceipt = async (booking: Booking) => {
     const doc = new jsPDF();
-    const receiptNumber = booking.id.slice(0, 8).toUpperCase();
+    const sequentialReceiptNumber = await lookupReceiptNumberByType("booking", booking.id);
+    const receiptNumber = sequentialReceiptNumber || `BK-${booking.id.slice(0, 8).toUpperCase()}`;
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Header background

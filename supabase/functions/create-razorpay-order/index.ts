@@ -368,29 +368,42 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateError) {
           console.error("Failed to update booking:", updateError);
-        } else {
-          console.log("Booking payment status updated to completed:", bookingId);
-          verifiedReceiptNumber = await ensureBookingIncome(bookingId);
-          if (!verifiedReceiptNumber) {
-            const { data: incomeRow } = await supabase
-              .from("income")
-              .select("receipt_number")
-              .eq("reference_id", bookingId)
-              .eq("reference_type", "booking")
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            verifiedReceiptNumber = incomeRow?.receipt_number ?? null;
-          }
-
-          const { data: bookingData } = await supabase.from("mahal_bookings").select("applicant_name, booking_amount, event_type").eq("id", bookingId).single();
-          await notifyAdmin(
-            "புதிய ஆன்லைன் முன்பதிவு கட்டணம் (New Online Booking Payment)",
-            `${bookingData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${bookingData?.event_type || ""} முன்பதிவு கட்டணம் ₹${bookingData?.booking_amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
-            bookingId,
-            "mahal_bookings"
+          return new Response(
+            JSON.stringify({ error: "Failed to update booking payment", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
+
+        console.log("Booking payment status updated to completed:", bookingId);
+        verifiedReceiptNumber = await ensureBookingIncome(bookingId);
+
+        if (!verifiedReceiptNumber) {
+          const { data: incomeRow } = await supabase
+            .from("income")
+            .select("receipt_number")
+            .eq("reference_id", bookingId)
+            .eq("reference_type", "booking")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          verifiedReceiptNumber = incomeRow?.receipt_number ?? null;
+        }
+
+        if (!verifiedReceiptNumber) {
+          console.error("Booking income sync failed: missing sequential receipt number", bookingId);
+          return new Response(
+            JSON.stringify({ error: "Payment verified but income sync failed", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        const { data: bookingData } = await supabase.from("mahal_bookings").select("applicant_name, booking_amount, event_type").eq("id", bookingId).single();
+        await notifyAdmin(
+          "புதிய ஆன்லைன் முன்பதிவு கட்டணம் (New Online Booking Payment)",
+          `${bookingData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${bookingData?.event_type || ""} முன்பதிவு கட்டணம் ₹${bookingData?.booking_amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+          bookingId,
+          "mahal_bookings"
+        );
       }
 
       return new Response(
