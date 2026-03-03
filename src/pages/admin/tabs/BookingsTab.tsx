@@ -285,7 +285,7 @@ const BookingsTab = () => {
             endTime: selectedBooking.end_time,
             expectedGuests: selectedBooking.expected_guests?.toString(),
             amount: Number(selectedBooking.booking_amount || 0),
-            transactionId: `BK-${selectedBooking.id.slice(0, 8).toUpperCase()}`,
+            bookingId: selectedBooking.id,
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
           }}
           onClose={() => {

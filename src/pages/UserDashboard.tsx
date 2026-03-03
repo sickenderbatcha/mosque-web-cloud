@@ -216,7 +216,7 @@ const UserDashboard = () => {
     endTime: string;
     expectedGuests?: string;
     amount: number;
-    transactionId: string;
+    bookingId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
   } | null>(null);
@@ -751,7 +751,7 @@ const UserDashboard = () => {
             startTime: booking.start_time,
             endTime: booking.end_time,
             amount: booking.booking_amount || 0,
-            transactionId: booking.id.substring(0, 8).toUpperCase(),
+            bookingId: booking.id,
             services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
             razorpayPaymentId: response.razorpay_payment_id || undefined,
           });
@@ -1095,7 +1095,7 @@ const UserDashboard = () => {
                                     startTime: booking.start_time,
                                     endTime: booking.end_time,
                                     amount: booking.booking_amount || 0,
-                                    transactionId: `BK-${booking.id.substring(0, 8).toUpperCase()}`,
+                                    bookingId: booking.id,
                                     services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
                                   })}
                                 >

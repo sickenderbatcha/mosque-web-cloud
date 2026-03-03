@@ -1,12 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
+import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
@@ -91,7 +91,7 @@ interface BookingReceiptProps {
     endTime: string;
     expectedGuests?: string;
     amount: number;
-    transactionId: string;
+    bookingId: string; // The actual booking UUID
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
   };
@@ -102,8 +102,42 @@ interface BookingReceiptProps {
 const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
+  const [receiptLoading, setReceiptLoading] = useState(true);
+
+  // Fetch the sequential receipt number from the income table
+  useEffect(() => {
+    const fetchReceiptNumber = async () => {
+      setReceiptLoading(true);
+      try {
+        // Retry up to 5 times with delay (trigger may not have fired yet)
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const { data, error } = await supabase
+            .from("income")
+            .select("receipt_number")
+            .eq("reference_id", booking.bookingId)
+            .eq("reference_type", "booking")
+            .maybeSingle();
+
+          if (data?.receipt_number) {
+            setReceiptNumber(data.receipt_number);
+            setReceiptLoading(false);
+            return;
+          }
+          // Wait before retry
+          if (attempt < 4) await new Promise(r => setTimeout(r, 1000));
+        }
+        // Fallback: use BK- prefix with UUID slice
+        setReceiptNumber(`BK-${booking.bookingId.substring(0, 8).toUpperCase()}`);
+      } catch {
+        setReceiptNumber(`BK-${booking.bookingId.substring(0, 8).toUpperCase()}`);
+      } finally {
+        setReceiptLoading(false);
+      }
+    };
+    fetchReceiptNumber();
+  }, [booking.bookingId]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -147,7 +181,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
+  const formattedReceiptNumber = receiptNumber || "Loading...";
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
@@ -361,12 +395,12 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
             </div>
