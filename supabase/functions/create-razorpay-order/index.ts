@@ -35,19 +35,119 @@ interface EnsureBookingIncomeRequest {
   bookingId?: string;
 }
 
+interface EnsureIncomeParams {
+  referenceId: string;
+  referenceType: string;
+  receiptType: string;
+  amount: number | null | undefined;
+  category: string;
+  source: string;
+  description: string;
+  paymentMethod?: string | null;
+}
+
+const getNumericSetting = async (
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  defaultValue: number,
+): Promise<number> => {
+  const { data } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", key)
+    .maybeSingle();
+
+  const parsed = Number.parseFloat(data?.value ?? "");
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+};
+
+const getSequentialReceiptNumber = async (
+  supabase: ReturnType<typeof createClient>,
+  receiptType: string,
+): Promise<string | null> => {
+  const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
+    p_receipt_type: receiptType,
+  });
+
+  if (receiptError || typeof nextReceipt !== "string") {
+    console.error("Unable to generate sequential receipt number:", receiptError);
+    return null;
+  }
+
+  return nextReceipt;
+};
+
+const ensureIncomeRecord = async (
+  supabase: ReturnType<typeof createClient>,
+  params: EnsureIncomeParams,
+): Promise<string | null> => {
+  const {
+    referenceId,
+    referenceType,
+    receiptType,
+    amount,
+    category,
+    source,
+    description,
+    paymentMethod,
+  } = params;
+
+  if (!amount || amount <= 0) {
+    console.error("Invalid income amount for sync:", { referenceId, referenceType, amount });
+    return null;
+  }
+
+  const { data: existingIncome } = await supabase
+    .from("income")
+    .select("id, receipt_number")
+    .eq("reference_id", referenceId)
+    .eq("reference_type", referenceType)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existingIncome?.receipt_number) return existingIncome.receipt_number;
+
+  const receiptNumber = await getSequentialReceiptNumber(supabase, receiptType);
+  if (!receiptNumber) return null;
+
+  const payload = {
+    amount,
+    category,
+    source,
+    description,
+    income_date: new Date().toISOString().slice(0, 10),
+    payment_method: paymentMethod ?? "Online",
+    receipt_number: receiptNumber,
+    reference_id: referenceId,
+    reference_type: referenceType,
+  };
+
+  if (existingIncome?.id) {
+    const { error: updateIncomeError } = await supabase
+      .from("income")
+      .update(payload)
+      .eq("id", existingIncome.id);
+
+    if (updateIncomeError) {
+      console.error("Failed to update income record:", updateIncomeError);
+      return null;
+    }
+
+    return receiptNumber;
+  }
+
+  const { error: insertIncomeError } = await supabase.from("income").insert(payload);
+  if (insertIncomeError) {
+    console.error("Failed to insert income record:", insertIncomeError);
+    return null;
+  }
+
+  return receiptNumber;
+};
+
 const ensureBookingIncomeSync = async (supabase: ReturnType<typeof createClient>, bookingId: string): Promise<string | null> => {
   try {
-    const { data: existingIncome } = await supabase
-      .from("income")
-      .select("id, receipt_number")
-      .eq("reference_id", bookingId)
-      .eq("reference_type", "booking")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (existingIncome?.receipt_number) return existingIncome.receipt_number;
-
     const { data: bookingData, error: bookingError } = await supabase
       .from("mahal_bookings")
       .select("id, booking_amount, applicant_name, event_type, event_date, payment_status")
@@ -59,54 +159,16 @@ const ensureBookingIncomeSync = async (supabase: ReturnType<typeof createClient>
       return null;
     }
 
-    const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
-      p_receipt_type: "booking",
-    });
-
-    if (receiptError || typeof nextReceipt !== "string") {
-      console.error("Unable to generate sequential booking receipt number:", receiptError);
-      return null;
-    }
-
-    if (existingIncome?.id) {
-      const { error: updateIncomeError } = await supabase
-        .from("income")
-        .update({
-          amount: bookingData.booking_amount,
-          category: "மஹால் முன்பதிவு (Mahal Booking)",
-          source: bookingData.applicant_name,
-          description: `${bookingData.event_type} - ${bookingData.event_date}`,
-          income_date: new Date().toISOString().slice(0, 10),
-          payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
-          receipt_number: nextReceipt,
-        })
-        .eq("id", existingIncome.id);
-
-      if (updateIncomeError) {
-        console.error("Failed to update booking income fallback record:", updateIncomeError);
-        return null;
-      }
-      return nextReceipt;
-    }
-
-    const { error: insertIncomeError } = await supabase.from("income").insert({
+    return await ensureIncomeRecord(supabase, {
+      referenceId: bookingId,
+      referenceType: "booking",
+      receiptType: "booking",
       amount: bookingData.booking_amount,
       category: "மஹால் முன்பதிவு (Mahal Booking)",
       source: bookingData.applicant_name,
       description: `${bookingData.event_type} - ${bookingData.event_date}`,
-      income_date: new Date().toISOString().slice(0, 10),
-      payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
-      receipt_number: nextReceipt,
-      reference_id: bookingId,
-      reference_type: "booking",
+      paymentMethod: bookingData.payment_status === "completed" ? "Online" : "Cash",
     });
-
-    if (insertIncomeError) {
-      console.error("Failed to insert booking income fallback record:", insertIncomeError);
-      return null;
-    }
-
-    return nextReceipt;
   } catch (e) {
     console.error("Unexpected error in ensureBookingIncomeSync:", e);
     return null;
@@ -294,90 +356,11 @@ const handler = async (req: Request): Promise<Response> => {
         }
       };
 
-      // Fallback guard: ensure booking income row exists and always has sequential receipt number
-      const ensureBookingIncome = async (bookingId: string): Promise<string | null> => {
-        try {
-          const { data: existingIncome } = await supabase
-            .from("income")
-            .select("id, receipt_number")
-            .eq("reference_id", bookingId)
-            .eq("reference_type", "booking")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          const { data: bookingData, error: bookingError } = await supabase
-            .from("mahal_bookings")
-            .select("id, booking_amount, applicant_name, event_type, event_date, payment_status")
-            .eq("id", bookingId)
-            .maybeSingle();
-
-          if (bookingError || !bookingData) {
-            console.error("Unable to fetch booking for income sync:", bookingError);
-            return null;
-          }
-
-          // Existing income row is valid and already has sequential receipt number
-          if (existingIncome?.receipt_number) return existingIncome.receipt_number;
-
-          const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
-            p_receipt_type: "booking",
-          });
-
-          if (receiptError || typeof nextReceipt !== "string") {
-            console.error("Unable to generate sequential booking receipt number:", receiptError);
-            return null;
-          }
-
-          if (existingIncome?.id) {
-            const { error: updateIncomeError } = await supabase
-              .from("income")
-              .update({
-                amount: bookingData.booking_amount,
-                category: "மஹால் முன்பதிவு (Mahal Booking)",
-                source: bookingData.applicant_name,
-                description: `${bookingData.event_type} - ${bookingData.event_date}`,
-                income_date: new Date().toISOString().slice(0, 10),
-                payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
-                receipt_number: nextReceipt,
-              })
-              .eq("id", existingIncome.id);
-
-            if (updateIncomeError) {
-              console.error("Failed to update booking income fallback record:", updateIncomeError);
-              return null;
-            }
-            return nextReceipt;
-          }
-
-          const { error: insertIncomeError } = await supabase.from("income").insert({
-            amount: bookingData.booking_amount,
-            category: "மஹால் முன்பதிவு (Mahal Booking)",
-            source: bookingData.applicant_name,
-            description: `${bookingData.event_type} - ${bookingData.event_date}`,
-            income_date: new Date().toISOString().slice(0, 10),
-            payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
-            receipt_number: nextReceipt,
-            reference_id: bookingId,
-            reference_type: "booking",
-          });
-
-          if (insertIncomeError) {
-            console.error("Failed to insert booking income fallback record:", insertIncomeError);
-            return null;
-          }
-
-          return nextReceipt;
-        } catch (e) {
-          console.error("Unexpected error in ensureBookingIncome:", e);
-          return null;
-        }
-      };
+      // Booking income sync is handled by shared ensureBookingIncomeSync helper.
 
       let verifiedReceiptNumber: string | null = null;
 
       if (type === "donation" && donationId) {
-        // Update donation payment status
         const { error: updateError } = await supabase
           .from("donations")
           .update({
@@ -390,19 +373,43 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateError) {
           console.error("Failed to update donation payment:", updateError);
-        } else {
-          console.log("Donation payment status updated:", donationId);
-          // Fetch donor info for notification
-          const { data: donationData } = await supabase.from("donations").select("donor_name, amount").eq("id", donationId).single();
-          await notifyAdmin(
-            "புதிய ஆன்லைன் நன்கொடை (New Online Donation)",
-            `${donationData?.donor_name || "Unknown"} அவர்களிடமிருந்து ₹${donationData?.amount || 0} நன்கொடை ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
-            donationId,
-            "donations"
+          return new Response(
+            JSON.stringify({ error: "Failed to update donation payment", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
+
+        const { data: donationData } = await supabase
+          .from("donations")
+          .select("donor_name, amount, purpose")
+          .eq("id", donationId)
+          .single();
+
+        verifiedReceiptNumber = await ensureIncomeRecord(supabase, {
+          referenceId: donationId,
+          referenceType: "donation",
+          receiptType: "donation",
+          amount: donationData?.amount,
+          category: "நன்கொடை (Donation)",
+          source: donationData?.donor_name || "Anonymous",
+          description: donationData?.purpose || "General Donation",
+          paymentMethod: "Online",
+        });
+
+        if (!verifiedReceiptNumber) {
+          return new Response(
+            JSON.stringify({ error: "Payment verified but donation income sync failed", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        await notifyAdmin(
+          "புதிய ஆன்லைன் நன்கொடை (New Online Donation)",
+          `${donationData?.donor_name || "Unknown"} அவர்களிடமிருந்து ₹${donationData?.amount || 0} நன்கொடை ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+          donationId,
+          "donations"
+        );
       } else if (type === "noc" && nocCertificateId) {
-        // Update NOC certificate payment status
         const { error: updateError } = await supabase
           .from("noc_certificates")
           .update({
@@ -414,18 +421,44 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateError) {
           console.error("Failed to update NOC certificate payment:", updateError);
-        } else {
-          console.log("NOC certificate payment status updated:", nocCertificateId);
-          const { data: nocData } = await supabase.from("noc_certificates").select("applicant_name").eq("id", nocCertificateId).single();
-          await notifyAdmin(
-            "புதிய ஆன்லைன் NOC கட்டணம் (New Online NOC Payment)",
-            `${nocData?.applicant_name || "Unknown"} அவர்களிடமிருந்து NOC சான்றிதழ் கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
-            nocCertificateId,
-            "noc_certificates"
+          return new Response(
+            JSON.stringify({ error: "Failed to update NOC certificate payment", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
+
+        const { data: nocData } = await supabase
+          .from("noc_certificates")
+          .select("applicant_name")
+          .eq("id", nocCertificateId)
+          .single();
+
+        const nocFee = await getNumericSetting(supabase, "certificate_fee_noc", 100);
+        verifiedReceiptNumber = await ensureIncomeRecord(supabase, {
+          referenceId: nocCertificateId,
+          referenceType: "noc_certificate",
+          receiptType: "certificate_noc",
+          amount: nocFee,
+          category: "ஆட்சேபனையின்மை சான்றிதழ் (NOC)",
+          source: nocData?.applicant_name || "Unknown",
+          description: `NOC சான்றிதழ் கட்டணம் - ${nocCertificateId}`,
+          paymentMethod: "Online",
+        });
+
+        if (!verifiedReceiptNumber) {
+          return new Response(
+            JSON.stringify({ error: "Payment verified but NOC income sync failed", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        await notifyAdmin(
+          "புதிய ஆன்லைன் NOC கட்டணம் (New Online NOC Payment)",
+          `${nocData?.applicant_name || "Unknown"} அவர்களிடமிருந்து NOC சான்றிதழ் கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+          nocCertificateId,
+          "noc_certificates"
+        );
       } else if (type === "certificate" && certificatePaymentId) {
-        // Update certificate payment status
         const { error: updateError } = await supabase
           .from("certificate_payments")
           .update({
@@ -439,18 +472,43 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateError) {
           console.error("Failed to update certificate payment:", updateError);
-        } else {
-          console.log("Certificate payment status updated:", certificatePaymentId);
-          const { data: certData } = await supabase.from("certificate_payments").select("applicant_name, amount, certificate_type").eq("id", certificatePaymentId).single();
-          await notifyAdmin(
-            "புதிய ஆன்லைன் சான்றிதழ் கட்டணம் (New Online Certificate Payment)",
-            `${certData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${certData?.certificate_type || ""} சான்றிதழ் கட்டணம் ₹${certData?.amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
-            certificatePaymentId,
-            "certificate_payments"
+          return new Response(
+            JSON.stringify({ error: "Failed to update certificate payment", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
+
+        const { data: certData } = await supabase
+          .from("certificate_payments")
+          .select("applicant_name, amount, certificate_type")
+          .eq("id", certificatePaymentId)
+          .single();
+
+        verifiedReceiptNumber = await ensureIncomeRecord(supabase, {
+          referenceId: certificatePaymentId,
+          referenceType: "certificate_payment",
+          receiptType: "certificate_general",
+          amount: certData?.amount,
+          category: "சான்றிதழ் கட்டணம் (Certificate Fee)",
+          source: certData?.applicant_name || "Unknown",
+          description: `${certData?.certificate_type || "certificate"} certificate payment`,
+          paymentMethod: "Online",
+        });
+
+        if (!verifiedReceiptNumber) {
+          return new Response(
+            JSON.stringify({ error: "Payment verified but certificate income sync failed", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        await notifyAdmin(
+          "புதிய ஆன்லைன் சான்றிதழ் கட்டணம் (New Online Certificate Payment)",
+          `${certData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${certData?.certificate_type || ""} சான்றிதழ் கட்டணம் ₹${certData?.amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+          certificatePaymentId,
+          "certificate_payments"
+        );
       } else if (type === "subscription" && subscriptionId) {
-        // Update subscription payment status
         const { error: updateError } = await supabase
           .from("subscriptions")
           .update({
@@ -463,16 +521,42 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateError) {
           console.error("Failed to update subscription:", updateError);
-        } else {
-          console.log("Subscription payment status updated:", subscriptionId);
-          const { data: subData } = await supabase.from("subscriptions").select("member_name, total_amount, member_id").eq("id", subscriptionId).single();
-          await notifyAdmin(
-            "புதிய ஆன்லைன் சந்தா கட்டணம் (New Online Subscription Payment)",
-            `${subData?.member_name || "Unknown"} (${subData?.member_id || ""}) அவர்களிடமிருந்து ₹${subData?.total_amount || 0} சந்தா கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
-            subscriptionId,
-            "subscriptions"
+          return new Response(
+            JSON.stringify({ error: "Failed to update subscription payment", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
+
+        const { data: subData } = await supabase
+          .from("subscriptions")
+          .select("member_name, total_amount, member_id, subscription_type, from_month, from_year, to_month, to_year")
+          .eq("id", subscriptionId)
+          .single();
+
+        verifiedReceiptNumber = await ensureIncomeRecord(supabase, {
+          referenceId: subscriptionId,
+          referenceType: "subscription",
+          receiptType: "subscription",
+          amount: subData?.total_amount,
+          category: "சந்தா (Subscription)",
+          source: `${subData?.member_name || "Unknown"} (${subData?.member_id || ""})`,
+          description: `${subData?.subscription_type || "subscription"} - ${subData?.from_month || ""}/${subData?.from_year || ""} to ${subData?.to_month || ""}/${subData?.to_year || ""}`,
+          paymentMethod: "Online",
+        });
+
+        if (!verifiedReceiptNumber) {
+          return new Response(
+            JSON.stringify({ error: "Payment verified but subscription income sync failed", verified: false }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        await notifyAdmin(
+          "புதிய ஆன்லைன் சந்தா கட்டணம் (New Online Subscription Payment)",
+          `${subData?.member_name || "Unknown"} (${subData?.member_id || ""}) அவர்களிடமிருந்து ₹${subData?.total_amount || 0} சந்தா கட்டணம் ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
+          subscriptionId,
+          "subscriptions"
+        );
       } else if (bookingId) {
         // Update booking payment status - use "completed" for online payments
         const { error: updateError } = await supabase
@@ -492,7 +576,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         console.log("Booking payment status updated to completed:", bookingId);
-        verifiedReceiptNumber = await ensureBookingIncome(bookingId);
+        verifiedReceiptNumber = await ensureBookingIncomeSync(supabase, bookingId);
 
         if (!verifiedReceiptNumber) {
           const { data: incomeRow } = await supabase
