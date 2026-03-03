@@ -1097,7 +1097,7 @@ const UserDashboard = () => {
                                     startTime: booking.start_time,
                                     endTime: booking.end_time,
                                     amount: booking.booking_amount || 0,
-                                    transactionId: `BK-${booking.id.substring(0, 8).toUpperCase()}`,
+                                    transactionId: booking.id.substring(0, 8).toUpperCase(),
                                     services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
                                     bookingId: booking.id,
                                   })}
