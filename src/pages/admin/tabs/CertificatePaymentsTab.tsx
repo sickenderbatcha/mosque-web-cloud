@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -71,6 +71,33 @@ export default function CertificatePaymentsTab() {
       return data as CertificatePayment[];
     },
   });
+
+  // Fetch receipt numbers from income table
+  const [receiptNumberMap, setReceiptNumberMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const fetchReceiptNumbers = async () => {
+      if (!payments?.length) return;
+      const completedIds = payments.filter(p => p.payment_status === "completed").map(p => p.id);
+      if (completedIds.length === 0) return;
+
+      const { data: incomeData } = await supabase
+        .from("income")
+        .select("receipt_number, reference_id")
+        .in("reference_id", completedIds)
+        .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"]);
+
+      if (incomeData) {
+        const map: Record<string, string> = {};
+        incomeData.forEach((row: any) => {
+          if (row.reference_id && row.receipt_number) {
+            map[row.reference_id] = row.receipt_number;
+          }
+        });
+        setReceiptNumberMap(map);
+      }
+    };
+    fetchReceiptNumbers();
+  }, [payments]);
 
   const updatePaymentMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
@@ -292,6 +319,7 @@ export default function CertificatePaymentsTab() {
                     <TableHead>Amount</TableHead>
                     <TableHead>Method</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Receipt No.</TableHead>
                     <TableHead>Transaction ID</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -317,6 +345,9 @@ export default function CertificatePaymentsTab() {
                         )}
                       </TableCell>
                       <TableCell>{getStatusBadge(payment.payment_status)}</TableCell>
+                      <TableCell className="text-xs font-mono font-semibold text-primary">
+                        {receiptNumberMap[payment.id] || (payment.payment_status === "completed" ? "Loading..." : "-")}
+                      </TableCell>
                       <TableCell className="text-xs font-mono">
                         {payment.transaction_id || "-"}
                       </TableCell>
@@ -413,6 +444,12 @@ export default function CertificatePaymentsTab() {
                 <div>
                   <Label className="text-muted-foreground">Payment Method</Label>
                   <p className="font-medium">{viewPayment.payment_method || "-"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Receipt No.</Label>
+                  <p className="font-medium text-xs font-mono text-primary">
+                    {receiptNumberMap[viewPayment.id] || (viewPayment.payment_status === "completed" ? "Loading..." : "-")}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Transaction ID</Label>

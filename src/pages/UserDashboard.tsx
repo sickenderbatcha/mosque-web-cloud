@@ -204,6 +204,9 @@ const UserDashboard = () => {
 
   // Certificate receipt state
   const [showCertReceipt, setShowCertReceipt] = useState<CertificateReceiptData | null>(null);
+  
+  // Receipt number map for certificates (from income table)
+  const [certReceiptNumberMap, setCertReceiptNumberMap] = useState<Record<string, string>>({});
 
   // Booking receipt state
   const [showBookingReceipt, setShowBookingReceipt] = useState<{
@@ -385,6 +388,27 @@ const UserDashboard = () => {
       setNocRequests((nocRes.data as NocRequest[]) || []);
       setHeirRequests((heirRes.data as HeirRequest[]) || []);
       setCertificatePayments((certPaymentsRes.data as CertificatePayment[]) || []);
+
+      // Fetch receipt numbers from income table for all completed certificates
+      const allCompletedIds = [
+        ...(nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id),
+        ...(heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id),
+        ...(certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id),
+      ];
+      if (allCompletedIds.length > 0) {
+        const { data: incomeData } = await supabase
+          .from("income")
+          .select("receipt_number, reference_id")
+          .in("reference_id", allCompletedIds)
+          .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"]);
+        if (incomeData) {
+          const map: Record<string, string> = {};
+          incomeData.forEach((row: any) => {
+            if (row.reference_id && row.receipt_number) map[row.reference_id] = row.receipt_number;
+          });
+          setCertReceiptNumberMap(map);
+        }
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -1737,6 +1761,11 @@ const UserDashboard = () => {
                                 <div className="text-sm text-muted-foreground mt-1">
                                   <span>சமர்ப்பிக்கும் பள்ளிவாசல்: {noc.mosque_to_submit}</span>
                                 </div>
+                                {certReceiptNumberMap[noc.id] && (
+                                  <div className="text-xs font-mono font-semibold text-primary mt-1">
+                                    ரசீது எண்: {certReceiptNumberMap[noc.id]}
+                                  </div>
+                                )}
                               </div>
                               
                               {/* Preview/Print/Download Actions */}
@@ -1937,6 +1966,11 @@ const UserDashboard = () => {
                                 <div className="text-sm text-muted-foreground mt-1">
                                   <span>மனுதாரர்: {heir.applicant_name} ({heir.applicant_relationship})</span>
                                 </div>
+                                {certReceiptNumberMap[heir.id] && (
+                                  <div className="text-xs font-mono font-semibold text-primary mt-1">
+                                    ரசீது எண்: {certReceiptNumberMap[heir.id]}
+                                  </div>
+                                )}
                               </div>
                               
                               {/* Preview/Print/Download Actions */}
@@ -2109,6 +2143,11 @@ const UserDashboard = () => {
                                     {formatDate(cp.created_at)}
                                   </span>
                                 </div>
+                                {certReceiptNumberMap[cp.id] && (
+                                  <div className="text-xs font-mono font-semibold text-primary mt-1">
+                                    ரசீது எண்: {certReceiptNumberMap[cp.id]}
+                                  </div>
+                                )}
                                 {cp.razorpay_payment_id && (
                                   <div className="text-xs text-muted-foreground mt-1">
                                     Razorpay Ref: {cp.razorpay_payment_id}
