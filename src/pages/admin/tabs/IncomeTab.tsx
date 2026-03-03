@@ -101,7 +101,6 @@ const IncomeTab = () => {
       const { data, error } = await supabase
         .from("income")
         .select("*")
-        .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -219,43 +218,24 @@ const IncomeTab = () => {
 
   const totalIncome = incomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
 
-  // Filtered + sorted incomes (newest activity first)
+  // Filtered incomes – order preserved from DB query (created_at DESC)
   const filteredIncomes = useMemo(() => {
-    const getReceiptSequence = (receiptNumber: string | null) => {
-      if (!receiptNumber) return -1;
-      const match = receiptNumber.match(/-(\d{4})$/);
-      return match ? Number.parseInt(match[1], 10) : -1;
-    };
+    return incomes.filter((income) => {
+      const searchLower = searchValue.toLowerCase();
+      const matchesSearch = !searchValue ||
+        income.source.toLowerCase().includes(searchLower) ||
+        income.category.toLowerCase().includes(searchLower) ||
+        income.receipt_number?.toLowerCase().includes(searchLower) ||
+        income.description?.toLowerCase().includes(searchLower);
 
-    return incomes
-      .filter((income) => {
-        const searchLower = searchValue.toLowerCase();
-        const matchesSearch = !searchValue ||
-          income.source.toLowerCase().includes(searchLower) ||
-          income.category.toLowerCase().includes(searchLower) ||
-          income.receipt_number?.toLowerCase().includes(searchLower) ||
-          income.description?.toLowerCase().includes(searchLower);
+      const matchesCategory = !filterValues.category || filterValues.category === "all" ||
+        income.category === filterValues.category;
 
-        const matchesCategory = !filterValues.category || filterValues.category === "all" ||
-          income.category === filterValues.category;
+      const matchesPaymentMethod = !filterValues.payment_method || filterValues.payment_method === "all" ||
+        income.payment_method === filterValues.payment_method;
 
-        const matchesPaymentMethod = !filterValues.payment_method || filterValues.payment_method === "all" ||
-          income.payment_method === filterValues.payment_method;
-
-        return matchesSearch && matchesCategory && matchesPaymentMethod;
-      })
-      .sort((a, b) => {
-        const latestA = Math.max(new Date(a.updated_at).getTime(), new Date(a.created_at).getTime());
-        const latestB = Math.max(new Date(b.updated_at).getTime(), new Date(b.created_at).getTime());
-
-        if (latestA !== latestB) return latestB - latestA;
-
-        const receiptSeqA = getReceiptSequence(a.receipt_number);
-        const receiptSeqB = getReceiptSequence(b.receipt_number);
-        if (receiptSeqA !== receiptSeqB) return receiptSeqB - receiptSeqA;
-
-        return new Date(b.income_date).getTime() - new Date(a.income_date).getTime();
-      });
+      return matchesSearch && matchesCategory && matchesPaymentMethod;
+    });
   }, [incomes, searchValue, filterValues]);
 
   // Get unique categories and payment methods
