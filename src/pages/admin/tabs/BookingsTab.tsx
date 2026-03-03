@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { Check, X, Printer, Ban } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
-import { ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +42,6 @@ const BookingsTab = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [selectedReceiptNumber, setSelectedReceiptNumber] = useState<string | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   
   // Filter states
@@ -186,19 +184,11 @@ const BookingsTab = () => {
     }
   };
 
-  const handlePrintReceipt = async (booking: Booking) => {
+  const handlePrintReceipt = (booking: Booking) => {
     if (booking.payment_status !== "paid" && booking.payment_status !== "completed") {
       toast.error("Receipt can only be printed for paid bookings");
       return;
     }
-
-    const receiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
-    if (!receiptNumber) {
-      toast.error("Unable to load new-format receipt number. Please try again.");
-      return;
-    }
-
-    setSelectedReceiptNumber(receiptNumber);
     setSelectedBooking(booking);
     setShowReceipt(true);
   };
@@ -295,15 +285,12 @@ const BookingsTab = () => {
             endTime: selectedBooking.end_time,
             expectedGuests: selectedBooking.expected_guests?.toString(),
             amount: Number(selectedBooking.booking_amount || 0),
-            transactionId: selectedBooking.id.slice(0, 8).toUpperCase(),
+            transactionId: `BK-${selectedBooking.id.slice(0, 8).toUpperCase()}`,
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
-            bookingId: selectedBooking.id,
-            receiptNumber: selectedReceiptNumber || undefined,
           }}
           onClose={() => {
             setShowReceipt(false);
             setSelectedBooking(null);
-            setSelectedReceiptNumber(null);
           }}
         />
       )}
@@ -386,7 +373,7 @@ const BookingsTab = () => {
             <CardContent>
               <div className="text-2xl font-bold text-primary">
                 ₹{bookings
-                  .filter((b) => b.payment_status === "paid" || b.payment_status === "completed")
+                  .filter((b) => b.payment_status === "paid")
                   .reduce((sum, b) => sum + Number(b.booking_amount || 0), 0)
                   .toLocaleString()}
               </div>
@@ -489,9 +476,7 @@ const BookingsTab = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                              void handlePrintReceipt(booking);
-                            }}
+                            onClick={() => handlePrintReceipt(booking)}
                             title="Print Receipt"
                           >
                             <Printer className="h-4 w-4" />

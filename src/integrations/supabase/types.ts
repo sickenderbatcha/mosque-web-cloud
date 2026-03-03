@@ -1900,33 +1900,6 @@ export type Database = {
         }
         Relationships: []
       }
-      receipt_sequences: {
-        Row: {
-          created_at: string
-          id: string
-          last_number: number
-          receipt_type: string
-          updated_at: string
-          year: number
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_number?: number
-          receipt_type: string
-          updated_at?: string
-          year: number
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_number?: number
-          receipt_type?: string
-          updated_at?: string
-          year?: number
-        }
-        Relationships: []
-      }
       refund_requests: {
         Row: {
           admin_notes: string | null
@@ -2194,10 +2167,6 @@ export type Database = {
           event_type: string
           status: Database["public"]["Enums"]["booking_status"]
         }[]
-      }
-      get_next_receipt_number: {
-        Args: { p_prefix?: string; p_receipt_type: string }
-        Returns: string
       }
       get_non_admin_gb_members: {
         Args: never

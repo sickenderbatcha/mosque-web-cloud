@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -94,8 +94,6 @@ interface BookingReceiptProps {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
-    bookingId?: string; // Full UUID for sequential receipt number lookup
-    receiptNumber?: string; // Authoritative receipt number from backend verify response
   };
   onClose: () => void;
   requireAction?: boolean;
@@ -104,54 +102,8 @@ interface BookingReceiptProps {
 const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
+  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
-
-  // Sequential receipt number state
-  const fallbackReceiptNumber = getReceiptNumber("booking", booking.transactionId);
-  const initialReceiptNumber = booking.receiptNumber || (booking.bookingId ? "" : fallbackReceiptNumber);
-  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(initialReceiptNumber);
-  const [isReceiptResolving, setIsReceiptResolving] = useState(!!booking.bookingId && !booking.receiptNumber);
-  const hasReceiptNumber = formattedReceiptNumber.trim().length > 0;
-
-  useEffect(() => {
-    let isMounted = true;
-
-    if (booking.receiptNumber) {
-      setFormattedReceiptNumber(booking.receiptNumber);
-      setIsReceiptResolving(false);
-      return () => {
-        isMounted = false;
-      };
-    }
-
-    if (!booking.bookingId) {
-      setFormattedReceiptNumber(fallbackReceiptNumber);
-      setIsReceiptResolving(false);
-      return () => {
-        isMounted = false;
-      };
-    }
-
-    setFormattedReceiptNumber("");
-    setIsReceiptResolving(true);
-    getSequentialReceiptNumber("booking", booking.bookingId, booking.transactionId)
-      .then((number) => {
-        if (!isMounted) return;
-        if (typeof number === "string" && /\d{4}-\d{4}$/.test(number)) {
-          setFormattedReceiptNumber(number);
-        } else {
-          setFormattedReceiptNumber("");
-        }
-      })
-      .finally(() => {
-        if (isMounted) setIsReceiptResolving(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [booking.bookingId, booking.receiptNumber, booking.transactionId, fallbackReceiptNumber, getSequentialReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -195,7 +147,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  // Receipt number is now managed via useEffect above
+  const formattedReceiptNumber = getReceiptNumber("booking", booking.transactionId);
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
@@ -409,13 +361,13 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={isReceiptResolving || !hasReceiptNumber}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" />
-                {isReceiptResolving ? "ரசீது எண் ஏற்றுகிறது..." : "அச்சிடு"}
+                அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={isReceiptResolving || !hasReceiptNumber}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
-                {isReceiptResolving ? "காத்திருங்கள்..." : "பதிவிறக்கம்"}
+                பதிவிறக்கம்
               </Button>
             </div>
           </div>
@@ -535,19 +487,11 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
             {/* Transaction ID */}
             <div className="bg-muted p-3 rounded-lg text-center">
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
-              <p className="font-mono font-bold">{isReceiptResolving ? "Resolving..." : formattedReceiptNumber || "Unavailable"}</p>
+              <p className="font-mono font-bold">{formattedReceiptNumber}</p>
               {booking.razorpayPaymentId && (
                 <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {booking.razorpayPaymentId}</p>
               )}
             </div>
-            {!isReceiptResolving && !hasReceiptNumber && (
-              <Alert className="mt-3 border-destructive/50">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  Sequential receipt/income sync is incomplete. Please retry after a moment.
-                </AlertDescription>
-              </Alert>
-            )}
 
             {/* Footer */}
             {/* Note */}

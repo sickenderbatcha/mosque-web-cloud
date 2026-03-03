@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
  import { motion } from "framer-motion";
  import { Download, Printer, ArrowLeft, Building2, CheckCircle2, Banknote, Calendar, User, Phone, Mail } from "lucide-react";
  import { Button } from "@/components/ui/button";
@@ -45,20 +45,12 @@ import { useRef, useState, useEffect } from "react";
  }
  
  const CashPaymentReceipt = ({ request, onClose, onPrinted }: CashPaymentReceiptProps) => {
-    const receiptRef = useRef<HTMLDivElement>(null);
-    const { settings: headerSettings } = useReceiptHeaderSettings();
-    const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
-   const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
+   const receiptRef = useRef<HTMLDivElement>(null);
+   const { settings: headerSettings } = useReceiptHeaderSettings();
+   const { getReceiptNumber } = useReceiptNumberSettings();
+  const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
  
-    // Sequential receipt number state
-    const fallbackReceiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
-    const [receiptNumber, setReceiptNumber] = useState(fallbackReceiptNumber);
-
-    useEffect(() => {
-      setReceiptNumber(fallbackReceiptNumber);
-      getSequentialReceiptNumber("cash_payment", request.id, request.id.slice(0, 8).toUpperCase())
-        .then(setReceiptNumber);
-    }, [request.id, fallbackReceiptNumber]);
+   const receiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
    const serviceTypeTamil = SERVICE_TYPE_LABELS_TAMIL[request.service_type] || request.service_type;
    const serviceTypeEn = SERVICE_TYPE_LABELS_EN[request.service_type] || request.service_type;
  

@@ -23,7 +23,6 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import OTPVerificationDialog from "@/components/OTPVerificationDialog";
-import { verifyRazorpayPaymentWithRetry, ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 
 declare global {
   interface Window {
@@ -87,8 +86,6 @@ const MahalBookingPage = () => {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
-    bookingId?: string;
-    receiptNumber?: string;
   } | null>(null);
 
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -274,13 +271,17 @@ const MahalBookingPage = () => {
             if (bookingError) throw bookingError;
 
             // Verify payment with the new bookingId
-            const { data: verifyData, error: verifyError } = await verifyRazorpayPaymentWithRetry({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              bookingId,
-              type: "booking",
-            });
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+              "create-razorpay-order?action=verify",
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  bookingId,
+                },
+              }
+            );
 
             if (verifyError || !verifyData?.verified) {
               toast({
@@ -321,27 +322,6 @@ const MahalBookingPage = () => {
               },
             }).catch(console.error);
 
-            const resolvedBookingId =
-              typeof bookingId === "string"
-                ? bookingId
-                : (bookingId as any)?.id || (bookingId as any)?.booking_id || undefined;
-
-            const confirmedReceiptNumber =
-              typeof verifyData?.receiptNumber === "string"
-                ? verifyData.receiptNumber
-                : resolvedBookingId
-                ? await ensureBookingReceiptNumberWithRetry(String(resolvedBookingId))
-                : null;
-
-            if (!confirmedReceiptNumber) {
-              toast({
-                title: "ரசீது எண் உருவாக்கம் தோல்வி / Receipt Number Sync Failed",
-                description: "Payment verified, but receipt/income sync failed. Please contact admin.",
-                variant: "destructive",
-              });
-              return;
-            }
-
             // Set receipt data
             setReceiptData({
               applicantName: capturedFormData.applicantName,
@@ -353,11 +333,9 @@ const MahalBookingPage = () => {
               endTime: capturedFormData.endTime,
               expectedGuests: capturedFormData.expectedGuests || undefined,
               amount,
-              transactionId: response.razorpay_payment_id,
+              transactionId: bookingId ? String(bookingId).substring(0, 8).toUpperCase() : response.razorpay_payment_id,
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
-              bookingId: resolvedBookingId ? String(resolvedBookingId) : undefined,
-              receiptNumber: confirmedReceiptNumber,
             });
             setShowReceipt(true);
 
@@ -627,7 +605,6 @@ const MahalBookingPage = () => {
           amount: totalAmount,
           transactionId: `CASH-${Date.now()}`,
           services: selectedServicesList,
-          bookingId: bookingId || undefined,
         });
         setShowReceipt(true);
 

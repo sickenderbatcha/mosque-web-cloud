@@ -69,7 +69,6 @@ export const getReceiptNumberSettings = async (): Promise<ReceiptNumberSettings>
 
 /**
  * Format a receipt number using the configured prefix and a unique identifier.
- * This is a FALLBACK used when the sequential number from DB is not yet available.
  * @param type - The receipt type
  * @param uniqueId - The unique portion (UUID slice, transaction ID, etc.)
  * @param settings - The receipt number settings
@@ -86,66 +85,6 @@ export const formatReceiptNumber = (
     return uniqueId;
   }
   return `${prefix}${uniqueId}`;
-};
-
-/**
- * Map ReceiptType to the reference_type used in the income table.
- */
-const RECEIPT_TYPE_TO_REFERENCE: Record<string, string> = {
-  booking: "booking",
-  donation: "donation",
-  subscription: "subscription",
-  cash_payment: "cash_payment",
-  certificate_noc: "noc_certificate",
-  certificate_heir: "heir_certificate",
-  certificate_general: "certificate_payment",
-};
-
-/**
- * Look up the sequential receipt number from the income/expenses table.
- * This is the authoritative source for receipt numbers since triggers
- * generate sequential numbers using get_next_receipt_number().
- * 
- * @param referenceId - The UUID of the source record (booking, donation, etc.)
- * @param referenceType - The reference_type as stored in income table
- * @returns The sequential receipt number, or null if not found
- */
-export const lookupReceiptNumber = async (
-  referenceId: string,
-  referenceType: string
-): Promise<string | null> => {
-  try {
-    const { data, error } = await supabase
-      .from("income")
-      .select("receipt_number")
-      .eq("reference_id", referenceId)
-      .eq("reference_type", referenceType)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    if (error) {
-      console.error("Error looking up receipt number:", error);
-      return null;
-    }
-
-    return data?.[0]?.receipt_number || null;
-  } catch (error) {
-    console.error("Error looking up receipt number:", error);
-    return null;
-  }
-};
-
-/**
- * Look up receipt number by receipt type and reference ID.
- * Convenience wrapper that maps ReceiptType to reference_type.
- */
-export const lookupReceiptNumberByType = async (
-  type: ReceiptType,
-  referenceId: string
-): Promise<string | null> => {
-  const refType = RECEIPT_TYPE_TO_REFERENCE[type];
-  if (!refType) return null;
-  return lookupReceiptNumber(referenceId, refType);
 };
 
 export const RECEIPT_NUMBER_SETTING_KEYS = SETTING_KEYS;

@@ -150,7 +150,7 @@ const ReceiptNumberSettings = () => {
           Configure the prefix/format for each receipt type. The prefix will appear before the unique identifier.
           <br />
           <span className="text-xs text-muted-foreground">
-            Example: If prefix is "INPT/BK/" and year is 2026, the receipt number will be "INPT/BK/2026-0001"
+            Example: If prefix is "INPT/BK/" and ID is "A1B2C3D4", the receipt number will be "INPT/BK/A1B2C3D4"
           </span>
         </CardDescription>
       </CardHeader>
@@ -169,7 +169,7 @@ const ReceiptNumberSettings = () => {
                 className="max-w-xs"
               />
               <span className="text-xs text-muted-foreground whitespace-nowrap">
-                Preview: <code className="bg-muted px-1.5 py-0.5 rounded">{formData[key]}2026-0001</code>
+                Preview: <code className="bg-muted px-1.5 py-0.5 rounded">{formData[key]}A1B2C3D4</code>
               </span>
             </div>
           </div>

@@ -4,7 +4,6 @@ import {
   ReceiptNumberSettings,
   DEFAULT_RECEIPT_NUMBER_SETTINGS,
   formatReceiptNumber,
-  lookupReceiptNumberByType,
   ReceiptType,
 } from "@/lib/receiptNumberSettings";
 
@@ -92,40 +91,9 @@ export const useReceiptNumberSettings = () => {
     };
   }, [fetchSettings]);
 
-  /**
-   * Get a receipt number using local prefix + uniqueId (fallback format).
-   * Use this when the sequential number from DB is not available.
-   */
   const getReceiptNumber = (type: ReceiptType, uniqueId: string) => {
     return formatReceiptNumber(type, uniqueId, settings);
   };
 
-  /**
-   * Look up the sequential receipt number from the income table.
-   * Returns the DB-assigned sequential number (e.g., BK-2026-0001),
-   * or falls back to prefix+uniqueId if not found.
-   */
-  const getSequentialReceiptNumber = async (
-    type: ReceiptType,
-    referenceId: string,
-    fallbackUniqueId?: string
-  ): Promise<string> => {
-    // Retry longer to handle async ledger creation right after payment verification
-    // (especially when receipt is opened immediately after successful payment)
-    const maxAttempts = type === "booking" ? 12 : 4;
-    const retryDelayMs = type === "booking" ? 750 : 500;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const dbNumber = await lookupReceiptNumberByType(type, referenceId);
-      if (dbNumber) return dbNumber;
-      if (attempt < maxAttempts - 1) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
-      }
-    }
-
-    // Fallback only if sequential number is still unavailable after retries
-    return formatReceiptNumber(type, fallbackUniqueId || referenceId.slice(0, 8).toUpperCase(), settings);
-  };
-
-  return { settings, isLoading, getReceiptNumber, getSequentialReceiptNumber };
+  return { settings, isLoading, getReceiptNumber };
 };

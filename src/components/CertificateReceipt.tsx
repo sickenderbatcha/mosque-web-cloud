@@ -38,14 +38,13 @@ export interface CertificateReceiptData {
   applicantName: string;
   applicantPhone?: string;
   applicantEmail?: string;
-  subjectName?: string;
+  subjectName?: string; // Deceased name for death/heir, Groom/Bride for marriage
   amount: number;
   receiptNumber: string;
   paymentMethod: string;
   transactionId?: string;
   createdAt: string;
-  additionalInfo?: Record<string, string>;
-  referenceId?: string; // Full UUID for sequential receipt number lookup
+  additionalInfo?: Record<string, string>; // For certificate-specific fields
 }
 
 interface CertificateReceiptProps {
@@ -57,7 +56,7 @@ interface CertificateReceiptProps {
 const CertificateReceipt = ({ data, onClose, requireAction = false }: CertificateReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
+  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
 
   // Strictly prevent navigation until user prints/downloads at least once
@@ -108,18 +107,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
     : data.certificateType === "heir"
     ? "certificate_heir"
     : "certificate_general";
-
-  // Sequential receipt number state
-  const fallbackReceiptNumber = getReceiptNumber(receiptType, data.receiptNumber);
-  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
-
-  useEffect(() => {
-    setFormattedReceiptNumber(fallbackReceiptNumber);
-    if (data.referenceId) {
-      getSequentialReceiptNumber(receiptType, data.referenceId, data.receiptNumber)
-        .then(setFormattedReceiptNumber);
-    }
-  }, [data.referenceId, data.receiptNumber, receiptType, fallbackReceiptNumber]);
+  const formattedReceiptNumber = getReceiptNumber(receiptType, data.receiptNumber);
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === "cash") return "ரொக்கம்";

@@ -27,7 +27,6 @@ interface Income {
   reference_id: string | null;
   reference_type: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 const DEFAULT_INCOME_CATEGORIES = [
@@ -101,9 +100,7 @@ const IncomeTab = () => {
       const { data, error } = await supabase
         .from("income")
         .select("*")
-        .order("updated_at", { ascending: false })
-        .order("created_at", { ascending: false })
-        .order("receipt_number", { ascending: false })
+        .order("income_date", { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
       if (error) {
@@ -220,7 +217,7 @@ const IncomeTab = () => {
 
   const totalIncome = incomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
 
-  // Filtered incomes – order preserved from DB query (created_at DESC)
+  // Filtered incomes
   const filteredIncomes = useMemo(() => {
     return incomes.filter((income) => {
       const searchLower = searchValue.toLowerCase();

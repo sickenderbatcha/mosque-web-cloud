@@ -34,7 +34,6 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
-import { verifyRazorpayPaymentWithRetry, ensureBookingReceiptNumberWithRetry } from "@/lib/paymentVerification";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
@@ -220,8 +219,6 @@ const UserDashboard = () => {
     transactionId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
-    bookingId?: string;
-    receiptNumber?: string;
   } | null>(null);
   const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
 
@@ -699,32 +696,22 @@ const UserDashboard = () => {
         description: `Mahal Booking - ${booking.event_type}`,
         order_id: orderData.orderId,
         handler: async (response: any) => {
-          const { data: verifyData, error: verifyError } = await verifyRazorpayPaymentWithRetry({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            bookingId: booking.id,
-            type: "booking",
-          });
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+            "create-razorpay-order?action=verify",
+            {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                bookingId: booking.id,
+              },
+            }
+          );
 
           if (verifyError || !verifyData?.verified) {
             toast({
               title: "பணம் செலுத்தல் சரிபார்ப்பு தோல்வி / Payment Verification Failed",
               description: "Please contact support if amount was deducted.",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          const confirmedReceiptNumber =
-            typeof verifyData?.receiptNumber === "string"
-              ? verifyData.receiptNumber
-              : await ensureBookingReceiptNumberWithRetry(booking.id);
-
-          if (!confirmedReceiptNumber) {
-            toast({
-              title: "ரசீது எண் உருவாக்கம் தோல்வி / Receipt Number Sync Failed",
-              description: "Payment verified, but receipt/income sync failed. Please contact admin.",
               variant: "destructive",
             });
             return;
@@ -764,11 +751,9 @@ const UserDashboard = () => {
             startTime: booking.start_time,
             endTime: booking.end_time,
             amount: booking.booking_amount || 0,
-            transactionId: response.razorpay_payment_id || booking.id.substring(0, 8).toUpperCase(),
+            transactionId: booking.id.substring(0, 8).toUpperCase(),
             services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
             razorpayPaymentId: response.razorpay_payment_id || undefined,
-            bookingId: booking.id,
-            receiptNumber: confirmedReceiptNumber,
           });
 
           // Refresh bookings data
@@ -806,19 +791,9 @@ const UserDashboard = () => {
     }
   };
 
-  const generateReceipt = async (booking: Booking) => {
-    const sequentialReceiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
-    if (!sequentialReceiptNumber) {
-      toast({
-        title: "ரசீது எண் கிடைக்கவில்லை / Receipt Number Missing",
-        description: "Unable to fetch sequential receipt number. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const generateReceipt = (booking: Booking) => {
     const doc = new jsPDF();
-    const receiptNumber = sequentialReceiptNumber;
+    const receiptNumber = booking.id.slice(0, 8).toUpperCase();
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Header background
@@ -916,34 +891,6 @@ const UserDashboard = () => {
     toast({
       title: "Receipt Downloaded",
       description: `Receipt #${receiptNumber} has been downloaded.`,
-    });
-  };
-
-  const openBookingReceipt = async (booking: Booking) => {
-    const sequentialReceiptNumber = await ensureBookingReceiptNumberWithRetry(booking.id);
-
-    if (!sequentialReceiptNumber) {
-      toast({
-        title: "ரசீது எண் கிடைக்கவில்லை / Receipt Number Missing",
-        description: "Unable to fetch sequential receipt number. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setShowBookingReceipt({
-      applicantName: booking.applicant_name,
-      applicantPhone: booking.applicant_phone,
-      applicantEmail: booking.applicant_email || undefined,
-      eventType: booking.event_type,
-      eventDate: booking.event_date,
-      startTime: booking.start_time,
-      endTime: booking.end_time,
-      amount: booking.booking_amount || 0,
-      transactionId: booking.id.substring(0, 8).toUpperCase(),
-      services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-      bookingId: booking.id,
-      receiptNumber: sequentialReceiptNumber,
     });
   };
 
@@ -1109,7 +1056,7 @@ const UserDashboard = () => {
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                               <span className="font-semibold break-words">{booking.event_type}</span>
                               {getBookingStatusBadge(booking.status)}
-                              {(booking.payment_status === "paid" || booking.payment_status === "completed") && (
+                              {booking.payment_status === "paid" && (
                                 <Badge className="bg-green-500/20 text-green-700 shrink-0">Paid</Badge>
                               )}
                             </div>
@@ -1133,13 +1080,24 @@ const UserDashboard = () => {
                             
                             {/* Action buttons - fully wrapped */}
                             <div className="flex flex-wrap items-center gap-2">
-                              {/* Receipt button for paid bookings */}
-                              {(booking.payment_status === "paid" || booking.payment_status === "completed") && booking.booking_amount && (
+                              {/* Receipt button for cash-paid bookings only (online payment receipts are shown at payment time) */}
+                              {booking.payment_status === "paid" && booking.booking_amount && (
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   className="h-auto py-1.5 px-2 text-xs sm:text-sm"
-                                  onClick={() => openBookingReceipt(booking)}
+                                  onClick={() => setShowBookingReceipt({
+                                    applicantName: booking.applicant_name,
+                                    applicantPhone: booking.applicant_phone,
+                                    applicantEmail: booking.applicant_email || undefined,
+                                    eventType: booking.event_type,
+                                    eventDate: booking.event_date,
+                                    startTime: booking.start_time,
+                                    endTime: booking.end_time,
+                                    amount: booking.booking_amount || 0,
+                                    transactionId: `BK-${booking.id.substring(0, 8).toUpperCase()}`,
+                                    services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+                                  })}
                                 >
                                   <Receipt className="h-3.5 w-3.5 mr-1 shrink-0" />
                                   Receipt
@@ -1532,7 +1490,7 @@ const UserDashboard = () => {
                     <CardDescription>Your payment history and receipts</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 ? (
+                    {bookings.filter(b => b.payment_status === 'paid').length === 0 ? (
                       <div className="text-center py-8">
                         <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground font-tamil">பணம் செலுத்தல் இல்லை</p>
@@ -1541,7 +1499,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings
-                          .filter(b => b.payment_status === 'paid' || b.payment_status === 'completed')
+                          .filter(b => b.payment_status === 'paid')
                           .map((booking) => (
                             <div
                               key={booking.id}
@@ -1555,7 +1513,7 @@ const UserDashboard = () => {
                                   <div>
                                     <p className="font-semibold">{booking.event_type}</p>
                                     <p className="text-xs text-muted-foreground">
-                                      Receipt number appears in the downloaded receipt
+                                      Receipt #{booking.id.slice(0, 8).toUpperCase()}
                                     </p>
                                   </div>
                                 </div>
@@ -1585,7 +1543,7 @@ const UserDashboard = () => {
 
                               <div className="mt-3 pt-3 border-t flex items-center justify-between">
                                 <div className="text-xs text-muted-foreground">
-                                  <span className="font-tamil">விலைப்பட்டியல் எண்:</span> Download receipt to view
+                                  <span className="font-tamil">விலைப்பட்டியல் எண்:</span> {booking.id.slice(0, 8).toUpperCase()}
                                 </div>
                                 <Button
                                   size="sm"

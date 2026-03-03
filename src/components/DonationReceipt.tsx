@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, ArrowLeft, Building2, Phone, User, Heart, IndianRupee, CheckCircle2, Mail, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,6 @@ interface DonationReceiptProps {
     isAnonymous: boolean;
     createdAt: string;
     razorpayPaymentId?: string;
-    donationId?: string;
   };
   onClose: () => void;
   requireAction?: boolean;
@@ -114,20 +113,8 @@ const getPurposeTamil = (purpose: string): string => {
 const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber, getSequentialReceiptNumber } = useReceiptNumberSettings();
+  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
-
-  // Sequential receipt number state
-  const fallbackReceiptNumber = getReceiptNumber("donation", donation.receiptNumber);
-  const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
-
-  useEffect(() => {
-    setFormattedReceiptNumber(fallbackReceiptNumber);
-    if (donation.donationId) {
-      getSequentialReceiptNumber("donation", donation.donationId, donation.receiptNumber)
-        .then(setFormattedReceiptNumber);
-    }
-  }, [donation.donationId, donation.receiptNumber, fallbackReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -171,7 +158,7 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
     };
   }, [requireAction, hasActioned]);
 
-  // Receipt number is now managed via useEffect above
+  const formattedReceiptNumber = getReceiptNumber("donation", donation.receiptNumber);
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
