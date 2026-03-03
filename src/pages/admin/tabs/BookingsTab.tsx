@@ -287,6 +287,7 @@ const BookingsTab = () => {
             amount: Number(selectedBooking.booking_amount || 0),
             transactionId: `BK-${selectedBooking.id.slice(0, 8).toUpperCase()}`,
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
+            bookingId: selectedBooking.id,
           }}
           onClose={() => {
             setShowReceipt(false);
