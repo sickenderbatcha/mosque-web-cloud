@@ -177,18 +177,17 @@ const handler = async (req: Request): Promise<Response> => {
         }
       };
 
-      // Fallback guard: ensure booking income row exists even if trigger timing misses
+      // Fallback guard: ensure booking income row exists and always has sequential receipt number
       const ensureBookingIncome = async (bookingId: string) => {
         try {
           const { data: existingIncome } = await supabase
             .from("income")
-            .select("id")
+            .select("id, receipt_number")
             .eq("reference_id", bookingId)
             .eq("reference_type", "booking")
+            .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
-
-          if (existingIncome) return;
 
           const { data: bookingData, error: bookingError } = await supabase
             .from("mahal_bookings")
@@ -197,9 +196,12 @@ const handler = async (req: Request): Promise<Response> => {
             .maybeSingle();
 
           if (bookingError || !bookingData) {
-            console.error("Unable to fetch booking for income insertion:", bookingError);
+            console.error("Unable to fetch booking for income sync:", bookingError);
             return;
           }
+
+          // Existing income row is valid and already has sequential receipt number
+          if (existingIncome?.receipt_number) return;
 
           const { data: nextReceipt, error: receiptError } = await supabase.rpc("get_next_receipt_number", {
             p_receipt_type: "booking",
@@ -207,6 +209,26 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (receiptError || typeof nextReceipt !== "string") {
             console.error("Unable to generate sequential booking receipt number:", receiptError);
+            return;
+          }
+
+          if (existingIncome?.id) {
+            const { error: updateIncomeError } = await supabase
+              .from("income")
+              .update({
+                amount: bookingData.booking_amount,
+                category: "மஹால் முன்பதிவு (Mahal Booking)",
+                source: bookingData.applicant_name,
+                description: `${bookingData.event_type} - ${bookingData.event_date}`,
+                income_date: new Date().toISOString().slice(0, 10),
+                payment_method: bookingData.payment_status === "completed" ? "Online" : "Cash",
+                receipt_number: nextReceipt,
+              })
+              .eq("id", existingIncome.id);
+
+            if (updateIncomeError) {
+              console.error("Failed to update booking income fallback record:", updateIncomeError);
+            }
             return;
           }
 

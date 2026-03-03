@@ -109,13 +109,31 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   // Sequential receipt number state
   const fallbackReceiptNumber = getReceiptNumber("booking", booking.transactionId);
   const [formattedReceiptNumber, setFormattedReceiptNumber] = useState(fallbackReceiptNumber);
+  const [isReceiptResolving, setIsReceiptResolving] = useState(!!booking.bookingId);
 
   useEffect(() => {
-    setFormattedReceiptNumber(fallbackReceiptNumber);
-    if (booking.bookingId) {
-      getSequentialReceiptNumber("booking", booking.bookingId, booking.transactionId)
-        .then(setFormattedReceiptNumber);
+    let isMounted = true;
+
+    if (!booking.bookingId) {
+      setFormattedReceiptNumber(fallbackReceiptNumber);
+      setIsReceiptResolving(false);
+      return () => {
+        isMounted = false;
+      };
     }
+
+    setIsReceiptResolving(true);
+    getSequentialReceiptNumber("booking", booking.bookingId, booking.transactionId)
+      .then((number) => {
+        if (isMounted) setFormattedReceiptNumber(number);
+      })
+      .finally(() => {
+        if (isMounted) setIsReceiptResolving(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [booking.bookingId, booking.transactionId, fallbackReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
@@ -374,13 +392,13 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={isReceiptResolving}>
                 <Printer className="h-4 w-4 mr-2" />
-                அச்சிடு
+                {isReceiptResolving ? "ரசீது எண் ஏற்றுகிறது..." : "அச்சிடு"}
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={isReceiptResolving}>
                 <Download className="h-4 w-4 mr-2" />
-                பதிவிறக்கம்
+                {isReceiptResolving ? "காத்திருங்கள்..." : "பதிவிறக்கம்"}
               </Button>
             </div>
           </div>
