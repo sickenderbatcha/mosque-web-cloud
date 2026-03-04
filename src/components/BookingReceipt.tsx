@@ -318,9 +318,9 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               ${booking.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${booking.razorpayPaymentId}</div>` : ''}
             </div>
 
-            <div style="background: #fff8e1; border: 1px solid #f9a825; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+            ${booking.paymentMethod?.toLowerCase() !== 'cash' ? `<div style="background: #fff8e1; border: 1px solid #f9a825; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
               <p style="color: #e65100; font-size: 13px; font-weight: 600; margin: 0;">குறிப்பு : தாங்கள் செலுத்திய பணம் எங்களுக்கு கிடைக்கப் பெற்றவுடன் முன் பதிவு உறுதி செய்யப்படும்</p>
-            </div>
+            </div>` : ''}
 
             <div class="footer">
               <p>${headerSettings.footerMessage}</p>
@@ -554,11 +554,13 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
 
             {/* Footer */}
             {/* Note */}
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-400 rounded-lg p-3 text-center mt-6">
-              <p className="text-amber-800 dark:text-amber-300 text-sm font-semibold">
-                குறிப்பு : தாங்கள் செலுத்திய பணம் எங்களுக்கு கிடைக்கப் பெற்றவுடன் முன் பதிவு உறுதி செய்யப்படும்
-              </p>
-            </div>
+            {booking.paymentMethod?.toLowerCase() !== 'cash' && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-400 rounded-lg p-3 text-center mt-6">
+                <p className="text-amber-800 dark:text-amber-300 text-sm font-semibold">
+                  குறிப்பு : தாங்கள் செலுத்திய பணம் எங்களுக்கு கிடைக்கப் பெற்றவுடன் முன் பதிவு உறுதி செய்யப்படும்
+                </p>
+              </div>
+            )}
 
             <div className="text-center mt-6 pt-6 border-t-2 border-dashed border-primary/30">
               <p className="text-sm text-muted-foreground">{headerSettings.footerMessage}</p>
