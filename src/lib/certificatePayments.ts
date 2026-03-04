@@ -20,6 +20,66 @@ export interface CertificateAccessStatus {
   completedPayment: CertificatePaymentLite | null;
 }
 
+const RECEIPT_SEQUENCE_PATTERN = /-\d{4}-\d{4,}$/;
+
+export const isSequentialReceiptNumber = (value?: string | null): value is string => {
+  if (!value) return false;
+  return RECEIPT_SEQUENCE_PATTERN.test(value.trim());
+};
+
+interface ReceiptRow {
+  reference_id: string | null;
+  receipt_number: string | null;
+  created_at: string;
+}
+
+export async function getLatestSequentialReceiptMap(params: {
+  referenceIds: string[];
+  referenceTypes: string[];
+  retries?: number;
+  retryDelayMs?: number;
+}): Promise<Record<string, string>> {
+  const {
+    referenceIds,
+    referenceTypes,
+    retries = 5,
+    retryDelayMs = 1000,
+  } = params;
+
+  if (!referenceIds.length || !referenceTypes.length) return {};
+
+  const uniqueReferenceIds = Array.from(new Set(referenceIds));
+  const uniqueReferenceTypes = Array.from(new Set(referenceTypes));
+
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const { data, error } = await supabase
+      .from("income")
+      .select("receipt_number, reference_id, created_at")
+      .in("reference_id", uniqueReferenceIds)
+      .in("reference_type", uniqueReferenceTypes)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const map: Record<string, string> = {};
+    (data as ReceiptRow[] | null)?.forEach((row) => {
+      if (!row.reference_id || map[row.reference_id]) return;
+      if (isSequentialReceiptNumber(row.receipt_number)) {
+        map[row.reference_id] = row.receipt_number;
+      }
+    });
+
+    const unresolvedCount = uniqueReferenceIds.filter((id) => !map[id]).length;
+    if (unresolvedCount === 0 || attempt === retries - 1) {
+      return map;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+  }
+
+  return {};
+}
+
 export async function getCertificateAccessStatus(params: {
   referenceId: string;
   certificateType: CertificateType;
@@ -53,3 +113,4 @@ export async function getCertificateAccessStatus(params: {
     completedPayment,
   };
 }
+

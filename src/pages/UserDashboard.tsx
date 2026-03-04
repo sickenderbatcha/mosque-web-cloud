@@ -34,6 +34,7 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate, OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
@@ -389,29 +390,18 @@ const UserDashboard = () => {
       setHeirRequests((heirRes.data as HeirRequest[]) || []);
       setCertificatePayments((certPaymentsRes.data as CertificatePayment[]) || []);
 
-      // Fetch receipt numbers from income table for all completed certificates
+      // Fetch receipt numbers from income table for all completed certificates (sequential only)
       const allCompletedIds = [
         ...(nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id),
         ...(heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id),
         ...(certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id),
       ];
-      if (allCompletedIds.length > 0) {
-        const { data: incomeData } = await supabase
-          .from("income")
-          .select("receipt_number, reference_id, created_at")
-          .in("reference_id", allCompletedIds)
-          .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"])
-          .order("created_at", { ascending: false });
-        if (incomeData) {
-          const map: Record<string, string> = {};
-          incomeData.forEach((row: any) => {
-            if (row.reference_id && row.receipt_number && !map[row.reference_id]) {
-              map[row.reference_id] = row.receipt_number;
-            }
-          });
-          setCertReceiptNumberMap(map);
-        }
-      }
+
+      const receiptMap = await getLatestSequentialReceiptMap({
+        referenceIds: allCompletedIds,
+        referenceTypes: ["certificate_payment", "noc_certificate", "heir_certificate"],
+      });
+      setCertReceiptNumberMap(receiptMap);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {

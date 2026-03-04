@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { supabase } from "@/integrations/supabase/client";
+import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -61,53 +61,30 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
   const [receiptNumber, setReceiptNumber] = useState<string>("");
   const [receiptLoading, setReceiptLoading] = useState(true);
 
-  // Fetch sequential receipt number from income table
   useEffect(() => {
-    const isSequentialReceipt = (value?: string | null) =>
-      !!value && /^[A-Za-z]+-\d{4}-\d{4,}$/.test(value);
-
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
-      const maxRetries = 5;
-      const referenceTypes = Array.from(
-        new Set([
+
+      const map = await getLatestSequentialReceiptMap({
+        referenceIds: [data.referenceId],
+        referenceTypes: [
           data.referenceType,
           "certificate_payment",
           "noc_certificate",
           "heir_certificate",
-        ].filter(Boolean))
-      ) as string[];
+        ].filter(Boolean),
+      });
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const { data: incomeRows } = await supabase
-          .from("income")
-          .select("receipt_number, created_at")
-          .eq("reference_id", data.referenceId)
-          .in("reference_type", referenceTypes)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        const sequentialReceiptNumber =
-          incomeRows?.find((row) => isSequentialReceipt(row.receipt_number))?.receipt_number || null;
-
-        if (sequentialReceiptNumber) {
-          setReceiptNumber(sequentialReceiptNumber);
-          setReceiptLoading(false);
-          return;
-        }
-
-        if (attempt < maxRetries - 1) {
-          await new Promise((r) => setTimeout(r, 1000));
-        }
-      }
-
-      // Only keep fallback if it is already a valid sequential receipt
-      setReceiptNumber(isSequentialReceipt(data.receiptNumber) ? data.receiptNumber : "");
+      setReceiptNumber(map[data.referenceId] || "");
       setReceiptLoading(false);
     };
 
-    fetchReceiptNumber();
-  }, [data.referenceId, data.referenceType, data.receiptNumber]);
+    fetchReceiptNumber().catch((error) => {
+      console.error("Failed to resolve certificate receipt number", error);
+      setReceiptNumber("");
+      setReceiptLoading(false);
+    });
+  }, [data.referenceId, data.referenceType]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
