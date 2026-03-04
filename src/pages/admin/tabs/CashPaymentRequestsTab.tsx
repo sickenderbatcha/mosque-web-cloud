@@ -106,6 +106,7 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
   subscription: "சந்தா (Subscription)",
   noc: "ஆட்சேபனையின்மை சான்றிதழ் (NOC)",
   heir: "வாரிசு சான்றிதழ் (Heir)",
+  outside_marriage_certificate: "வெளியூர் திருமணச் சான்றிதழ் (Outside Marriage Certificate)",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -387,6 +388,16 @@ const CashPaymentRequestsTab = () => {
             if (error) throw error;
           }
           break;
+
+        case "outside_marriage_certificate":
+          if (reference_id) {
+            const { error } = await supabase
+              .from("certificate_payments")
+              .update({ payment_status: "completed", payment_method: "cash" })
+              .eq("id", reference_id);
+            if (error) throw error;
+          }
+          break;
       }
     } catch (error) {
       console.error("Error updating service payment status:", error);
@@ -542,6 +553,7 @@ const CashPaymentRequestsTab = () => {
                 <SelectItem value="certificate">சான்றிதழ்</SelectItem>
                 <SelectItem value="noc">NOC</SelectItem>
                 <SelectItem value="heir">வாரிசு சான்றிதழ்</SelectItem>
+                <SelectItem value="outside_marriage_certificate">வெளியூர் திருமணம்</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -1026,6 +1026,40 @@ export default function NocCertificatePage() {
               partnerName: form.getValues("partner_name"),
               mosqueToSubmit: form.getValues("mosque_to_submit"),
             }}
+            onBeforeSubmit={
+              !cashRequestData.referenceId
+                ? async () => {
+                    const formData = form.getValues();
+                    const { data: nocData, error: nocError } = await supabase
+                      .from("noc_certificates")
+                      .insert([{
+                        applicant_membership_number: formData.applicant_membership_number || null,
+                        applicant_name: formData.applicant_name,
+                        applicant_email: formData.applicant_email || null,
+                        applicant_phone: formData.applicant_phone,
+                        father_membership_number: formData.father_membership_number,
+                        father_name: formData.father_name,
+                        family_name: formData.family_name,
+                        applicant_relationship: formData.applicant_relationship,
+                        partner_name: formData.partner_name,
+                        partner_father_name: formData.partner_father_name,
+                        partner_category: formData.partner_category,
+                        partner_applicant_relationship: formData.partner_applicant_relationship,
+                        mosque_to_submit: formData.mosque_to_submit,
+                        address_to_submit: formData.address_to_submit,
+                        status: "payment_pending",
+                        payment_status: "pending",
+                        user_id: user?.id || null,
+                      }])
+                      .select()
+                      .single();
+
+                    if (nocError) throw nocError;
+                    setNocRecordId(nocData.id);
+                    return nocData.id;
+                  }
+                : undefined
+            }
             onSuccess={() => {
               setCashRequestData(null);
               form.reset();
