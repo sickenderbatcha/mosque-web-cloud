@@ -33,6 +33,7 @@ import { Search, Eye, Check, X, IndianRupee, FileText, Receipt } from "lucide-re
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
+import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 
 interface CertificatePayment {
   id: string;
@@ -76,28 +77,26 @@ export default function CertificatePaymentsTab() {
   const [receiptNumberMap, setReceiptNumberMap] = useState<Record<string, string>>({});
   useEffect(() => {
     const fetchReceiptNumbers = async () => {
-      if (!payments?.length) return;
-      const completedIds = payments.filter(p => p.payment_status === "completed").map(p => p.id);
-      if (completedIds.length === 0) return;
-
-      const { data: incomeData } = await supabase
-        .from("income")
-        .select("receipt_number, reference_id, created_at")
-        .in("reference_id", completedIds)
-        .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"])
-        .order("created_at", { ascending: false });
-
-      if (incomeData) {
-        const map: Record<string, string> = {};
-        incomeData.forEach((row: any) => {
-          if (row.reference_id && row.receipt_number && !map[row.reference_id]) {
-            map[row.reference_id] = row.receipt_number;
-          }
-        });
-        setReceiptNumberMap(map);
+      if (!payments?.length) {
+        setReceiptNumberMap({});
+        return;
       }
+
+      const completedIds = payments
+        .filter((p) => p.payment_status === "completed")
+        .map((p) => p.id);
+
+      const map = await getLatestSequentialReceiptMap({
+        referenceIds: completedIds,
+        referenceTypes: ["certificate_payment", "noc_certificate", "heir_certificate"],
+      });
+
+      setReceiptNumberMap(map);
     };
-    fetchReceiptNumbers();
+
+    fetchReceiptNumbers().catch((error) => {
+      console.error("Failed to fetch certificate receipt numbers", error);
+    });
   }, [payments]);
 
   const updatePaymentMutation = useMutation({
