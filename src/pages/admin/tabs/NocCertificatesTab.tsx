@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { incrementNocCertificateSequence } from "@/components/admin/NocCertificateNumberSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,10 +145,13 @@ export default function NocCertificatesTab() {
         // Don't fail the status update if notification fails
       }
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["noc-certificates"] });
       toast.success("நிலை புதுப்பிக்கப்பட்டது");
       setViewRecord(null);
+      if (variables.status === "approved") {
+        await incrementNocCertificateSequence();
+      }
     },
     onError: (error) => {
       toast.error("பிழை: " + error.message);

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { incrementDeathCertificateSequence } from "@/components/admin/DeathCertificateNumberSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -326,11 +327,12 @@ export default function DeathRegisterTab() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
       toast.success("இறப்பு பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false);
       form.reset();
+      await incrementDeathCertificateSequence();
     },
     onError: (error) => {
       toast.error("பிழை: " + error.message);
