@@ -199,7 +199,7 @@ export default function CertificatePaymentsTab() {
       applicantPhone: payment.applicant_phone,
       applicantEmail: payment.applicant_email || undefined,
       amount: payment.amount,
-      receiptNumber: payment.id.substring(0, 8).toUpperCase(),
+      receiptNumber: receiptNumberMap[payment.id] || "",
       referenceId: payment.id,
       referenceType: certificateType === "noc" ? "noc_certificate" : certificateType === "heir" ? "heir_certificate" : "certificate_payment",
       paymentMethod: payment.payment_method || "cash",

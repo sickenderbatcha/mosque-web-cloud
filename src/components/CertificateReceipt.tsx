@@ -67,15 +67,17 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
       setReceiptLoading(true);
       const maxRetries = 5;
       for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const { data: incomeData } = await supabase
+        const { data: incomeRows } = await supabase
           .from("income")
           .select("receipt_number")
           .eq("reference_id", data.referenceId)
           .eq("reference_type", data.referenceType)
-          .maybeSingle();
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-        if (incomeData?.receipt_number) {
-          setReceiptNumber(incomeData.receipt_number);
+        const sequentialReceiptNumber = incomeRows?.[0]?.receipt_number;
+        if (sequentialReceiptNumber) {
+          setReceiptNumber(sequentialReceiptNumber);
           setReceiptLoading(false);
           return;
         }
