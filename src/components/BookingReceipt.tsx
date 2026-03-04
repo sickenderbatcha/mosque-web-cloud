@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { supabase } from "@/integrations/supabase/client";
+import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
@@ -121,39 +121,26 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(true);
 
-  // Fetch the sequential receipt number from the income table
+  // Fetch authoritative sequential receipt number from income table
   useEffect(() => {
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
       try {
-        // Retry to account for async income insert after payment confirmation
-        for (let attempt = 0; attempt < 10; attempt++) {
-          const { data, error } = await supabase
-            .from("income")
-            .select("receipt_number")
-            .eq("reference_id", booking.bookingId)
-            .eq("reference_type", "booking")
-            .maybeSingle();
+        const receiptMap = await getLatestSequentialReceiptMap({
+          referenceIds: [booking.bookingId],
+          referenceTypes: ["booking"],
+          retries: 12,
+          retryDelayMs: 1000,
+        });
 
-          if (error) throw error;
-
-          if (data?.receipt_number) {
-            setReceiptNumber(data.receipt_number);
-            setReceiptLoading(false);
-            return;
-          }
-
-          if (attempt < 9) await new Promise((r) => setTimeout(r, 1000));
-        }
-
-        // Do not generate legacy fallback receipt numbers in UI
-        setReceiptNumber(null);
+        setReceiptNumber(receiptMap[booking.bookingId] || null);
       } catch {
         setReceiptNumber(null);
       } finally {
         setReceiptLoading(false);
       }
     };
+
     fetchReceiptNumber();
   }, [booking.bookingId]);
 

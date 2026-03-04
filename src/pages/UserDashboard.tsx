@@ -25,7 +25,6 @@ declare global {
 }
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import jsPDF from "jspdf";
 import { generateNocCertificatePdf, printNocCertificate, NocRecord } from "@/utils/nocCertificatePdf";
 import NocCertificatePreview from "@/components/NocCertificatePreview";
 import { generateHeirCertificatePdf, printHeirCertificate, HeirRecord as HeirRecordType } from "@/utils/heirCertificatePdf";
@@ -810,108 +809,6 @@ const UserDashboard = () => {
     }
   };
 
-  const generateReceipt = (booking: Booking) => {
-    const doc = new jsPDF();
-    const receiptNumber = booking.id.slice(0, 8).toUpperCase();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Header background
-    doc.setFillColor(26, 95, 74);
-    doc.rect(0, 0, pageWidth, 50, "F");
-    
-    // Header text
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.text("PAYMENT RECEIPT", pageWidth / 2, 25, { align: "center" });
-    doc.setFontSize(12);
-    doc.text("Ilaiyankudi Mosque - Mahal Booking", pageWidth / 2, 35, { align: "center" });
-    
-    // Receipt info
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    doc.text(`Receipt No: ${receiptNumber}`, 20, 65);
-    doc.text(`Date: ${formatDate(booking.created_at)}`, pageWidth - 20, 65, { align: "right" });
-    
-    // Paid stamp
-    doc.setDrawColor(34, 197, 94);
-    doc.setTextColor(34, 197, 94);
-    doc.setFontSize(28);
-    doc.setLineWidth(2);
-    doc.rect(pageWidth - 70, 70, 50, 20, "S");
-    doc.text("PAID", pageWidth - 45, 84, { align: "center" });
-    
-    // Customer details section
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text("Customer Details", 20, 110);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 115, pageWidth - 20, 115);
-    
-    doc.setFontSize(11);
-    doc.text(`Name: ${booking.applicant_name}`, 20, 125);
-    doc.text(`Phone: ${booking.applicant_phone}`, 20, 135);
-    if (booking.applicant_email) {
-      doc.text(`Email: ${booking.applicant_email}`, 20, 145);
-    }
-    
-    // Booking details section
-    const detailsY = booking.applicant_email ? 165 : 155;
-    doc.setFontSize(14);
-    doc.text("Booking Details", 20, detailsY);
-    doc.line(20, detailsY + 5, pageWidth - 20, detailsY + 5);
-    
-    doc.setFontSize(11);
-    const details = [
-      ["Event Type", booking.event_type],
-      ["Event Date", formatDate(booking.event_date)],
-      ["Time Slot", `${booking.start_time} - ${booking.end_time}`],
-      ["Booking Status", booking.status.toUpperCase()],
-    ];
-    
-    let y = detailsY + 18;
-    details.forEach(([label, value]) => {
-      doc.text(`${label}:`, 25, y);
-      doc.text(value, 80, y);
-      y += 10;
-    });
-    
-    // Payment summary section
-    y += 10;
-    doc.setFontSize(14);
-    doc.text("Payment Summary", 20, y);
-    doc.line(20, y + 5, pageWidth - 20, y + 5);
-    
-    y += 18;
-    doc.setFontSize(11);
-    doc.setFillColor(245, 245, 245);
-    doc.rect(20, y - 5, pageWidth - 40, 30, "F");
-    
-    doc.text("Total Amount Paid:", 25, y + 5);
-    doc.setFontSize(16);
-    doc.setTextColor(26, 95, 74);
-    doc.text(`Rs. ${booking.booking_amount?.toLocaleString() || "0"}`, pageWidth - 25, y + 5, { align: "right" });
-    
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(10);
-    doc.text("Payment Method: Online (Razorpay)", 25, y + 18);
-    
-    // Footer
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(9);
-    const footerY = doc.internal.pageSize.getHeight() - 30;
-    doc.line(20, footerY - 10, pageWidth - 20, footerY - 10);
-    doc.text("This is a computer-generated receipt and does not require a signature.", pageWidth / 2, footerY, { align: "center" });
-    doc.text("Thank you for choosing Ilaiyankudi Mosque Mahal for your event.", pageWidth / 2, footerY + 10, { align: "center" });
-    doc.text("For queries, contact the Masjid office", pageWidth / 2, footerY + 20, { align: "center" });
-    
-    // Save PDF
-    doc.save(`Receipt_${receiptNumber}_${booking.event_type.replace(/\s/g, "_")}.pdf`);
-    
-    toast({
-      title: "Receipt Downloaded",
-      description: `Receipt #${receiptNumber} has been downloaded.`,
-    });
-  };
 
   if (loading) {
     return (
@@ -1510,7 +1407,7 @@ const UserDashboard = () => {
                     <CardDescription>Your payment history and receipts</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bookings.filter(b => b.payment_status === 'paid').length === 0 ? (
+                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 ? (
                       <div className="text-center py-8">
                         <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground font-tamil">பணம் செலுத்தல் இல்லை</p>
@@ -1519,7 +1416,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {bookings
-                          .filter(b => b.payment_status === 'paid')
+                          .filter(b => b.payment_status === 'paid' || b.payment_status === 'completed')
                           .map((booking) => (
                             <div
                               key={booking.id}
@@ -1533,7 +1430,7 @@ const UserDashboard = () => {
                                   <div>
                                     <p className="font-semibold">{booking.event_type}</p>
                                     <p className="text-xs text-muted-foreground">
-                                      Receipt #{booking.id.slice(0, 8).toUpperCase()}
+                                      {booking.payment_status === "completed" ? "Online Payment" : "Cash Payment"}
                                     </p>
                                   </div>
                                 </div>
@@ -1561,18 +1458,27 @@ const UserDashboard = () => {
                                 </div>
                               </div>
 
-                              <div className="mt-3 pt-3 border-t flex items-center justify-between">
-                                <div className="text-xs text-muted-foreground">
-                                  <span className="font-tamil">விலைப்பட்டியல் எண்:</span> {booking.id.slice(0, 8).toUpperCase()}
-                                </div>
+                              <div className="mt-3 pt-3 border-t flex items-center justify-end">
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => generateReceipt(booking)}
+                                  onClick={() => setShowBookingReceipt({
+                                    applicantName: booking.applicant_name,
+                                    applicantPhone: booking.applicant_phone,
+                                    applicantEmail: booking.applicant_email || undefined,
+                                    eventType: booking.event_type,
+                                    eventDate: booking.event_date,
+                                    startTime: booking.start_time,
+                                    endTime: booking.end_time,
+                                    amount: booking.booking_amount || 0,
+                                    bookingId: booking.id,
+                                    services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+                                    paymentMethod: booking.payment_status === "completed" ? "online" : "cash",
+                                  })}
                                   className="gap-1"
                                 >
-                                  <Download className="h-3.5 w-3.5" />
-                                  Download Receipt
+                                  <Eye className="h-3.5 w-3.5" />
+                                  View Receipt
                                 </Button>
                               </div>
                             </div>
