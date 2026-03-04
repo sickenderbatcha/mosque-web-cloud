@@ -34,6 +34,8 @@ const ReceiptSequenceResetSettings = () => {
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; type: string; value: number } | null>(null);
   const { toast } = useToast();
 
+  const ALL_RECEIPT_TYPES = Object.keys(RECEIPT_TYPE_LABELS);
+
   useEffect(() => {
     fetchSequences();
   }, []);
@@ -48,9 +50,30 @@ const ReceiptSequenceResetSettings = () => {
         .order("year", { ascending: false });
 
       if (error) throw error;
-      setSequences((data as SequenceRow[]) || []);
+
+      const rows = (data as SequenceRow[]) || [];
+      const currentYear = new Date().getFullYear();
+
+      // Build virtual rows for missing receipt types in current year
+      const existingKeys = new Set(rows.map(r => `${r.receipt_type}_${r.year}`));
+      const virtualRows: SequenceRow[] = ALL_RECEIPT_TYPES
+        .filter(type => !existingKeys.has(`${type}_${currentYear}`))
+        .map(type => ({
+          id: `virtual_${type}_${currentYear}`,
+          receipt_type: type,
+          year: currentYear,
+          last_number: 0,
+          updated_at: new Date().toISOString(),
+        }));
+
+      const allRows = [...rows, ...virtualRows].sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return a.receipt_type.localeCompare(b.receipt_type);
+      });
+
+      setSequences(allRows);
       const vals: Record<string, string> = {};
-      (data || []).forEach((row: SequenceRow) => {
+      allRows.forEach((row) => {
         vals[`${row.receipt_type}_${row.year}`] = row.last_number.toString();
       });
       setEditValues(vals);
@@ -74,17 +97,18 @@ const ReceiptSequenceResetSettings = () => {
   const confirmSave = async () => {
     if (!confirmDialog) return;
     const { type, value } = confirmDialog;
-    const year = sequences.find(s => s.receipt_type === type)?.year;
-    if (!year) return;
+    const seq = sequences.find(s => s.receipt_type === type);
+    const year = seq?.year || new Date().getFullYear();
 
     setSaving(type);
     setConfirmDialog(null);
     try {
       const { error } = await supabase
         .from("receipt_sequences")
-        .update({ last_number: value, updated_at: new Date().toISOString() })
-        .eq("receipt_type", type)
-        .eq("year", year);
+        .upsert(
+          { receipt_type: type, year, last_number: value, updated_at: new Date().toISOString() },
+          { onConflict: "receipt_type,year" }
+        );
 
       if (error) throw error;
 
