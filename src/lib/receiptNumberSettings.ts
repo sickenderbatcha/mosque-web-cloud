@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general" | "certificate_death";
+export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general";
 
 export interface ReceiptNumberSettings {
   booking_prefix: string;
@@ -10,7 +10,6 @@ export interface ReceiptNumberSettings {
   certificate_noc_prefix: string;
   certificate_heir_prefix: string;
   certificate_general_prefix: string;
-  certificate_death_prefix: string;
 }
 
 // Default prefixes
@@ -22,7 +21,6 @@ const DEFAULT_SETTINGS: ReceiptNumberSettings = {
   certificate_noc_prefix: "NOC-",
   certificate_heir_prefix: "HEIR-",
   certificate_general_prefix: "CERT-",
-  certificate_death_prefix: "DEATH-",
 };
 
 // Keys used in app_settings
@@ -34,7 +32,6 @@ const SETTING_KEYS: Record<keyof ReceiptNumberSettings, string> = {
   certificate_noc_prefix: "receipt_num_prefix_cert_noc",
   certificate_heir_prefix: "receipt_num_prefix_cert_heir",
   certificate_general_prefix: "receipt_num_prefix_cert_general",
-  certificate_death_prefix: "receipt_num_prefix_cert_death",
 };
 
 // No-op for backward compatibility
