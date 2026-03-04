@@ -48,6 +48,20 @@ interface SubscriptionReceiptProps {
   requireAction?: boolean;
 }
 
+const getPaymentMethodTamil = (method?: string | null) => {
+  if (!method) return 'ஆன்லைன்';
+  if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
+  if (method.toLowerCase() === 'online') return 'ஆன்லைன்';
+  return method;
+};
+
+const getPaymentMethodEnglish = (method?: string | null) => {
+  if (!method) return 'Online';
+  if (method.toLowerCase() === 'cash') return 'Cash';
+  if (method.toLowerCase() === 'online') return 'Online';
+  return method;
+};
+
 const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: SubscriptionReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
@@ -237,6 +251,10 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
                 <span class="info-label">பணம் செலுத்திய தேதி</span>
                 <span class="info-value">${format(new Date(subscription.created_at), "dd/MM/yyyy")}</span>
               </div>
+              <div class="info-row">
+                <span class="info-label">செலுத்தும் முறை / Payment Method</span>
+                <span class="info-value">${getPaymentMethodTamil(subscription.payment_method)} (${getPaymentMethodEnglish(subscription.payment_method)})</span>
+              </div>
             </div>
 
             <div class="amount-box">
@@ -319,6 +337,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
               <div class="info-row"><span class="info-label">சந்தா காலம்</span><span class="info-value">${getPeriodText()}</span></div>
               ${subscription.number_of_months ? `<div class="info-row"><span class="info-label">கால அளவு</span><span class="info-value">${subscription.number_of_months} மாதம்(கள்)</span></div>` : ''}
               <div class="info-row"><span class="info-label">பணம் செலுத்திய தேதி</span><span class="info-value">${format(new Date(subscription.created_at), "dd/MM/yyyy")}</span></div>
+              <div class="info-row"><span class="info-label">செலுத்தும் முறை</span><span class="info-value">${getPaymentMethodTamil(subscription.payment_method)} (${getPaymentMethodEnglish(subscription.payment_method)})</span></div>
             </div>
 
             <div class="amount-box">
@@ -484,6 +503,12 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
                     <Calendar className="h-4 w-4" /> பணம் செலுத்திய தேதி
                   </span>
                   <span className="font-medium">{format(new Date(subscription.created_at), "dd/MM/yyyy")}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    செலுத்தும் முறை
+                  </span>
+                  <span className="font-medium">{getPaymentMethodTamil(subscription.payment_method)} ({getPaymentMethodEnglish(subscription.payment_method)})</span>
                 </div>
               </div>
             </div>

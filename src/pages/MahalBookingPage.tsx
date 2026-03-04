@@ -86,6 +86,7 @@ const MahalBookingPage = () => {
     bookingId: string;
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
+    paymentMethod?: string;
   } | null>(null);
 
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -336,6 +337,7 @@ const MahalBookingPage = () => {
               bookingId: bookingId ? String(bookingId) : "",
               services: selectedServicesList,
               razorpayPaymentId: response.razorpay_payment_id,
+              paymentMethod: "online",
             });
             setShowReceipt(true);
 
