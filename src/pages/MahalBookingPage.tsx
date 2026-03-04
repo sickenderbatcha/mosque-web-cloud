@@ -607,6 +607,7 @@ const MahalBookingPage = () => {
           amount: totalAmount,
           bookingId: bookingId ? String(bookingId) : "",
           services: selectedServicesList,
+          paymentMethod: "cash",
         });
         setShowReceipt(true);
 
