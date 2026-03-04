@@ -15,6 +15,7 @@ const RECEIPT_NUMBER_KEYS = [
   "receipt_num_prefix_cert_noc",
   "receipt_num_prefix_cert_heir",
   "receipt_num_prefix_cert_general",
+  "receipt_num_prefix_cert_death",
 ];
 
 export const useReceiptNumberSettings = () => {
@@ -44,6 +45,7 @@ export const useReceiptNumberSettings = () => {
           receipt_num_prefix_cert_noc: "certificate_noc_prefix",
           receipt_num_prefix_cert_heir: "certificate_heir_prefix",
           receipt_num_prefix_cert_general: "certificate_general_prefix",
+          receipt_num_prefix_cert_death: "certificate_death_prefix",
         };
 
         data.forEach((item) => {

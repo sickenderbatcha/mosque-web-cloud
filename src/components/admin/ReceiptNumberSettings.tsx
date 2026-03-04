@@ -74,6 +74,14 @@ const RECEIPT_TYPES: ReceiptTypeConfig[] = [
     defaultPrefix: "CERT-",
     defaultFormat: "",
   },
+  {
+    key: "certificate_death",
+    label: "இறப்புச் சான்றிதழ் ரசீது (Death Certificate Receipt)",
+    prefixSettingKey: "receipt_num_prefix_cert_death",
+    formatSettingKey: "receipt_num_format_certificate_death",
+    defaultPrefix: "DEATH-",
+    defaultFormat: "",
+  },
 ];
 
 interface ReceiptFormState {
