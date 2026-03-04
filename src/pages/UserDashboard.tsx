@@ -1116,7 +1116,7 @@ const UserDashboard = () => {
                                     amount: booking.booking_amount || 0,
                                     bookingId: booking.id,
                                     services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-                                    paymentMethod: booking.payment_status === "paid" ? "online" : undefined,
+                                    paymentMethod: booking.payment_status === "completed" ? "online" : booking.payment_status === "paid" ? "cash" : undefined,
                                   })}
                                 >
                                   <Receipt className="h-3.5 w-3.5 mr-1 shrink-0" />
