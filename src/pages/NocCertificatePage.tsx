@@ -860,7 +860,7 @@ export default function NocCertificatePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-4">
+                <div className="flex flex-col md:flex-row md:flex-wrap items-stretch gap-3 pt-4">
                   {!isPaid ? (
                     isAdmin ? (
                       <>
@@ -868,7 +868,7 @@ export default function NocCertificatePage() {
                           type="button"
                           onClick={handleCashPayment}
                           disabled={loading}
-                          className="flex-1 min-w-[140px] h-auto py-2"
+                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                           variant="default"
                         >
                           {loading ? (
@@ -876,21 +876,21 @@ export default function NocCertificatePage() {
                           ) : (
                             <Banknote className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil truncate">ரொக்கம் செலுத்து</span>
+                          <span className="font-tamil block min-w-0 truncate">ரொக்கம் செலுத்து</span>
                         </Button>
                         <Button
                           type="button"
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
                           variant="outline"
-                          className="flex-1 min-w-[140px] h-auto py-2"
+                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                         >
                           {loading ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                           ) : (
                             <CreditCard className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil truncate">ஆன்லைன் செலுத்து</span>
+                          <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
                       </>
                     ) : (
@@ -899,14 +899,14 @@ export default function NocCertificatePage() {
                           type="button"
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
-                          className="flex-1 min-w-[140px] h-auto py-2"
+                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                         >
                           {loading ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                           ) : (
                             <CreditCard className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil truncate">ஆன்லைன் செலுத்து</span>
+                          <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
                         <Button
                           type="button"
@@ -925,10 +925,10 @@ export default function NocCertificatePage() {
                             setShowCashRequestDialog(true);
                           }}
                           disabled={loading}
-                          className="flex-1 min-w-[140px] h-auto py-2"
+                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                         >
                           <Banknote className="h-4 w-4 mr-2 shrink-0" />
-                          <span className="font-tamil truncate">ரொக்க கோரிக்கை</span>
+                          <span className="font-tamil block min-w-0 truncate">ரொக்க கோரிக்கை</span>
                         </Button>
                       </>
                     )
@@ -937,14 +937,14 @@ export default function NocCertificatePage() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={loading}
-                      className="flex-1 min-w-[140px] h-auto py-2"
+                      className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                     >
                       {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                       ) : (
                         <Send className="h-4 w-4 mr-2 shrink-0" />
                       )}
-                      <span className="font-tamil truncate">அனுப்பு</span>
+                      <span className="font-tamil block min-w-0 truncate">அனுப்பு</span>
                     </Button>
                   ) : null}
 
@@ -953,10 +953,10 @@ export default function NocCertificatePage() {
                     variant="outline"
                     onClick={handlePrint}
                     disabled={!isPaid || !isApproved || loading}
-                    className="flex-1 min-w-[140px] h-auto py-2"
+                    className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                   >
                     <Printer className="h-4 w-4 mr-2 shrink-0" />
-                    <span className="font-tamil truncate">அச்சிடு</span>
+                    <span className="font-tamil block min-w-0 truncate">அச்சிடு</span>
                   </Button>
 
                   <Button
@@ -964,10 +964,10 @@ export default function NocCertificatePage() {
                     variant="destructive"
                     onClick={handleCancel}
                     disabled={loading}
-                    className="flex-1 min-w-[140px] h-auto py-2"
+                    className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
                   >
                     <X className="h-4 w-4 mr-2 shrink-0" />
-                    <span className="font-tamil truncate">ரத்து செய்</span>
+                    <span className="font-tamil block min-w-0 truncate">ரத்து செய்</span>
                   </Button>
                 </div>
 
