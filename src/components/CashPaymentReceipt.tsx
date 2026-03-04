@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
  import { motion } from "framer-motion";
  import { Download, Printer, ArrowLeft, Building2, CheckCircle2, Banknote, Calendar, User, Phone, Mail } from "lucide-react";
  import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
  import { format } from "date-fns";
  import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
  import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
+ import { supabase } from "@/integrations/supabase/client";
  
  const SERVICE_TYPE_LABELS_TAMIL: Record<string, string> = {
    booking: "மஹால் முன்பதிவு",
@@ -14,6 +15,7 @@ import { useRef, useState } from "react";
    subscription: "சந்தா",
    noc: "ஆட்சேபனையின்மை சான்றிதழ்",
    heir: "வாரிசு சான்றிதழ்",
+   outside_marriage_certificate: "வெளியூர் திருமணச் சான்றிதழ்",
  };
  
  const SERVICE_TYPE_LABELS_EN: Record<string, string> = {
@@ -23,6 +25,18 @@ import { useRef, useState } from "react";
    subscription: "Subscription",
    noc: "NOC Certificate",
    heir: "Heir Certificate",
+   outside_marriage_certificate: "Outside Marriage Certificate",
+ };
+
+ // Map service_type to the reference_type used in the income table
+ const SERVICE_TO_INCOME_REF_TYPE: Record<string, string[]> = {
+   booking: ["booking"],
+   donation: ["donation"],
+   subscription: ["subscription"],
+   certificate: ["certificate_payment"],
+   noc: ["noc_certificate", "certificate_payment"],
+   heir: ["heir_certificate", "certificate_payment"],
+   outside_marriage_certificate: ["certificate_payment"],
  };
  
  interface CashPaymentReceiptProps {
@@ -49,8 +63,32 @@ import { useRef, useState } from "react";
    const { settings: headerSettings } = useReceiptHeaderSettings();
    const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
- 
-   const receiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
+  const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
+
+   // Try to fetch the actual sequential receipt number from the income table
+   useEffect(() => {
+     const fetchSequentialReceipt = async () => {
+       if (!request.reference_id) return;
+       const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
+       if (refTypes.length === 0) return;
+
+       const { data } = await supabase
+         .from("income")
+         .select("receipt_number")
+         .eq("reference_id", request.reference_id)
+         .in("reference_type", refTypes)
+         .order("created_at", { ascending: false })
+         .limit(1);
+
+       if (data && data.length > 0 && data[0].receipt_number) {
+         setSequentialReceiptNumber(data[0].receipt_number);
+       }
+     };
+     fetchSequentialReceipt();
+   }, [request.reference_id, request.service_type]);
+
+   const fallbackReceiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
+   const receiptNumber = sequentialReceiptNumber || fallbackReceiptNumber;
    const serviceTypeTamil = SERVICE_TYPE_LABELS_TAMIL[request.service_type] || request.service_type;
    const serviceTypeEn = SERVICE_TYPE_LABELS_EN[request.service_type] || request.service_type;
  
