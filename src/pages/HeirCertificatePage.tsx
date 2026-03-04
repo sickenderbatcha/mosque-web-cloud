@@ -317,7 +317,7 @@ export default function HeirCertificatePage() {
               applicantEmail: heirData.applicant_email || undefined,
               subjectName: heirData.deceased_name,
               amount: certificateFee,
-              receiptNumber: heirData.id.substring(0, 8).toUpperCase(),
+              receiptNumber: "",
               referenceId: heirData.id,
               referenceType: "heir_certificate",
               paymentMethod: "online",
