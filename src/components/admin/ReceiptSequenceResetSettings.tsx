@@ -21,8 +21,7 @@ const RECEIPT_TYPE_LABELS: Record<string, string> = {
   donation: "நன்கொடை (Donation)",
   subscription: "சந்தா (Subscription)",
   cash_payment: "ரொக்க செலுத்துதல் (Cash Payment)",
-  certificate_general: "சான்றிதழ் பொது (Certificate General)",
-  certificate_noc: "NOC சான்றிதழ் (NOC Certificate)",
+  certificate_general: "சான்றிதழ் பொது (Certificate General - Marriage/Death/NOC/Heir)",
   certificate_heir: "வாரிசு சான்றிதழ் (Heir Certificate)",
 };
 
