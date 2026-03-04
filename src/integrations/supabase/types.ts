@@ -2187,6 +2187,7 @@ export type Database = {
         Args: { p_document_type: string }
         Returns: string
       }
+      get_app_local_date: { Args: never; Returns: string }
       get_mahal_availability: {
         Args: { _end: string; _start: string }
         Returns: {
