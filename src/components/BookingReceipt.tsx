@@ -126,8 +126,8 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
       try {
-        // Retry up to 5 times with delay (trigger may not have fired yet)
-        for (let attempt = 0; attempt < 5; attempt++) {
+        // Retry to account for async income insert after payment confirmation
+        for (let attempt = 0; attempt < 10; attempt++) {
           const { data, error } = await supabase
             .from("income")
             .select("receipt_number")
@@ -135,18 +135,21 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
             .eq("reference_type", "booking")
             .maybeSingle();
 
+          if (error) throw error;
+
           if (data?.receipt_number) {
             setReceiptNumber(data.receipt_number);
             setReceiptLoading(false);
             return;
           }
-          // Wait before retry
-          if (attempt < 4) await new Promise(r => setTimeout(r, 1000));
+
+          if (attempt < 9) await new Promise((r) => setTimeout(r, 1000));
         }
-        // Fallback: use BK- prefix with UUID slice
-        setReceiptNumber(`BK-${booking.bookingId.substring(0, 8).toUpperCase()}`);
+
+        // Do not generate legacy fallback receipt numbers in UI
+        setReceiptNumber(null);
       } catch {
-        setReceiptNumber(`BK-${booking.bookingId.substring(0, 8).toUpperCase()}`);
+        setReceiptNumber(null);
       } finally {
         setReceiptLoading(false);
       }
@@ -196,7 +199,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = receiptNumber || "Loading...";
+  const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
@@ -414,11 +417,11 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
