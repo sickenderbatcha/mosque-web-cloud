@@ -23,6 +23,7 @@ import CertificateHeaderSettings from "@/components/admin/CertificateHeaderSetti
 import ReceiptHeaderSettings from "@/components/admin/ReceiptHeaderSettings";
 import HeaderTextsSettings from "@/components/admin/HeaderTextsSettings";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
+import ReceiptSequenceResetSettings from "@/components/admin/ReceiptSequenceResetSettings";
 import HeirCertificateFontSettings from "@/components/admin/HeirCertificateFontSettings";
 import DeathCertificateFontSettings from "@/components/admin/DeathCertificateFontSettings";
 import HeirCertificateNumberSettings from "@/components/admin/HeirCertificateNumberSettings";
@@ -1245,6 +1246,9 @@ const SuperAdminSettingsTab = () => {
 
       {/* Receipt Number Settings - configurable prefixes for each receipt type */}
       <ReceiptNumberSettings />
+
+      {/* Receipt Sequence Reset - reset/override sequential counters */}
+      <ReceiptSequenceResetSettings />
 
       {/* Footer Credit Text Card */}
       <Card>
