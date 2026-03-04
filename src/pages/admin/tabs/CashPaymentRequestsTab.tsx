@@ -371,9 +371,10 @@ const CashPaymentRequestsTab = () => {
 
         case "noc":
           if (reference_id) {
+            // Update both payment_status AND status so user dashboard shows correct state
             const { error } = await supabase
               .from("noc_certificates")
-              .update({ payment_status: "completed" })
+              .update({ payment_status: "completed", status: "approved", approved_at: new Date().toISOString() })
               .eq("id", reference_id);
             if (error) throw error;
           }
@@ -381,9 +382,10 @@ const CashPaymentRequestsTab = () => {
 
         case "heir":
           if (reference_id) {
+            // Update both payment_status AND status so user dashboard shows correct state
             const { error } = await supabase
               .from("heir_certificates")
-              .update({ payment_status: "completed" })
+              .update({ payment_status: "completed", status: "approved", approved_at: new Date().toISOString() })
               .eq("id", reference_id);
             if (error) throw error;
           }
