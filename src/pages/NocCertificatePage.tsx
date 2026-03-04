@@ -305,7 +305,7 @@ export default function NocCertificatePage() {
               applicantEmail: nocData.applicant_email || undefined,
               subjectName: nocData.partner_name,
               amount: certificateFee,
-              receiptNumber: nocData.id.substring(0, 8).toUpperCase(),
+              receiptNumber: "",
               referenceId: nocData.id,
               referenceType: "noc_certificate",
               paymentMethod: "online",

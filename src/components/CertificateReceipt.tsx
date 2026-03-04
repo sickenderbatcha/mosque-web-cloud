@@ -63,32 +63,49 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
 
   // Fetch sequential receipt number from income table
   useEffect(() => {
+    const isSequentialReceipt = (value?: string | null) =>
+      !!value && /^[A-Za-z]+-\d{4}-\d{4,}$/.test(value);
+
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
       const maxRetries = 5;
+      const referenceTypes = Array.from(
+        new Set([
+          data.referenceType,
+          "certificate_payment",
+          "noc_certificate",
+          "heir_certificate",
+        ].filter(Boolean))
+      ) as string[];
+
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         const { data: incomeRows } = await supabase
           .from("income")
-          .select("receipt_number")
+          .select("receipt_number, created_at")
           .eq("reference_id", data.referenceId)
-          .eq("reference_type", data.referenceType)
+          .in("reference_type", referenceTypes)
           .order("created_at", { ascending: false })
-          .limit(1);
+          .limit(5);
 
-        const sequentialReceiptNumber = incomeRows?.[0]?.receipt_number;
+        const sequentialReceiptNumber =
+          incomeRows?.find((row) => isSequentialReceipt(row.receipt_number))?.receipt_number || null;
+
         if (sequentialReceiptNumber) {
           setReceiptNumber(sequentialReceiptNumber);
           setReceiptLoading(false);
           return;
         }
+
         if (attempt < maxRetries - 1) {
           await new Promise((r) => setTimeout(r, 1000));
         }
       }
-      // Fallback
-      setReceiptNumber(data.receiptNumber);
+
+      // Only keep fallback if it is already a valid sequential receipt
+      setReceiptNumber(isSequentialReceipt(data.receiptNumber) ? data.receiptNumber : "");
       setReceiptLoading(false);
     };
+
     fetchReceiptNumber();
   }, [data.referenceId, data.referenceType, data.receiptNumber]);
 

@@ -82,14 +82,15 @@ export default function CertificatePaymentsTab() {
 
       const { data: incomeData } = await supabase
         .from("income")
-        .select("receipt_number, reference_id")
+        .select("receipt_number, reference_id, created_at")
         .in("reference_id", completedIds)
-        .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"]);
+        .in("reference_type", ["certificate_payment", "noc_certificate", "heir_certificate"])
+        .order("created_at", { ascending: false });
 
       if (incomeData) {
         const map: Record<string, string> = {};
         incomeData.forEach((row: any) => {
-          if (row.reference_id && row.receipt_number) {
+          if (row.reference_id && row.receipt_number && !map[row.reference_id]) {
             map[row.reference_id] = row.receipt_number;
           }
         });
