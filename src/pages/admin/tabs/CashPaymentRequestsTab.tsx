@@ -302,7 +302,8 @@ const CashPaymentRequestsTab = () => {
               .from("mahal_bookings")
               .update({
                 status: "approved",
-                admin_notes: "Cash payment approved - awaiting receipt",
+                payment_status: "paid",
+                admin_notes: "Cash payment approved",
               })
               .eq("id", reference_id);
             if (error) throw error;
