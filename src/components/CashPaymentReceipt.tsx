@@ -66,26 +66,50 @@ import { useRef, useState, useEffect } from "react";
   const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
 
    // Try to fetch the actual sequential receipt number from the income table
+   // Uses retries to handle the case where DB trigger hasn't fired yet
    useEffect(() => {
      const fetchSequentialReceipt = async () => {
-       if (!request.reference_id) return;
+       // First, resolve the reference_id – it may have been updated in DB
+       // (e.g. subscription cash requests get reference_id set during approval)
+       let refId = request.reference_id;
+       if (!refId) {
+         const { data: freshReq } = await supabase
+           .from("cash_payment_requests")
+           .select("reference_id")
+           .eq("id", request.id)
+           .maybeSingle();
+         if (freshReq?.reference_id) {
+           refId = freshReq.reference_id;
+         }
+       }
+
+       if (!refId) return;
+
        const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
        if (refTypes.length === 0) return;
 
-       const { data } = await supabase
-         .from("income")
-         .select("receipt_number")
-         .eq("reference_id", request.reference_id)
-         .in("reference_type", refTypes)
-         .order("created_at", { ascending: false })
-         .limit(1);
+       // Retry up to 5 times (income record may be created by DB trigger with slight delay)
+       const maxRetries = 5;
+       for (let attempt = 0; attempt < maxRetries; attempt++) {
+         const { data } = await supabase
+           .from("income")
+           .select("receipt_number")
+           .eq("reference_id", refId)
+           .in("reference_type", refTypes)
+           .order("created_at", { ascending: false })
+           .limit(1);
 
-       if (data && data.length > 0 && data[0].receipt_number) {
-         setSequentialReceiptNumber(data[0].receipt_number);
+         if (data && data.length > 0 && data[0].receipt_number) {
+           setSequentialReceiptNumber(data[0].receipt_number);
+           return;
+         }
+         if (attempt < maxRetries - 1) {
+           await new Promise((r) => setTimeout(r, 1000));
+         }
        }
      };
      fetchSequentialReceipt();
-   }, [request.reference_id, request.service_type]);
+   }, [request.id, request.reference_id, request.service_type]);
 
    const fallbackReceiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
    const receiptNumber = sequentialReceiptNumber || fallbackReceiptNumber;
