@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { incrementOutsideMarriageCertificateSequence } from "@/components/admin/OutsideMarriageCertificateNumberSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -360,10 +361,11 @@ export default function OutsideMarriageRegisterTab() {
       const { error } = await supabase.from("outside_marriage_registers").insert(buildInsertData(data));
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] });
       toast.success("வெளியூர் திருமண பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false); clearMemberLookup(); resetToInitial();
+      await incrementOutsideMarriageCertificateSequence();
     },
     onError: (error) => toast.error("பிழை: " + error.message),
   });

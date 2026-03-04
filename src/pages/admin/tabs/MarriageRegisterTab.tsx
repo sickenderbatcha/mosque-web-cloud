@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { incrementMarriageCertificateSequence } from "@/components/admin/MarriageCertificateNumberSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -632,7 +633,7 @@ export default function MarriageRegisterTab() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["marriage-registers"] });
       toast.success("திருமண பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false);
@@ -640,6 +641,8 @@ export default function MarriageRegisterTab() {
       setGroomPhotoUrl("");
       setBridePhotoUrl("");
       resetToInitial();
+      // Increment certificate number sequence
+      await incrementMarriageCertificateSequence();
     },
     onError: (error) => {
       toast.error("பிழை: " + error.message);
