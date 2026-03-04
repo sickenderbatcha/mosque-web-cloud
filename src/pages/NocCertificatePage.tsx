@@ -860,55 +860,53 @@ export default function NocCertificatePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-4">
                   {!isPaid ? (
                     isAdmin ? (
-                      // Admin sees both Cash and Online payment options
                       <>
                         <Button
                           type="button"
                           onClick={handleCashPayment}
                           disabled={loading}
-                          className="w-full h-auto py-2"
+                          className="flex-1 min-w-[140px] h-auto py-2"
                           variant="default"
                         >
                           {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                           ) : (
-                            <Banknote className="h-4 w-4 mr-2" />
+                            <Banknote className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil break-words">ரொக்கம் செலுத்து</span>
+                          <span className="font-tamil truncate">ரொக்கம் செலுத்து</span>
                         </Button>
                         <Button
                           type="button"
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
                           variant="outline"
-                          className="w-full h-auto py-2"
+                          className="flex-1 min-w-[140px] h-auto py-2"
                         >
                           {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                           ) : (
-                            <CreditCard className="h-4 w-4 mr-2" />
+                            <CreditCard className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
+                          <span className="font-tamil truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
                       </>
                     ) : (
-                      // Non-admin users see Online payment + Cash Request option
                       <>
                         <Button
                           type="button"
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
-                          className="w-full h-auto py-2"
+                          className="flex-1 min-w-[140px] h-auto py-2"
                         >
                           {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                           ) : (
-                            <CreditCard className="h-4 w-4 mr-2" />
+                            <CreditCard className="h-4 w-4 mr-2 shrink-0" />
                           )}
-                          <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
+                          <span className="font-tamil truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
                         <Button
                           type="button"
@@ -927,10 +925,10 @@ export default function NocCertificatePage() {
                             setShowCashRequestDialog(true);
                           }}
                           disabled={loading}
-                          className="w-full h-auto py-2"
+                          className="flex-1 min-w-[140px] h-auto py-2"
                         >
-                          <Banknote className="h-4 w-4 mr-2" />
-                          <span className="font-tamil break-words">ரொக்க கோரிக்கை</span>
+                          <Banknote className="h-4 w-4 mr-2 shrink-0" />
+                          <span className="font-tamil truncate">ரொக்க கோரிக்கை</span>
                         </Button>
                       </>
                     )
@@ -939,14 +937,14 @@ export default function NocCertificatePage() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={loading}
-                      className="w-full h-auto py-2"
+                      className="flex-1 min-w-[140px] h-auto py-2"
                     >
                       {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
                       ) : (
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-4 w-4 mr-2 shrink-0" />
                       )}
-                      <span className="font-tamil break-words">அனுப்பு</span>
+                      <span className="font-tamil truncate">அனுப்பு</span>
                     </Button>
                   ) : null}
 
@@ -955,10 +953,10 @@ export default function NocCertificatePage() {
                     variant="outline"
                     onClick={handlePrint}
                     disabled={!isPaid || !isApproved || loading}
-                    className="w-full h-auto py-2"
+                    className="flex-1 min-w-[140px] h-auto py-2"
                   >
-                    <Printer className="h-4 w-4 mr-2" />
-                    <span className="font-tamil break-words">அச்சிடு</span>
+                    <Printer className="h-4 w-4 mr-2 shrink-0" />
+                    <span className="font-tamil truncate">அச்சிடு</span>
                   </Button>
 
                   <Button
@@ -966,10 +964,10 @@ export default function NocCertificatePage() {
                     variant="destructive"
                     onClick={handleCancel}
                     disabled={loading}
-                    className="w-full h-auto py-2"
+                    className="flex-1 min-w-[140px] h-auto py-2"
                   >
-                    <X className="h-4 w-4 mr-2" />
-                    <span className="font-tamil break-words">ரத்து செய்</span>
+                    <X className="h-4 w-4 mr-2 shrink-0" />
+                    <span className="font-tamil truncate">ரத்து செய்</span>
                   </Button>
                 </div>
 
