@@ -94,10 +94,25 @@ interface BookingReceiptProps {
     bookingId: string; // The actual booking UUID
     services: { name: string; rate: number }[];
     razorpayPaymentId?: string;
+    paymentMethod?: string;
   };
   onClose: () => void;
   requireAction?: boolean;
 }
+
+const getPaymentMethodTamil = (method?: string) => {
+  if (!method) return 'ஆன்லைன்';
+  if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
+  if (method.toLowerCase() === 'online') return 'ஆன்லைன்';
+  return method;
+};
+
+const getPaymentMethodEnglish = (method?: string) => {
+  if (!method) return 'Online';
+  if (method.toLowerCase() === 'cash') return 'Cash';
+  if (method.toLowerCase() === 'online') return 'Online';
+  return method;
+};
 
 const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -267,6 +282,10 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
                 <span class="info-value">${booking.expectedGuests}</span>
               </div>
               ` : ''}
+              <div class="info-row">
+                <span class="info-label">செலுத்தும் முறை / Payment Method</span>
+                <span class="info-value">${getPaymentMethodTamil(booking.paymentMethod)} (${getPaymentMethodEnglish(booking.paymentMethod)})</span>
+              </div>
             </div>
 
             <div class="section">
@@ -478,6 +497,12 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
                     <span className="font-medium">{booking.expectedGuests}</span>
                   </div>
                 )}
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    செலுத்தும் முறை
+                  </span>
+                  <span className="font-medium">{getPaymentMethodTamil(booking.paymentMethod)} ({getPaymentMethodEnglish(booking.paymentMethod)})</span>
+                </div>
               </div>
             </div>
 

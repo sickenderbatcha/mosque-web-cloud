@@ -287,6 +287,7 @@ const BookingsTab = () => {
             amount: Number(selectedBooking.booking_amount || 0),
             bookingId: selectedBooking.id,
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
+            paymentMethod: selectedBooking.payment_status === "paid" ? (selectedBooking.applicant_email ? "online" : "cash") : undefined,
           }}
           onClose={() => {
             setShowReceipt(false);
