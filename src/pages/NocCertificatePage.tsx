@@ -860,7 +860,7 @@ export default function NocCertificatePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
                   {!isPaid ? (
                     isAdmin ? (
                       // Admin sees both Cash and Online payment options
@@ -869,7 +869,7 @@ export default function NocCertificatePage() {
                           type="button"
                           onClick={handleCashPayment}
                           disabled={loading}
-                          className="flex-1 min-w-0 h-auto py-2"
+                          className="w-full h-auto py-2"
                           variant="default"
                         >
                           {loading ? (
@@ -884,7 +884,7 @@ export default function NocCertificatePage() {
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
                           variant="outline"
-                          className="flex-1 min-w-0 h-auto py-2"
+                          className="w-full h-auto py-2"
                         >
                           {loading ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -901,7 +901,7 @@ export default function NocCertificatePage() {
                           type="button"
                           onClick={handlePayment}
                           disabled={loading || !razorpayLoaded}
-                          className="flex-1 min-w-0 h-auto py-2"
+                          className="w-full h-auto py-2"
                         >
                           {loading ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -927,7 +927,7 @@ export default function NocCertificatePage() {
                             setShowCashRequestDialog(true);
                           }}
                           disabled={loading}
-                          className="flex-1 min-w-0 h-auto py-2"
+                          className="w-full h-auto py-2"
                         >
                           <Banknote className="h-4 w-4 mr-2" />
                           <span className="font-tamil break-words">ரொக்க கோரிக்கை</span>
@@ -939,7 +939,7 @@ export default function NocCertificatePage() {
                       type="button"
                       onClick={handleSubmit}
                       disabled={loading}
-                      className="flex-1 min-w-0 h-auto py-2"
+                      className="w-full h-auto py-2"
                     >
                       {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -955,7 +955,7 @@ export default function NocCertificatePage() {
                     variant="outline"
                     onClick={handlePrint}
                     disabled={!isPaid || !isApproved || loading}
-                    className="flex-1 min-w-0 h-auto py-2"
+                    className="w-full h-auto py-2"
                   >
                     <Printer className="h-4 w-4 mr-2" />
                     <span className="font-tamil break-words">அச்சிடு</span>
@@ -966,7 +966,7 @@ export default function NocCertificatePage() {
                     variant="destructive"
                     onClick={handleCancel}
                     disabled={loading}
-                    className="flex-1 min-w-0 h-auto py-2"
+                    className="w-full h-auto py-2"
                   >
                     <X className="h-4 w-4 mr-2" />
                     <span className="font-tamil break-words">ரத்து செய்</span>
