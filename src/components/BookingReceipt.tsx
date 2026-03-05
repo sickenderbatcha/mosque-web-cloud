@@ -102,7 +102,6 @@ interface BookingReceiptProps {
   };
   onClose: () => void;
   requireAction?: boolean;
-  resolvedReceiptNumber?: string | null;
 }
 
 const getPaymentMethodTamil = (method?: string) => {
