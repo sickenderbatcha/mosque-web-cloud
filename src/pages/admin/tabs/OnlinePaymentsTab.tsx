@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +18,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { IndianRupee, Search, CreditCard, CheckCircle, Clock } from "lucide-react";
+import { IndianRupee, Search, CreditCard, CheckCircle, Clock, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface OnlinePayment {
   id: string;
@@ -49,9 +63,27 @@ const STATUS_COLORS: Record<string, string> = {
   failed: "bg-red-100 text-red-800",
 };
 
+// Map service_type to actual Supabase table name
+const SERVICE_TABLE_MAP: Record<string, string> = {
+  booking: "mahal_bookings",
+  donation: "donations",
+  certificate: "certificate_payments",
+  subscription: "subscriptions",
+  noc: "noc_certificates",
+  heir: "heir_certificates",
+};
+
 const OnlinePaymentsTab = () => {
   const [filterService, setFilterService] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<OnlinePayment | null>(null);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
+  const { role } = useUserRole();
+  const isSuperAdmin = role === "superadmin";
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ["online-payments", filterService],
@@ -163,7 +195,7 @@ const OnlinePaymentsTab = () => {
             id: n.id,
             service_type: "noc",
             applicant_name: n.applicant_name,
-            amount: 0, // NOC fee from settings
+            amount: 0,
             razorpay_payment_id: n.razorpay_payment_id,
             razorpay_order_id: n.razorpay_order_id,
             payment_status: n.payment_status || "completed",
@@ -215,6 +247,86 @@ const OnlinePaymentsTab = () => {
   const completedCount = filteredPayments.filter(
     (p) => p.payment_status === "completed" || p.payment_status === "paid"
   ).length;
+
+  const handleDeleteSingle = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const tableName = SERVICE_TABLE_MAP[deleteTarget.service_type];
+      if (!tableName) throw new Error("Unknown service type");
+
+      const { error } = await supabase
+        .from(tableName as any)
+        .delete()
+        .eq("id", deleteTarget.id);
+
+      if (error) throw error;
+
+      toast.success("பதிவு வெற்றிகரமாக நீக்கப்பட்டது (Record deleted successfully)");
+      queryClient.invalidateQueries({ queryKey: ["online-payments"] });
+    } catch (err: any) {
+      toast.error("நீக்குவதில் பிழை: " + (err.message || "Unknown error"));
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setIsDeleting(true);
+    try {
+      // Group selected payments by service_type
+      const grouped: Record<string, string[]> = {};
+      for (const payment of filteredPayments) {
+        const key = `${payment.service_type}-${payment.id}`;
+        if (selectedIds.has(key)) {
+          if (!grouped[payment.service_type]) grouped[payment.service_type] = [];
+          grouped[payment.service_type].push(payment.id);
+        }
+      }
+
+      let totalDeleted = 0;
+      for (const [serviceType, ids] of Object.entries(grouped)) {
+        const tableName = SERVICE_TABLE_MAP[serviceType];
+        if (!tableName) continue;
+
+        const { error } = await supabase
+          .from(tableName as any)
+          .delete()
+          .in("id", ids);
+
+        if (error) throw error;
+        totalDeleted += ids.length;
+      }
+
+      toast.success(`${totalDeleted} பதிவுகள் வெற்றிகரமாக நீக்கப்பட்டன (${totalDeleted} records deleted)`);
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ["online-payments"] });
+    } catch (err: any) {
+      toast.error("நீக்குவதில் பிழை: " + (err.message || "Unknown error"));
+    } finally {
+      setIsDeleting(false);
+      setBulkDeleteDialogOpen(false);
+    }
+  };
+
+  const toggleSelect = (key: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredPayments.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredPayments.map((p) => `${p.service_type}-${p.id}`)));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -294,6 +406,17 @@ const OnlinePaymentsTab = () => {
                 <SelectItem value="heir">வாரிசு (Heir)</SelectItem>
               </SelectContent>
             </Select>
+            {isSuperAdmin && selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBulkDeleteDialogOpen(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                நீக்கு ({selectedIds.size})
+              </Button>
+            )}
           </div>
 
           {isLoading ? (
@@ -307,6 +430,14 @@ const OnlinePaymentsTab = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {isSuperAdmin && (
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={selectedIds.size === filteredPayments.length && filteredPayments.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
+                    )}
                     <TableHead>தேதி (Date)</TableHead>
                     <TableHead>பெயர் (Name)</TableHead>
                     <TableHead>சேவை (Service)</TableHead>
@@ -314,48 +445,128 @@ const OnlinePaymentsTab = () => {
                     <TableHead>Payment ID</TableHead>
                     <TableHead>Order ID</TableHead>
                     <TableHead>நிலை (Status)</TableHead>
+                    {isSuperAdmin && <TableHead className="w-10"></TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPayments.map((payment) => (
-                    <TableRow key={`${payment.service_type}-${payment.id}`}>
-                      <TableCell className="whitespace-nowrap">
-                        {format(new Date(payment.created_at), "dd/MM/yyyy HH:mm")}
-                      </TableCell>
-                      <TableCell className="font-medium">{payment.applicant_name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {SERVICE_TYPE_LABELS[payment.service_type] || payment.service_type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {payment.amount > 0 ? `₹${payment.amount.toLocaleString("en-IN")}` : "-"}
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground">
-                        {payment.razorpay_payment_id || "-"}
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground">
-                        {payment.razorpay_order_id || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            STATUS_COLORS[payment.payment_status] || "bg-gray-100 text-gray-800"
-                          }
-                        >
-                          {payment.payment_status === "completed" || payment.payment_status === "paid"
-                            ? "✅ Success"
-                            : payment.payment_status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredPayments.map((payment) => {
+                    const rowKey = `${payment.service_type}-${payment.id}`;
+                    return (
+                      <TableRow key={rowKey}>
+                        {isSuperAdmin && (
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedIds.has(rowKey)}
+                              onCheckedChange={() => toggleSelect(rowKey)}
+                            />
+                          </TableCell>
+                        )}
+                        <TableCell className="whitespace-nowrap">
+                          {format(new Date(payment.created_at), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                        <TableCell className="font-medium">{payment.applicant_name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {SERVICE_TYPE_LABELS[payment.service_type] || payment.service_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {payment.amount > 0 ? `₹${payment.amount.toLocaleString("en-IN")}` : "-"}
+                        </TableCell>
+                        <TableCell className="text-xs font-mono text-muted-foreground">
+                          {payment.razorpay_payment_id || "-"}
+                        </TableCell>
+                        <TableCell className="text-xs font-mono text-muted-foreground">
+                          {payment.razorpay_order_id || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              STATUS_COLORS[payment.payment_status] || "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {payment.payment_status === "completed" || payment.payment_status === "paid"
+                              ? "✅ Success"
+                              : payment.payment_status}
+                          </Badge>
+                        </TableCell>
+                        {isSuperAdmin && (
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setDeleteTarget(payment);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Single Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>பதிவை நீக்கவா? (Delete Record?)</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget && (
+                <>
+                  <strong>{deleteTarget.applicant_name}</strong> - {SERVICE_TYPE_LABELS[deleteTarget.service_type] || deleteTarget.service_type}
+                  {deleteTarget.amount > 0 && ` (₹${deleteTarget.amount.toLocaleString("en-IN")})`}
+                  <br /><br />
+                  இந்த பதிவு நிரந்தரமாக நீக்கப்படும். இதை மீட்டெடுக்க முடியாது.
+                  (This record will be permanently deleted and cannot be recovered.)
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>ரத்து (Cancel)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSingle}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "நீக்குகிறது..." : "நீக்கு (Delete)"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{selectedIds.size} பதிவுகளை நீக்கவா? (Delete {selectedIds.size} records?)</AlertDialogTitle>
+            <AlertDialogDescription>
+              தேர்ந்தெடுக்கப்பட்ட {selectedIds.size} பதிவுகள் நிரந்தரமாக நீக்கப்படும். இதை மீட்டெடுக்க முடியாது.
+              (Selected {selectedIds.size} records will be permanently deleted and cannot be recovered.)
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>ரத்து (Cancel)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "நீக்குகிறது..." : `${selectedIds.size} நீக்கு (Delete)`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
