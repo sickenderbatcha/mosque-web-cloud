@@ -185,8 +185,8 @@ const BookingsTab = () => {
   };
 
   const handlePrintReceipt = (booking: Booking) => {
-    if (booking.payment_status !== "paid" && booking.payment_status !== "completed") {
-      toast.error("Receipt can only be printed for paid bookings");
+    if (booking.status !== "approved" && booking.payment_status !== "paid" && booking.payment_status !== "completed") {
+      toast.error("Receipt can only be printed for approved or paid bookings");
       return;
     }
     setSelectedBooking(booking);
@@ -473,7 +473,7 @@ const BookingsTab = () => {
                             <Ban className="h-4 w-4" />
                           </Button>
                         )}
-                        {(booking.payment_status === "paid" || booking.payment_status === "completed") && (
+                        {(booking.status === "approved" || booking.payment_status === "paid" || booking.payment_status === "completed") && (
                           <Button
                             size="sm"
                             variant="outline"
