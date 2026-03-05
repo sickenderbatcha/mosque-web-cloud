@@ -1223,10 +1223,11 @@ const DonationPage = () => {
     donorEmail?: string;
     amount: number;
     purpose: string;
-    receiptNumber: string;
+    receiptNumber?: string;
     paymentMethod: string;
     isAnonymous: boolean;
     createdAt: string;
+    referenceId?: string;
     razorpayPaymentId?: string;
   } | null>(null);
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -1392,7 +1393,9 @@ const DonationPage = () => {
 
       // For cash payments (admin only), record directly without Razorpay
       if (isAdmin && paymentMethod === "cash") {
+        const cashDonationId = crypto.randomUUID();
         const { error } = await supabase.from("donations").insert({
+          id: cashDonationId,
           donor_name: isAnonymous ? "Anonymous" : donorName,
           donor_phone: phone,
           donor_email: email || null,
@@ -1414,10 +1417,10 @@ const DonationPage = () => {
           donorEmail: email || undefined,
           amount: amount,
           purpose: donationPurpose,
-          receiptNumber: receiptNum,
           paymentMethod: "Cash",
           isAnonymous,
           createdAt: new Date().toISOString(),
+          referenceId: cashDonationId,
         });
         setShowDonationReceipt(true);
 
@@ -1523,10 +1526,10 @@ const DonationPage = () => {
               donorEmail: email || undefined,
               amount: amount,
               purpose: donationPurpose,
-              receiptNumber: receiptNum,
               paymentMethod: "Online",
               isAnonymous,
               createdAt: new Date().toISOString(),
+              referenceId: donationId,
               razorpayPaymentId: response.razorpay_payment_id,
             });
             setShowDonationReceipt(true);
