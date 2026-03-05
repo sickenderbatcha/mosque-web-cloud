@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react";
  import { Card } from "@/components/ui/card";
  import { format } from "date-fns";
  import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
- import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
+ import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
  import { supabase } from "@/integrations/supabase/client";
  
  const SERVICE_TYPE_LABELS_TAMIL: Record<string, string> = {
@@ -61,9 +61,9 @@ import { useRef, useState, useEffect } from "react";
  const CashPaymentReceipt = ({ request, onClose, onPrinted }: CashPaymentReceiptProps) => {
    const receiptRef = useRef<HTMLDivElement>(null);
    const { settings: headerSettings } = useReceiptHeaderSettings();
-   const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
   const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
+  const [receiptLoading, setReceiptLoading] = useState(true);
 
    // Try to fetch the actual sequential receipt number from the income table
    // Uses retries to handle the case where DB trigger hasn't fired yet
@@ -88,37 +88,32 @@ import { useRef, useState, useEffect } from "react";
        const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
        if (refTypes.length === 0) return;
 
-       // Retry up to 5 times (income record may be created by DB trigger with slight delay)
-       const maxRetries = 5;
-       for (let attempt = 0; attempt < maxRetries; attempt++) {
-         const { data } = await supabase
-           .from("income")
-           .select("receipt_number")
-           .eq("reference_id", refId)
-           .in("reference_type", refTypes)
-           .order("created_at", { ascending: false })
-           .limit(1);
+       // Retry up to 12 times (income record may be created by DB trigger with slight delay)
+       const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
+         referenceId: refId,
+         referenceTypes: refTypes,
+         retries: 12,
+         retryDelayMs: 800,
+       });
 
-         if (data && data.length > 0 && data[0].receipt_number) {
-           setSequentialReceiptNumber(data[0].receipt_number);
-           return;
-         }
-         if (attempt < maxRetries - 1) {
-           await new Promise((r) => setTimeout(r, 1000));
-         }
-       }
-     };
-     fetchSequentialReceipt();
-   }, [request.id, request.reference_id, request.service_type]);
+       setSequentialReceiptNumber(resolvedReceiptNumber);
+      };
+      fetchSequentialReceipt()
+        .catch((error) => {
+          console.error("Failed to resolve cash receipt number", error);
+          setSequentialReceiptNumber(null);
+        })
+        .finally(() => setReceiptLoading(false));
+    }, [request.id, request.reference_id, request.service_type]);
 
-   const fallbackReceiptNumber = getReceiptNumber("cash_payment", request.id.slice(0, 8).toUpperCase());
-   const receiptNumber = sequentialReceiptNumber || fallbackReceiptNumber;
+   const receiptNumber = sequentialReceiptNumber;
    const serviceTypeTamil = SERVICE_TYPE_LABELS_TAMIL[request.service_type] || request.service_type;
    const serviceTypeEn = SERVICE_TYPE_LABELS_EN[request.service_type] || request.service_type;
  
    const handlePrint = () => {
-     const printWindow = window.open("", "_blank");
-     if (!printWindow) return;
+      if (!receiptNumber) return;
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return;
  
      const styles = `
        <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -239,6 +234,7 @@ import { useRef, useState, useEffect } from "react";
    };
  
    const handleDownload = () => {
+      if (!receiptNumber) return;
      const htmlContent = `
        <!DOCTYPE html>
        <html>
@@ -360,14 +356,14 @@ import { useRef, useState, useEffect } from "react";
                <h2 className="font-semibold text-sm sm:text-base">ரசீது</h2>
              </div>
               <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                <Button variant="outline" size="sm" onClick={handlePrint}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  அச்சிடு
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleDownload}>
-                  <Download className="h-4 w-4 mr-2" />
-                  பதிவிறக்கம்
-                </Button>
+                 <Button variant="outline" size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
+                   <Printer className="h-4 w-4 mr-2" />
+                   அச்சிடு
+                 </Button>
+                 <Button variant="outline" size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
+                   <Download className="h-4 w-4 mr-2" />
+                   பதிவிறக்கம்
+                 </Button>
               </div>
            </div>
  
@@ -467,7 +463,7 @@ import { useRef, useState, useEffect } from "react";
              {/* Receipt Number */}
              <div className="bg-muted rounded-lg p-3 text-center">
                <p className="text-xs text-muted-foreground">ரசீது எண் / Receipt Number</p>
-               <p className="font-mono font-bold text-lg">{receiptNumber}</p>
+                <p className="font-mono font-bold text-lg">{receiptLoading ? "Loading..." : receiptNumber || "Pending sync"}</p>
              </div>
  
              {/* Footer */}

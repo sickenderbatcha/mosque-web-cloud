@@ -80,6 +80,25 @@ export async function getLatestSequentialReceiptMap(params: {
   return {};
 }
 
+export async function getLatestSequentialReceiptNumber(params: {
+  referenceId: string;
+  referenceTypes: string[];
+  retries?: number;
+  retryDelayMs?: number;
+}): Promise<string | null> {
+  const { referenceId, referenceTypes, retries, retryDelayMs } = params;
+
+  if (!referenceId || !referenceTypes.length) return null;
+
+  const map = await getLatestSequentialReceiptMap({
+    referenceIds: [referenceId],
+    referenceTypes,
+    retries,
+    retryDelayMs,
+  });
+
+  return map[referenceId] || null;
+}
 export async function getCertificateAccessStatus(params: {
   referenceId: string;
   certificateType: CertificateType;
