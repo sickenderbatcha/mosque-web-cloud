@@ -190,7 +190,8 @@ const BookingsTab = () => {
     (status ?? "").toString().trim().toLowerCase();
 
   const isApprovedBooking = (booking: Booking) =>
-    getNormalizedBookingStatus(booking.status) === "approved";
+    getNormalizedBookingStatus(booking.status) === "approved" ||
+    getNormalizedBookingStatus(booking.payment_status) === "completed";
 
   const handlePrintReceipt = (booking: Booking) => {
     if (!isApprovedBooking(booking)) {
