@@ -6,7 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getLatestSequentialReceiptMap, isSequentialReceiptNumber } from "@/lib/certificatePayments";
+
+/** Compute the deterministic booking receipt number from UUID */
+const getBookingReceiptNumber = (bookingId: string): string => {
+  return "BK-" + bookingId.replace(/-/g, "").substring(0, 8).toUpperCase();
+};
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
@@ -98,7 +102,6 @@ interface BookingReceiptProps {
   };
   onClose: () => void;
   requireAction?: boolean;
-  resolvedReceiptNumber?: string | null;
 }
 
 const getPaymentMethodTamil = (method?: string) => {
@@ -115,47 +118,12 @@ const getPaymentMethodEnglish = (method?: string) => {
   return method;
 };
 
-const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedReceiptNumber = null }: BookingReceiptProps) => {
+const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
-  const initialResolvedReceiptNumber =
-    resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)
-      ? resolvedReceiptNumber
-      : null;
 
-  const [receiptNumber, setReceiptNumber] = useState<string | null>(initialResolvedReceiptNumber);
-  const [receiptLoading, setReceiptLoading] = useState(!initialResolvedReceiptNumber);
-
-  // Fetch authoritative sequential receipt number from income table
-  useEffect(() => {
-    if (resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)) {
-      setReceiptNumber(resolvedReceiptNumber);
-      setReceiptLoading(false);
-      return;
-    }
-
-    const fetchReceiptNumber = async () => {
-      setReceiptLoading(true);
-      try {
-        const receiptMap = await getLatestSequentialReceiptMap({
-          referenceIds: [booking.bookingId],
-          referenceTypes: ["booking"],
-          retries: 12,
-          retryDelayMs: 1000,
-        });
-
-        const resolved = receiptMap[booking.bookingId] || null;
-        setReceiptNumber(resolved && isSequentialReceiptNumber(resolved) ? resolved : null);
-      } catch {
-        setReceiptNumber(null);
-      } finally {
-        setReceiptLoading(false);
-      }
-    };
-
-    fetchReceiptNumber();
-  }, [booking.bookingId, resolvedReceiptNumber]);
+  const receiptNumber = getBookingReceiptNumber(booking.bookingId);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -199,7 +167,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedRecei
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
+  const formattedReceiptNumber = receiptNumber;
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
@@ -417,12 +385,12 @@ const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedRecei
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
-                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
-                {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
               </Button>
             </div>

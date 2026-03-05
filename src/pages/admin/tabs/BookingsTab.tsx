@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Check, X, Printer, Ban } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
-import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
+// Receipt number is computed deterministically from booking UUID
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +43,7 @@ const BookingsTab = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [selectedBookingReceiptNumber, setSelectedBookingReceiptNumber] = useState<string | null>(null);
+  // Filter states
   const [showReceipt, setShowReceipt] = useState(false);
   
   // Filter states
@@ -192,33 +192,13 @@ const BookingsTab = () => {
   const isApprovedBooking = (booking: Booking) =>
     getNormalizedBookingStatus(booking.status) === "approved";
 
-  const handlePrintReceipt = async (booking: Booking) => {
+  const handlePrintReceipt = (booking: Booking) => {
     if (!isApprovedBooking(booking)) {
       toast.error("Receipt can only be printed for approved bookings");
       return;
     }
-
-    try {
-      const receiptMap = await getLatestSequentialReceiptMap({
-        referenceIds: [booking.id],
-        referenceTypes: ["booking"],
-        retries: 8,
-        retryDelayMs: 700,
-      });
-
-      const sequentialReceipt = receiptMap[booking.id] || null;
-      if (!sequentialReceipt) {
-        toast.error("Sequential receipt is not ready yet. Please try again in a moment.");
-        return;
-      }
-
-      setSelectedBookingReceiptNumber(sequentialReceipt);
-      setSelectedBooking(booking);
-      setShowReceipt(true);
-    } catch (error) {
-      console.error("Failed to resolve booking receipt number", error);
-      toast.error("Unable to load receipt number. Please try again.");
-    }
+    setSelectedBooking(booking);
+    setShowReceipt(true);
   };
 
   const getServicesFromAmount = (amount: number): { name: string; rate: number }[] => {
@@ -317,11 +297,9 @@ const BookingsTab = () => {
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
             paymentMethod: selectedBooking.payment_status === "completed" ? "online" : selectedBooking.payment_status === "paid" ? "cash" : undefined,
           }}
-          resolvedReceiptNumber={selectedBookingReceiptNumber}
           onClose={() => {
             setShowReceipt(false);
             setSelectedBooking(null);
-            setSelectedBookingReceiptNumber(null);
           }}
         />
       )}
