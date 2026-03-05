@@ -350,17 +350,25 @@ const SubscriptionForm = () => {
 
       // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
       if (unpaid.length > 0) {
-        const selectedMonth = parseInt(fromMonth, 10);
-        const selectedYear = parseInt(fromYear, 10);
-        const selectedInUnpaid = unpaid.some(
-          (m) => m.month === selectedMonth && m.year === selectedYear
-        );
-
-        if (!selectedInUnpaid) {
+        if (forcePendingEnabled) {
+          // Always set to first pending month and all pending months count
           setFromMonth(String(unpaid[0].month).padStart(2, "0"));
           setFromYear(String(unpaid[0].year));
-          setNumberOfMonths(forcePendingEnabled ? unpaid.length : 1);
+          setNumberOfMonths(unpaid.length);
           setSubscriptionType("monthly");
+        } else {
+          const selectedMonth = parseInt(fromMonth, 10);
+          const selectedYear = parseInt(fromYear, 10);
+          const selectedInUnpaid = unpaid.some(
+            (m) => m.month === selectedMonth && m.year === selectedYear
+          );
+
+          if (!selectedInUnpaid) {
+            setFromMonth(String(unpaid[0].month).padStart(2, "0"));
+            setFromYear(String(unpaid[0].year));
+            setNumberOfMonths(1);
+            setSubscriptionType("monthly");
+          }
         }
       }
     } catch (error) {
