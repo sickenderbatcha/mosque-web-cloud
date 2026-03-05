@@ -225,6 +225,7 @@ const UserDashboard = () => {
     paymentMethod?: string;
   } | null>(null);
   const [bookingReceiptRequireAction, setBookingReceiptRequireAction] = useState(false);
+  const [resolvedBookingReceiptNumber, setResolvedBookingReceiptNumber] = useState<string | null>(null);
 
   // Fetch certificate fees from app_settings
   const { settings: certificateFees } = useAppSettings(["certificate_fee_noc", "certificate_fee_heir", "certificate_fee_marriage", "certificate_fee_death", "certificate_fee_outside_marriage"]);
@@ -420,6 +421,59 @@ const UserDashboard = () => {
   };
 
   const getEventTypeTamil = (type: string) => eventTypeTamil[type] || type;
+
+  const openBookingReceipt = async (
+    booking: Booking,
+    options?: { requireAction?: boolean; razorpayPaymentId?: string }
+  ) => {
+    try {
+      const receiptMap = await getLatestSequentialReceiptMap({
+        referenceIds: [booking.id],
+        referenceTypes: ["booking"],
+        retries: 12,
+        retryDelayMs: 800,
+      });
+
+      const sequentialReceiptNumber = receiptMap[booking.id] || null;
+      if (!sequentialReceiptNumber) {
+        toast({
+          title: "Receipt Not Ready",
+          description: "Sequential receipt is syncing. Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setResolvedBookingReceiptNumber(sequentialReceiptNumber);
+      setBookingReceiptRequireAction(!!options?.requireAction);
+      setShowBookingReceipt({
+        applicantName: booking.applicant_name,
+        applicantPhone: booking.applicant_phone,
+        applicantEmail: booking.applicant_email || undefined,
+        eventType: booking.event_type,
+        eventDate: booking.event_date,
+        startTime: booking.start_time,
+        endTime: booking.end_time,
+        amount: booking.booking_amount || 0,
+        bookingId: booking.id,
+        services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+        razorpayPaymentId: options?.razorpayPaymentId,
+        paymentMethod:
+          booking.payment_status === "completed"
+            ? "online"
+            : booking.payment_status === "paid"
+              ? "cash"
+              : undefined,
+      });
+    } catch (error) {
+      console.error("Failed to load booking receipt number", error);
+      toast({
+        title: "Unable to Load Receipt",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const cancelBooking = async (bookingId: string) => {
     setCancellingBookingId(bookingId);
@@ -758,20 +812,9 @@ const UserDashboard = () => {
           }).catch(console.error);
 
           // Show receipt with enforcement immediately after online payment
-          setBookingReceiptRequireAction(true);
-          setShowBookingReceipt({
-            applicantName: booking.applicant_name,
-            applicantPhone: booking.applicant_phone,
-            applicantEmail: booking.applicant_email || undefined,
-            eventType: booking.event_type,
-            eventDate: booking.event_date,
-            startTime: booking.start_time,
-            endTime: booking.end_time,
-            amount: booking.booking_amount || 0,
-            bookingId: booking.id,
-            services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+          await openBookingReceipt(booking, {
+            requireAction: true,
             razorpayPaymentId: response.razorpay_payment_id || undefined,
-            paymentMethod: "online",
           });
 
           // Refresh bookings data
@@ -1002,19 +1045,7 @@ const UserDashboard = () => {
                                   size="sm"
                                   variant="outline"
                                   className="h-auto py-1.5 px-2 text-xs sm:text-sm"
-                                  onClick={() => setShowBookingReceipt({
-                                    applicantName: booking.applicant_name,
-                                    applicantPhone: booking.applicant_phone,
-                                    applicantEmail: booking.applicant_email || undefined,
-                                    eventType: booking.event_type,
-                                    eventDate: booking.event_date,
-                                    startTime: booking.start_time,
-                                    endTime: booking.end_time,
-                                    amount: booking.booking_amount || 0,
-                                    bookingId: booking.id,
-                                    services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-                                    paymentMethod: booking.payment_status === "completed" ? "online" : booking.payment_status === "paid" ? "cash" : undefined,
-                                  })}
+                                  onClick={() => void openBookingReceipt(booking)}
                                 >
                                   <Receipt className="h-3.5 w-3.5 mr-1 shrink-0" />
                                   Receipt
@@ -1462,19 +1493,7 @@ const UserDashboard = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setShowBookingReceipt({
-                                    applicantName: booking.applicant_name,
-                                    applicantPhone: booking.applicant_phone,
-                                    applicantEmail: booking.applicant_email || undefined,
-                                    eventType: booking.event_type,
-                                    eventDate: booking.event_date,
-                                    startTime: booking.start_time,
-                                    endTime: booking.end_time,
-                                    amount: booking.booking_amount || 0,
-                                    bookingId: booking.id,
-                                    services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-                                    paymentMethod: booking.payment_status === "completed" ? "online" : "cash",
-                                  })}
+                                  onClick={() => void openBookingReceipt(booking)}
                                   className="gap-1"
                                 >
                                   <Eye className="h-3.5 w-3.5" />
@@ -2670,9 +2689,11 @@ const UserDashboard = () => {
       {showBookingReceipt && (
         <BookingReceipt
           booking={showBookingReceipt}
+          resolvedReceiptNumber={resolvedBookingReceiptNumber}
           requireAction={bookingReceiptRequireAction}
           onClose={() => {
             setShowBookingReceipt(null);
+            setResolvedBookingReceiptNumber(null);
             setBookingReceiptRequireAction(false);
           }}
         />

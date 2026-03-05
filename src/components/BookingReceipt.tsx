@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
+import { getLatestSequentialReceiptMap, isSequentialReceiptNumber } from "@/lib/certificatePayments";
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
@@ -119,12 +119,17 @@ const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedRecei
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
-  const [receiptNumber, setReceiptNumber] = useState<string | null>(resolvedReceiptNumber);
-  const [receiptLoading, setReceiptLoading] = useState(!resolvedReceiptNumber);
+  const initialResolvedReceiptNumber =
+    resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)
+      ? resolvedReceiptNumber
+      : null;
+
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(initialResolvedReceiptNumber);
+  const [receiptLoading, setReceiptLoading] = useState(!initialResolvedReceiptNumber);
 
   // Fetch authoritative sequential receipt number from income table
   useEffect(() => {
-    if (resolvedReceiptNumber) {
+    if (resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)) {
       setReceiptNumber(resolvedReceiptNumber);
       setReceiptLoading(false);
       return;
@@ -140,7 +145,8 @@ const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedRecei
           retryDelayMs: 1000,
         });
 
-        setReceiptNumber(receiptMap[booking.bookingId] || null);
+        const resolved = receiptMap[booking.bookingId] || null;
+        setReceiptNumber(resolved && isSequentialReceiptNumber(resolved) ? resolved : null);
       } catch {
         setReceiptNumber(null);
       } finally {
