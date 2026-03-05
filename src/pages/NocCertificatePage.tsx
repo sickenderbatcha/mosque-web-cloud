@@ -292,16 +292,7 @@ export default function NocCertificatePage() {
               return;
             }
 
-            // Update NOC status
-            await supabase
-              .from("noc_certificates")
-              .update({
-                status: "payment_pending",
-                payment_status: "completed",
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-              })
-              .eq("id", nocData.id);
+            // NOC status is now updated by the edge function via service role key
 
             setIsPaid(true);
             setNocRecord({

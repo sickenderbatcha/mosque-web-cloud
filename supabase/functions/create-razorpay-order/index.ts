@@ -242,7 +242,32 @@ const handler = async (req: Request): Promise<Response> => {
           console.error("Failed to update certificate payment:", updateError);
         } else {
           console.log("Certificate payment status updated:", certificatePaymentId);
-          const { data: certData } = await supabase.from("certificate_payments").select("applicant_name, amount, certificate_type").eq("id", certificatePaymentId).single();
+          const { data: certData } = await supabase.from("certificate_payments").select("applicant_name, amount, certificate_type, reference_id").eq("id", certificatePaymentId).single();
+          
+          // Also update the source certificate table's payment status
+          if (certData?.certificate_type && certData?.reference_id) {
+            const certTableMap: Record<string, string> = {
+              noc: "noc_certificates",
+              heir: "heir_certificates",
+            };
+            const sourceTable = certTableMap[certData.certificate_type];
+            if (sourceTable) {
+              const { error: sourceUpdateError } = await supabase
+                .from(sourceTable)
+                .update({
+                  payment_status: "completed",
+                  razorpay_order_id: razorpay_order_id,
+                  razorpay_payment_id: razorpay_payment_id,
+                })
+                .eq("id", certData.reference_id);
+              if (sourceUpdateError) {
+                console.error(`Failed to update ${sourceTable} payment status:`, sourceUpdateError);
+              } else {
+                console.log(`${sourceTable} payment status updated for:`, certData.reference_id);
+              }
+            }
+          }
+
           await notifyAdmin(
             "புதிய ஆன்லைன் சான்றிதழ் கட்டணம் (New Online Certificate Payment)",
             `${certData?.applicant_name || "Unknown"} அவர்களிடமிருந்து ${certData?.certificate_type || ""} சான்றிதழ் கட்டணம் ₹${certData?.amount || 0} ஆன்லைன் மூலம் பெறப்பட்டது. Payment ID: ${razorpay_payment_id}`,
