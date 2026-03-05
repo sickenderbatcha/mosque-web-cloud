@@ -73,9 +73,12 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
           "noc_certificate",
           "heir_certificate",
         ].filter(Boolean),
+        retries: 10,
+        retryDelayMs: 1500,
       });
 
-      setReceiptNumber(map[data.referenceId] || "");
+      const found = map[data.referenceId] || "";
+      setReceiptNumber(found || data.transactionId || "PENDING");
       setReceiptLoading(false);
     };
 
