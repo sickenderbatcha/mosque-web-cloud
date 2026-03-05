@@ -98,6 +98,7 @@ interface BookingReceiptProps {
   };
   onClose: () => void;
   requireAction?: boolean;
+  resolvedReceiptNumber?: string | null;
 }
 
 const getPaymentMethodTamil = (method?: string) => {
@@ -114,15 +115,21 @@ const getPaymentMethodEnglish = (method?: string) => {
   return method;
 };
 
-const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
+const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedReceiptNumber = null }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
-  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
-  const [receiptLoading, setReceiptLoading] = useState(true);
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(resolvedReceiptNumber);
+  const [receiptLoading, setReceiptLoading] = useState(!resolvedReceiptNumber);
 
   // Fetch authoritative sequential receipt number from income table
   useEffect(() => {
+    if (resolvedReceiptNumber) {
+      setReceiptNumber(resolvedReceiptNumber);
+      setReceiptLoading(false);
+      return;
+    }
+
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
       try {
@@ -142,7 +149,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
 
     fetchReceiptNumber();
-  }, [booking.bookingId]);
+  }, [booking.bookingId, resolvedReceiptNumber]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
