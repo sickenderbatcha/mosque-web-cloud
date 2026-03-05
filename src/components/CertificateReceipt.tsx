@@ -408,11 +408,11 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
               <h2 className="font-semibold font-tamil text-sm">{certificateTypeTamil} கட்டண ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
