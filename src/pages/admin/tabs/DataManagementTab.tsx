@@ -46,6 +46,7 @@ const AVAILABLE_TABLES: Omit<TableInfo, "count">[] = [
   { name: "heir_certificates", displayName: "Heir Certificates", displayNameTamil: "வாரிசு சான்றிதழ்கள்", description: "Heir certificate requests" },
   { name: "noc_certificates", displayName: "NOC Certificates", displayNameTamil: "NOC சான்றிதழ்கள்", description: "NOC certificate requests" },
   { name: "certificate_payments", displayName: "Certificate Payments", displayNameTamil: "சான்றிதழ் கட்டணங்கள்", description: "Certificate payment records" },
+  { name: "cash_payment_requests", displayName: "Cash Payment Requests", displayNameTamil: "ரொக்க செலுத்துதல் கோரிக்கைகள்", description: "Cash payment request records" },
   { name: "refund_requests", displayName: "Refund Requests", displayNameTamil: "பணம் திரும்ப கோரிக்கைகள்", description: "Refund request records" },
   { name: "admin_notifications", displayName: "Admin Notifications", displayNameTamil: "நிர்வாக அறிவிப்புகள்", description: "Admin notification records" },
   { name: "page_visits", displayName: "Page Visits", displayNameTamil: "பக்க வருகைகள்", description: "Website visitor analytics" },
