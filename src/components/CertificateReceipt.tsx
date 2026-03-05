@@ -84,7 +84,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
 
     fetchReceiptNumber().catch((error) => {
       console.error("Failed to resolve certificate receipt number", error);
-      setReceiptNumber("");
+      setReceiptNumber(data.transactionId || "PENDING");
       setReceiptLoading(false);
     });
   }, [data.referenceId, data.referenceType]);
