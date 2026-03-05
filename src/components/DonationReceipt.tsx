@@ -30,6 +30,7 @@ interface DonationReceiptProps {
     createdAt: string;
     referenceId?: string;
     razorpayPaymentId?: string;
+  };
   onClose: () => void;
   requireAction?: boolean;
 }
