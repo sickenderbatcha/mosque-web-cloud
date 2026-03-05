@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { useReceiptNumberSettings } from "@/hooks/useReceiptNumberSettings";
+import { getLatestSequentialReceiptNumber, isSequentialReceiptNumber } from "@/lib/certificatePayments";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -24,12 +24,12 @@ interface DonationReceiptProps {
     donorEmail?: string;
     amount: number;
     purpose: string;
-    receiptNumber: string;
+    receiptNumber?: string;
     paymentMethod: string;
     isAnonymous: boolean;
     createdAt: string;
+    referenceId?: string;
     razorpayPaymentId?: string;
-  };
   onClose: () => void;
   requireAction?: boolean;
 }
@@ -113,8 +113,9 @@ const getPurposeTamil = (purpose: string): string => {
 const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
-  const { getReceiptNumber } = useReceiptNumberSettings();
   const [hasActioned, setHasActioned] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState<string>("");
+  const [receiptLoading, setReceiptLoading] = useState(true);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -158,7 +159,47 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = getReceiptNumber("donation", donation.receiptNumber);
+  useEffect(() => {
+    const fetchReceiptNumber = async () => {
+      const existingSequential = isSequentialReceiptNumber(donation.receiptNumber)
+        ? donation.receiptNumber
+        : null;
+
+      if (existingSequential) {
+        setReceiptNumber(existingSequential);
+        setReceiptLoading(false);
+        return;
+      }
+
+      if (!donation.referenceId) {
+        setReceiptNumber("");
+        setReceiptLoading(false);
+        return;
+      }
+
+      setReceiptLoading(true);
+      try {
+        const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
+          referenceId: donation.referenceId,
+          referenceTypes: ["donation"],
+          retries: 12,
+          retryDelayMs: 800,
+        });
+
+        setReceiptNumber(resolvedReceiptNumber || "");
+      } finally {
+        setReceiptLoading(false);
+      }
+    };
+
+    fetchReceiptNumber().catch((error) => {
+      console.error("Failed to resolve donation receipt number", error);
+      setReceiptNumber("");
+      setReceiptLoading(false);
+    });
+  }, [donation.receiptNumber, donation.referenceId]);
+
+  const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
@@ -402,11 +443,11 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
               <h2 className="font-semibold font-tamil">நன்கொடை ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={handlePrint}>
+              <Button variant="outline" size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Button variant="outline" size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
               </Button>

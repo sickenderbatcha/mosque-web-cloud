@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { supabase } from "@/integrations/supabase/client";
+import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -73,30 +73,25 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
   useEffect(() => {
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
-      const maxRetries = 5;
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const { data } = await supabase
-          .from("income")
-          .select("receipt_number")
-          .eq("reference_id", subscription.id)
-          .eq("reference_type", "subscription")
-          .maybeSingle();
+      try {
+        const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
+          referenceId: subscription.id,
+          referenceTypes: ["subscription"],
+          retries: 12,
+          retryDelayMs: 800,
+        });
 
-        if (data?.receipt_number) {
-          setReceiptNumber(data.receipt_number);
-          setReceiptLoading(false);
-          return;
-        }
-        // Wait 1s before retry
-        if (attempt < maxRetries - 1) {
-          await new Promise((r) => setTimeout(r, 1000));
-        }
+        setReceiptNumber(resolvedReceiptNumber || "");
+      } finally {
+        setReceiptLoading(false);
       }
-      // Fallback: use UUID slice
-      setReceiptNumber(`SUB-${subscription.id.slice(0, 8).toUpperCase()}`);
-      setReceiptLoading(false);
     };
-    fetchReceiptNumber();
+
+    fetchReceiptNumber().catch((error) => {
+      console.error("Failed to resolve subscription receipt number", error);
+      setReceiptNumber("");
+      setReceiptLoading(false);
+    });
   }, [subscription.id]);
 
   // Strictly prevent navigation until user prints/downloads at least once
@@ -414,11 +409,11 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
               <h2 className="font-semibold font-tamil">சந்தா ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
