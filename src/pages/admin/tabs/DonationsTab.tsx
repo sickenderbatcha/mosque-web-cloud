@@ -206,10 +206,11 @@ const DonationsTab = () => {
             donorEmail: selectedDonation.donor_email || undefined,
             amount: Number(selectedDonation.amount),
             purpose: selectedDonation.purpose || "General Donation",
-            receiptNumber: selectedDonation.receipt_number || selectedDonation.id.slice(0, 8).toUpperCase(),
+            receiptNumber: selectedDonation.receipt_number || undefined,
             paymentMethod: selectedDonation.payment_method || "Online",
             isAnonymous: selectedDonation.is_anonymous || false,
             createdAt: selectedDonation.created_at,
+            referenceId: selectedDonation.id,
           }}
           onClose={() => setSelectedDonation(null)}
         />
