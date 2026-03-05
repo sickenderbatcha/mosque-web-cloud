@@ -789,7 +789,7 @@ export default function NocCertificatePage() {
                           <FormLabel className="font-tamil">துணை உறவு முறை *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             disabled={isPaid}
                           >
                             <FormControl>
