@@ -73,15 +73,18 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
           "noc_certificate",
           "heir_certificate",
         ].filter(Boolean),
+        retries: 10,
+        retryDelayMs: 1500,
       });
 
-      setReceiptNumber(map[data.referenceId] || "");
+      const found = map[data.referenceId] || "";
+      setReceiptNumber(found || data.transactionId || "PENDING");
       setReceiptLoading(false);
     };
 
     fetchReceiptNumber().catch((error) => {
       console.error("Failed to resolve certificate receipt number", error);
-      setReceiptNumber("");
+      setReceiptNumber(data.transactionId || "PENDING");
       setReceiptLoading(false);
     });
   }, [data.referenceId, data.referenceType]);
@@ -408,11 +411,11 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
               <h2 className="font-semibold font-tamil text-sm">{certificateTypeTamil} கட்டண ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading}>
                 {receiptLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
                 பதிவிறக்கம்
               </Button>
