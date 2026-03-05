@@ -113,13 +113,15 @@ export default function NocCertificatePage() {
     },
   });
 
-  // Auto-set partner_category based on applicant_relationship
+  // Auto-set partner_category and partner_applicant_relationship based on applicant_relationship
   const watchedRelationship = form.watch("applicant_relationship");
   useEffect(() => {
     if (watchedRelationship === "மகன்") {
       form.setValue("partner_category", "மணமகளுக்கும்");
+      form.setValue("partner_applicant_relationship", "மகள்");
     } else if (watchedRelationship === "மகள்") {
       form.setValue("partner_category", "மணமகனுக்கும்");
+      form.setValue("partner_applicant_relationship", "மகன்");
     }
   }, [watchedRelationship, form]);
 
