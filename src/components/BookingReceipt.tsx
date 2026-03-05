@@ -119,47 +119,12 @@ const getPaymentMethodEnglish = (method?: string) => {
   return method;
 };
 
-const BookingReceipt = ({ booking, onClose, requireAction = false, resolvedReceiptNumber = null }: BookingReceiptProps) => {
+const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
-  const initialResolvedReceiptNumber =
-    resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)
-      ? resolvedReceiptNumber
-      : null;
 
-  const [receiptNumber, setReceiptNumber] = useState<string | null>(initialResolvedReceiptNumber);
-  const [receiptLoading, setReceiptLoading] = useState(!initialResolvedReceiptNumber);
-
-  // Fetch authoritative sequential receipt number from income table
-  useEffect(() => {
-    if (resolvedReceiptNumber && isSequentialReceiptNumber(resolvedReceiptNumber)) {
-      setReceiptNumber(resolvedReceiptNumber);
-      setReceiptLoading(false);
-      return;
-    }
-
-    const fetchReceiptNumber = async () => {
-      setReceiptLoading(true);
-      try {
-        const receiptMap = await getLatestSequentialReceiptMap({
-          referenceIds: [booking.bookingId],
-          referenceTypes: ["booking"],
-          retries: 12,
-          retryDelayMs: 1000,
-        });
-
-        const resolved = receiptMap[booking.bookingId] || null;
-        setReceiptNumber(resolved && isSequentialReceiptNumber(resolved) ? resolved : null);
-      } catch {
-        setReceiptNumber(null);
-      } finally {
-        setReceiptLoading(false);
-      }
-    };
-
-    fetchReceiptNumber();
-  }, [booking.bookingId, resolvedReceiptNumber]);
+  const receiptNumber = getBookingReceiptNumber(booking.bookingId);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
