@@ -763,7 +763,7 @@ export default function NocCertificatePage() {
                           <FormLabel className="font-tamil">துணை வகை *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                             disabled={isPaid}
                           >
                             <FormControl>
