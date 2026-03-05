@@ -192,33 +192,13 @@ const BookingsTab = () => {
   const isApprovedBooking = (booking: Booking) =>
     getNormalizedBookingStatus(booking.status) === "approved";
 
-  const handlePrintReceipt = async (booking: Booking) => {
+  const handlePrintReceipt = (booking: Booking) => {
     if (!isApprovedBooking(booking)) {
       toast.error("Receipt can only be printed for approved bookings");
       return;
     }
-
-    try {
-      const receiptMap = await getLatestSequentialReceiptMap({
-        referenceIds: [booking.id],
-        referenceTypes: ["booking"],
-        retries: 8,
-        retryDelayMs: 700,
-      });
-
-      const sequentialReceipt = receiptMap[booking.id] || null;
-      if (!sequentialReceipt) {
-        toast.error("Sequential receipt is not ready yet. Please try again in a moment.");
-        return;
-      }
-
-      setSelectedBookingReceiptNumber(sequentialReceipt);
-      setSelectedBooking(booking);
-      setShowReceipt(true);
-    } catch (error) {
-      console.error("Failed to resolve booking receipt number", error);
-      toast.error("Unable to load receipt number. Please try again.");
-    }
+    setSelectedBooking(booking);
+    setShowReceipt(true);
   };
 
   const getServicesFromAmount = (amount: number): { name: string; rate: number }[] => {
