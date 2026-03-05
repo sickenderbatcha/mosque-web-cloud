@@ -113,6 +113,16 @@ export default function NocCertificatePage() {
     },
   });
 
+  // Auto-set partner_category based on applicant_relationship
+  const watchedRelationship = form.watch("applicant_relationship");
+  useEffect(() => {
+    if (watchedRelationship === "மகன்") {
+      form.setValue("partner_category", "மணமகளுக்கும்");
+    } else if (watchedRelationship === "மகள்") {
+      form.setValue("partner_category", "மணமகனுக்கும்");
+    }
+  }, [watchedRelationship, form]);
+
   // Load Razorpay script
   useEffect(() => {
     const script = document.createElement("script");
