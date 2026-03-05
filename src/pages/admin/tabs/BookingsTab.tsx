@@ -317,11 +317,9 @@ const BookingsTab = () => {
             services: getServicesFromAmount(Number(selectedBooking.booking_amount || 0)),
             paymentMethod: selectedBooking.payment_status === "completed" ? "online" : selectedBooking.payment_status === "paid" ? "cash" : undefined,
           }}
-          resolvedReceiptNumber={selectedBookingReceiptNumber}
           onClose={() => {
             setShowReceipt(false);
             setSelectedBooking(null);
-            setSelectedBookingReceiptNumber(null);
           }}
         />
       )}

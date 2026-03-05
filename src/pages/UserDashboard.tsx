@@ -2662,11 +2662,9 @@ const UserDashboard = () => {
       {showBookingReceipt && (
         <BookingReceipt
           booking={showBookingReceipt}
-          resolvedReceiptNumber={resolvedBookingReceiptNumber}
           requireAction={bookingReceiptRequireAction}
           onClose={() => {
             setShowBookingReceipt(null);
-            setResolvedBookingReceiptNumber(null);
             setBookingReceiptRequireAction(false);
           }}
         />
