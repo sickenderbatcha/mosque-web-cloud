@@ -186,8 +186,14 @@ const BookingsTab = () => {
     }
   };
 
+  const getNormalizedBookingStatus = (status: Booking["status"] | null | undefined) =>
+    (status ?? "").toString().trim().toLowerCase();
+
+  const isApprovedBooking = (booking: Booking) =>
+    getNormalizedBookingStatus(booking.status) === "approved";
+
   const handlePrintReceipt = async (booking: Booking) => {
-    if (booking.status !== "approved") {
+    if (!isApprovedBooking(booking)) {
       toast.error("Receipt can only be printed for approved bookings");
       return;
     }
@@ -497,7 +503,7 @@ const BookingsTab = () => {
                             <Ban className="h-4 w-4" />
                           </Button>
                         )}
-                        {booking.status === "approved" && (
+                        {isApprovedBooking(booking) && (
                           <Button
                             size="sm"
                             variant="outline"
