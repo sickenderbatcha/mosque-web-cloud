@@ -1,3 +1,4 @@
+// BookingReceipt - uses deterministic BK-XXXXXXXX receipt number from booking UUID
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
