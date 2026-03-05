@@ -6,7 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getLatestSequentialReceiptMap, isSequentialReceiptNumber } from "@/lib/certificatePayments";
+
+/** Compute the deterministic booking receipt number from UUID */
+const getBookingReceiptNumber = (bookingId: string): string => {
+  return "BK-" + bookingId.replace(/-/g, "").substring(0, 8).toUpperCase();
+};
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
