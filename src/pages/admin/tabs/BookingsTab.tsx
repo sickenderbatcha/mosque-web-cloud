@@ -43,7 +43,7 @@ const BookingsTab = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [selectedBookingReceiptNumber, setSelectedBookingReceiptNumber] = useState<string | null>(null);
+  // Filter states
   const [showReceipt, setShowReceipt] = useState(false);
   
   // Filter states
