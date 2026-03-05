@@ -870,7 +870,7 @@ export default function NocCertificatePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col md:flex-row md:flex-wrap items-stretch gap-3 pt-4">
+                <div className="flex flex-col gap-3 pt-4 w-full overflow-hidden md:flex-row md:flex-wrap md:items-stretch">
                   {!isPaid ? (
                     isAdmin ? (
                       <>
