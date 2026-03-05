@@ -422,57 +422,30 @@ const UserDashboard = () => {
 
   const getEventTypeTamil = (type: string) => eventTypeTamil[type] || type;
 
-  const openBookingReceipt = async (
+  const openBookingReceipt = (
     booking: Booking,
     options?: { requireAction?: boolean; razorpayPaymentId?: string }
   ) => {
-    try {
-      const receiptMap = await getLatestSequentialReceiptMap({
-        referenceIds: [booking.id],
-        referenceTypes: ["booking"],
-        retries: 12,
-        retryDelayMs: 800,
-      });
-
-      const sequentialReceiptNumber = receiptMap[booking.id] || null;
-      if (!sequentialReceiptNumber) {
-        toast({
-          title: "Receipt Not Ready",
-          description: "Sequential receipt is syncing. Please try again in a moment.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setResolvedBookingReceiptNumber(sequentialReceiptNumber);
-      setBookingReceiptRequireAction(!!options?.requireAction);
-      setShowBookingReceipt({
-        applicantName: booking.applicant_name,
-        applicantPhone: booking.applicant_phone,
-        applicantEmail: booking.applicant_email || undefined,
-        eventType: booking.event_type,
-        eventDate: booking.event_date,
-        startTime: booking.start_time,
-        endTime: booking.end_time,
-        amount: booking.booking_amount || 0,
-        bookingId: booking.id,
-        services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
-        razorpayPaymentId: options?.razorpayPaymentId,
-        paymentMethod:
-          booking.payment_status === "completed"
-            ? "online"
-            : booking.payment_status === "paid"
-              ? "cash"
-              : undefined,
-      });
-    } catch (error) {
-      console.error("Failed to load booking receipt number", error);
-      toast({
-        title: "Unable to Load Receipt",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
+    setBookingReceiptRequireAction(!!options?.requireAction);
+    setShowBookingReceipt({
+      applicantName: booking.applicant_name,
+      applicantPhone: booking.applicant_phone,
+      applicantEmail: booking.applicant_email || undefined,
+      eventType: booking.event_type,
+      eventDate: booking.event_date,
+      startTime: booking.start_time,
+      endTime: booking.end_time,
+      amount: booking.booking_amount || 0,
+      bookingId: booking.id,
+      services: [{ name: "Hall", rate: booking.booking_amount || 0 }],
+      razorpayPaymentId: options?.razorpayPaymentId,
+      paymentMethod:
+        booking.payment_status === "completed"
+          ? "online"
+          : booking.payment_status === "paid"
+            ? "cash"
+            : undefined,
+    });
   };
 
   const cancelBooking = async (bookingId: string) => {
