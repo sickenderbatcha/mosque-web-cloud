@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Check, X, Printer, Ban } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
-import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
+// Receipt number is computed deterministically from booking UUID
 import {
   AlertDialog,
   AlertDialogAction,
