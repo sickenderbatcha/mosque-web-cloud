@@ -425,8 +425,9 @@ const BookingsTab = () => {
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Guests</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Status</TableHead>
+                    <TableHead>Booked On</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
