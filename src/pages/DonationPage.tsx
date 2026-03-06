@@ -476,12 +476,12 @@ const SubscriptionForm = () => {
         const firstPending = pendingMonths[0];
         fromMonthNum = firstPending.month;
         fromYearNum = firstPending.year;
-        effectiveMonths = 1;
-        payableAmount = monthlyAmount;
+        effectiveMonths = pendingMonths.length;
+        payableAmount = monthlyAmount * pendingMonths.length;
 
         setFromMonth(String(firstPending.month).padStart(2, "0"));
         setFromYear(String(firstPending.year));
-        setNumberOfMonths(1);
+        setNumberOfMonths(pendingMonths.length);
       }
 
       // Check if any months are already paid in subscription_slots
