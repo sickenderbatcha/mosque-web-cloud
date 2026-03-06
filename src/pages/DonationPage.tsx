@@ -524,11 +524,10 @@ const SubscriptionForm = () => {
 
           fromMonthNum = candidateMonth;
           fromYearNum = candidateYear;
-          effectiveMonths = 1;
-          payableAmount = monthlyAmount;
+          // Keep the user's intended number of months, just shift the start
+          // effectiveMonths and payableAmount remain unchanged
           setFromMonth(String(candidateMonth).padStart(2, "0"));
           setFromYear(String(candidateYear));
-          setNumberOfMonths(1);
 
           toast({
             title: "அடுத்த மாதம் தேர்ந்தெடுக்கப்பட்டது / Next month selected",
