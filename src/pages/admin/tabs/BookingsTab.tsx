@@ -425,8 +425,9 @@ const BookingsTab = () => {
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Guests</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Status</TableHead>
+                    <TableHead>Booked On</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -446,6 +447,7 @@ const BookingsTab = () => {
                     </TableCell>
                     <TableCell>{booking.expected_guests || "-"}</TableCell>
                     <TableCell>₹{Number(booking.booking_amount || 0).toLocaleString()}</TableCell>
+                    <TableCell>{format(new Date(booking.created_at), "dd/MM/yyyy")}</TableCell>
                     <TableCell>{getPaymentBadge(booking.payment_status)}</TableCell>
                     <TableCell>{getStatusBadge(booking.status)}</TableCell>
                     <TableCell>
