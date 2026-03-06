@@ -65,46 +65,66 @@ import { useRef, useState, useEffect } from "react";
   const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(true);
 
-   // Try to fetch the actual sequential receipt number from the income table
-   // Uses retries to handle the case where DB trigger hasn't fired yet
-   useEffect(() => {
-     const fetchSequentialReceipt = async () => {
-       // First, resolve the reference_id – it may have been updated in DB
-       // (e.g. subscription cash requests get reference_id set during approval)
-       let refId = request.reference_id;
-       if (!refId) {
-         const { data: freshReq } = await supabase
-           .from("cash_payment_requests")
-           .select("reference_id")
-           .eq("id", request.id)
-           .maybeSingle();
-         if (freshReq?.reference_id) {
-           refId = freshReq.reference_id;
-         }
-       }
+  // Try to fetch the actual sequential receipt number from the income table
+    // Uses retries to handle the case where DB trigger hasn't fired yet
+    useEffect(() => {
+      const fetchSequentialReceipt = async () => {
+        // For bookings, use deterministic BK-XXXXXXXX receipt number directly
+        // (no need to poll – the income trigger uses this same format)
+        if (request.service_type === "booking") {
+          let refId = request.reference_id;
+          if (!refId) {
+            const { data: freshReq } = await supabase
+              .from("cash_payment_requests")
+              .select("reference_id")
+              .eq("id", request.id)
+              .maybeSingle();
+            if (freshReq?.reference_id) {
+              refId = freshReq.reference_id;
+            }
+          }
+          if (refId) {
+            const deterministicReceipt = "BK-" + refId.replace(/-/g, "").substring(0, 8).toUpperCase();
+            setSequentialReceiptNumber(deterministicReceipt);
+          }
+          return;
+        }
 
-       if (!refId) return;
+        // For other service types, resolve via income table polling
+        let refId = request.reference_id;
+        if (!refId) {
+          const { data: freshReq } = await supabase
+            .from("cash_payment_requests")
+            .select("reference_id")
+            .eq("id", request.id)
+            .maybeSingle();
+          if (freshReq?.reference_id) {
+            refId = freshReq.reference_id;
+          }
+        }
 
-       const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
-       if (refTypes.length === 0) return;
+        if (!refId) return;
 
-       // Retry up to 12 times (income record may be created by DB trigger with slight delay)
-       const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
-         referenceId: refId,
-         referenceTypes: refTypes,
-         retries: 12,
-         retryDelayMs: 800,
-       });
+        const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
+        if (refTypes.length === 0) return;
 
-       setSequentialReceiptNumber(resolvedReceiptNumber);
-      };
-      fetchSequentialReceipt()
-        .catch((error) => {
-          console.error("Failed to resolve cash receipt number", error);
-          setSequentialReceiptNumber(null);
-        })
-        .finally(() => setReceiptLoading(false));
-    }, [request.id, request.reference_id, request.service_type]);
+        // Retry up to 12 times (income record may be created by DB trigger with slight delay)
+        const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
+          referenceId: refId,
+          referenceTypes: refTypes,
+          retries: 12,
+          retryDelayMs: 800,
+        });
+
+        setSequentialReceiptNumber(resolvedReceiptNumber);
+       };
+       fetchSequentialReceipt()
+         .catch((error) => {
+           console.error("Failed to resolve cash receipt number", error);
+           setSequentialReceiptNumber(null);
+         })
+         .finally(() => setReceiptLoading(false));
+     }, [request.id, request.reference_id, request.service_type]);
 
    const receiptNumber = sequentialReceiptNumber;
    const serviceTypeTamil = SERVICE_TYPE_LABELS_TAMIL[request.service_type] || request.service_type;
