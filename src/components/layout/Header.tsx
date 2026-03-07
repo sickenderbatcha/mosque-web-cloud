@@ -188,7 +188,7 @@ const Header = () => {
           dir="rtl"
           style={{ fontSize: getBismillahSize() }}>
 
-          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+          {fontSettings.header_bismillah || "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"}
         </span>
       </div>
       
