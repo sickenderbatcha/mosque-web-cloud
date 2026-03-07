@@ -46,12 +46,13 @@ const Header = () => {
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
 
-  const fontSettingKeys = [
+  const headerSettingKeys = [
+  "header_bismillah", "header_title_ta", "header_title_en",
   "header_font_bismillah_mobile", "header_font_bismillah_desktop",
   "header_font_ta_mobile", "header_font_ta_desktop",
   "header_font_en_mobile", "header_font_en_desktop"];
 
-  const { settings: fontSettings } = useAppSettings(fontSettingKeys);
+  const { settings: fontSettings } = useAppSettings(headerSettingKeys);
 
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
