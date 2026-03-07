@@ -149,7 +149,7 @@ const HomePage = () => {
                   transition={{ delay: 0.6 }}
                   className="text-lg md:text-xl text-primary-foreground/90 mb-8 font-display"
                 >
-                  <p>{content.hero.subtitle || "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal"}</p>
+                  <p>{content.hero.subtitle_en || content.hero.subtitle || "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal"}</p>
                   {content.hero.subtitle_line2 && (
                     <p className="mt-1">{content.hero.subtitle_line2}</p>
                   )}
