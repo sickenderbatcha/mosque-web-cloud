@@ -89,10 +89,11 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
   useEffect(() => {
     if (pendingFile) {
       // Validate the file
-      if (pendingFile.type !== "application/pdf") {
+      const isValidType = pendingFile.type === "application/pdf" || pendingFile.type.startsWith("image/");
+      if (!isValidType) {
         toast({
           title: "Invalid File Type",
-          description: "Only PDF files are accepted. Please select a .pdf file.",
+          description: "Only PDF and image files are accepted.",
           variant: "destructive",
         });
         onPendingFileConsumed?.();
@@ -111,7 +112,7 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
 
       // File is valid — open metadata dialog
       setSelectedFile(pendingFile);
-      setUploadDocName(pendingFile.name.replace(/\.pdf$/i, ""));
+      setUploadDocName(pendingFile.name.replace(/\.(pdf|png|jpe?g|gif|webp|svg)$/i, ""));
       setMetadataDialogOpen(true);
       onPendingFileConsumed?.();
     }
@@ -156,10 +157,11 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== "application/pdf") {
+    const isValidType = file.type === "application/pdf" || file.type.startsWith("image/");
+    if (!isValidType) {
       toast({
         title: "Invalid File Type",
-        description: "Only PDF files are accepted. Please select a .pdf file.",
+        description: "Only PDF and image files are accepted.",
         variant: "destructive",
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -178,7 +180,7 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
 
     // File is valid — save it and THEN open the metadata dialog
     setSelectedFile(file);
-    setUploadDocName(file.name.replace(/\.pdf$/i, ""));
+    setUploadDocName(file.name.replace(/\.(pdf|png|jpe?g|gif|webp|svg)$/i, ""));
     setMetadataDialogOpen(true);
   };
 
@@ -374,7 +376,7 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
       {!onRequestFileUpload && (
         <input
           type="file"
-          accept=".pdf,application/pdf"
+          accept=".pdf,application/pdf,image/*"
           ref={fileInputRef}
           onChange={handleFileSelect}
           className="hidden"
@@ -389,10 +391,10 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
             <div>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                PDF ஆவண சேமிப்பகம் (PDF Document Storage)
+                ஆவண சேமிப்பகம் (Document Storage)
               </CardTitle>
               <CardDescription>
-                Upload, search, view and download PDF documents. Total: {documents.length} documents
+                Upload, search and view PDF &amp; image documents. Total: {documents.length} documents
               </CardDescription>
             </div>
             {isMobile ? (
