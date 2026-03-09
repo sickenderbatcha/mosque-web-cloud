@@ -56,6 +56,8 @@ const MembersTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+  const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string; notificationSent: boolean } | null>(null);
+  const [passwordCopied, setPasswordCopied] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
