@@ -205,7 +205,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Password reset successful. New password sent to member's registered contact.`,
+        message: `Password reset successful.`,
+        newPassword,
         notificationSent,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
