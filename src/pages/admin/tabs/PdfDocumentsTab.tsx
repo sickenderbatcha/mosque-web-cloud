@@ -157,10 +157,11 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== "application/pdf") {
+    const isValidType = file.type === "application/pdf" || file.type.startsWith("image/");
+    if (!isValidType) {
       toast({
         title: "Invalid File Type",
-        description: "Only PDF files are accepted. Please select a .pdf file.",
+        description: "Only PDF and image files are accepted.",
         variant: "destructive",
       });
       if (fileInputRef.current) fileInputRef.current.value = "";
