@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Building, History, MapPin, Users, BookOpen, Loader2, Images, ChevronRight } from "lucide-react";
+import { Building, History, MapPin, Users, BookOpen, Loader2, Images, ChevronRight, FileText, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLandingContent } from "@/hooks/useLandingContent";
 import { supabase } from "@/integrations/supabase/client";
