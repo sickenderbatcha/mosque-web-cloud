@@ -376,7 +376,7 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
       {!onRequestFileUpload && (
         <input
           type="file"
-          accept=".pdf,application/pdf"
+          accept=".pdf,application/pdf,image/*"
           ref={fileInputRef}
           onChange={handleFileSelect}
           className="hidden"
