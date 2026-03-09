@@ -190,10 +190,11 @@ export default function CertificatePreviewPage() {
       {/* Toolbar - hidden when printing */}
       <div className="print:hidden sticky top-0 z-10 bg-background/95 backdrop-blur border-b p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            பின்செல் / Back
           </Button>
-          <h1 className="text-lg font-semibold font-tamil">{title}</h1>
+          <h1 className="text-lg font-semibold font-tamil hidden sm:block">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handlePrint} disabled={actionLoading || !paymentChecked || !isPaid}>
