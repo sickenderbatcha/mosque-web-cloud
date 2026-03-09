@@ -391,10 +391,10 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
             <div>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                PDF ஆவண சேமிப்பகம் (PDF Document Storage)
+                ஆவண சேமிப்பகம் (Document Storage)
               </CardTitle>
               <CardDescription>
-                Upload, search, view and download PDF documents. Total: {documents.length} documents
+                Upload, search and view PDF &amp; image documents. Total: {documents.length} documents
               </CardDescription>
             </div>
             {isMobile ? (
