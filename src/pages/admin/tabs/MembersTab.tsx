@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Users, UserCheck, UserX, Download, KeyRound, Loader2, Upload, FileDown, ImagePlus, User, X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Plus, Edit, Users, UserCheck, UserX, Download, KeyRound, Loader2, Upload, FileDown, ImagePlus, User, X, ChevronLeft, ChevronRight, Trash2, Copy, Check } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import MemberFamilySection from "@/components/admin/MemberFamilySection";
 import { Progress } from "@/components/ui/progress";
@@ -56,6 +56,8 @@ const MembersTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+  const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string; notificationSent: boolean } | null>(null);
+  const [passwordCopied, setPasswordCopied] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -370,13 +372,19 @@ const MembersTab = () => {
       }
 
       const newPassword = response.data?.newPassword;
-      toast({ 
-        title: "Password reset successful", 
-        description: newPassword 
-          ? `New password for ${member.full_name}: ${newPassword}${response.data?.notificationSent ? ' (also sent to registered contact)' : ' (notification could not be sent - please share manually)'}`
-          : `New password has been sent to ${member.full_name}'s registered contact.`,
-        duration: 30000,
-      });
+      if (newPassword) {
+        setResetPasswordResult({
+          name: member.full_name,
+          password: newPassword,
+          notificationSent: response.data?.notificationSent || false,
+        });
+        setPasswordCopied(false);
+      } else {
+        toast({ 
+          title: "Password reset successful", 
+          description: `New password has been sent to ${member.full_name}'s registered contact.`,
+        });
+      }
     } catch (error: any) {
       toast({ 
         title: "Error resetting password", 
@@ -1554,6 +1562,42 @@ const MembersTab = () => {
           )}
         </CardContent>
       </Card>
+      {/* Password Reset Result Dialog */}
+      <Dialog open={!!resetPasswordResult} onOpenChange={(open) => { if (!open) setResetPasswordResult(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Password Reset Successful</DialogTitle>
+            <div className="text-sm text-muted-foreground">
+              New password for <strong>{resetPasswordResult?.name}</strong>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Input 
+                readOnly 
+                value={resetPasswordResult?.password || ""} 
+                className="font-mono text-lg tracking-wider text-center"
+              />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard.writeText(resetPasswordResult?.password || "");
+                  setPasswordCopied(true);
+                  setTimeout(() => setPasswordCopied(false), 2000);
+                }}
+              >
+                {passwordCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {resetPasswordResult?.notificationSent 
+                ? "This password has also been sent to the member's registered contact."
+                : "⚠️ Notification could not be sent. Please share this password manually."}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
