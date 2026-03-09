@@ -89,10 +89,11 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
   useEffect(() => {
     if (pendingFile) {
       // Validate the file
-      if (pendingFile.type !== "application/pdf") {
+      const isValidType = pendingFile.type === "application/pdf" || pendingFile.type.startsWith("image/");
+      if (!isValidType) {
         toast({
           title: "Invalid File Type",
-          description: "Only PDF files are accepted. Please select a .pdf file.",
+          description: "Only PDF and image files are accepted.",
           variant: "destructive",
         });
         onPendingFileConsumed?.();
