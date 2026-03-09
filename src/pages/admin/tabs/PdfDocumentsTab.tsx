@@ -180,7 +180,7 @@ const PdfDocumentsTab = ({ onUploadDialogChange, onRequestFileUpload, pendingFil
 
     // File is valid — save it and THEN open the metadata dialog
     setSelectedFile(file);
-    setUploadDocName(file.name.replace(/\.pdf$/i, ""));
+    setUploadDocName(file.name.replace(/\.(pdf|png|jpe?g|gif|webp|svg)$/i, ""));
     setMetadataDialogOpen(true);
   };
 
