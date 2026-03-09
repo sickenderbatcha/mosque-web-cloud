@@ -18,6 +18,8 @@ const AboutPage = () => {
   const { getContent, isLoading } = useLandingContent();
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [loadingGallery, setLoadingGallery] = useState(true);
+  const [documents, setDocuments] = useState<{ id: string; document_name: string; document_type: string; description: string | null; file_path: string; file_url: string }[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
