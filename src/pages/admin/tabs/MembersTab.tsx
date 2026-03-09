@@ -369,9 +369,13 @@ const MembersTab = () => {
         throw new Error(response.data.error);
       }
 
+      const newPassword = response.data?.newPassword;
       toast({ 
         title: "Password reset successful", 
-        description: `New password has been sent to ${member.full_name}'s registered contact.` 
+        description: newPassword 
+          ? `New password for ${member.full_name}: ${newPassword}${response.data?.notificationSent ? ' (also sent to registered contact)' : ' (notification could not be sent - please share manually)'}`
+          : `New password has been sent to ${member.full_name}'s registered contact.`,
+        duration: 30000,
       });
     } catch (error: any) {
       toast({ 

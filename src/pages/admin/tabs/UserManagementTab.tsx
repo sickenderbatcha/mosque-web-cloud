@@ -169,9 +169,13 @@ const UserManagementTab = () => {
       if (response.error) throw response.error;
       if (response.data?.error) throw new Error(response.data.error);
 
+      const newPassword = response.data?.newPassword;
       toast({
         title: "Password reset successful",
-        description: `New password has been sent to ${user.full_name}'s registered contact.`,
+        description: newPassword 
+          ? `New password for ${user.full_name}: ${newPassword}${response.data?.notificationSent ? ' (also sent to registered contact)' : ' (notification could not be sent - please share manually)'}`
+          : `New password has been sent to ${user.full_name}'s registered contact.`,
+        duration: 30000,
       });
     } catch (error: any) {
       toast({
