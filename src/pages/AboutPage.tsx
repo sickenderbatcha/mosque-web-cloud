@@ -215,8 +215,88 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Management Section */}
+      {/* Documents Section */}
       <section className="py-16 bg-muted">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <FileText className="h-8 w-8 text-primary" />
+              <h2 className="text-2xl md:text-3xl font-bold font-tamil text-foreground">
+                ஆவணங்கள்
+              </h2>
+            </div>
+            <p className="text-muted-foreground font-display">
+              Documents
+            </p>
+            <div className="section-divider mt-6" />
+          </motion.div>
+
+          {loadingDocuments ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground">No documents available yet</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {documents.map((doc, index) => (
+                <motion.div
+                  key={doc.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="bg-card shadow-soft hover:shadow-medium transition-shadow h-full">
+                    <CardContent className="p-5 flex flex-col h-full">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-foreground text-sm truncate">
+                            {doc.document_name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {doc.document_type.replace(/_/g, " ")}
+                          </p>
+                        </div>
+                      </div>
+                      {doc.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {doc.description}
+                        </p>
+                      )}
+                      <div className="mt-auto pt-2">
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                        >
+                          <Download className="h-4 w-4" />
+                          பதிவிறக்கம் / Download
+                        </a>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Management Section */}
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
