@@ -274,49 +274,75 @@ const AboutPage = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-              {documents.map((doc, index) => (
-                <motion.div
-                  key={doc.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className="bg-card shadow-soft hover:shadow-medium transition-shadow h-full">
-                    <CardContent className="p-5 flex flex-col h-full">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <FileText className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground text-sm truncate">
+              {documents.map((doc, index) => {
+                const isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(doc.file_path);
+                return (
+                  <motion.div
+                    key={doc.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card className="bg-card shadow-soft hover:shadow-medium transition-shadow h-full">
+                      <CardContent className="p-5 flex flex-col h-full">
+                        {isImage ? (
+                          <a
+                            href={doc.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block mb-3 rounded-lg overflow-hidden"
+                          >
+                            <img
+                              src={doc.file_url}
+                              alt={doc.document_name}
+                              className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </a>
+                        ) : (
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <FileText className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-foreground text-sm truncate">
+                                {doc.document_name}
+                              </h3>
+                              <p className="text-xs text-muted-foreground capitalize">
+                                {doc.document_type.replace(/_/g, " ")}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {isImage && (
+                          <h3 className="font-semibold text-foreground text-sm mb-1 truncate">
                             {doc.document_name}
                           </h3>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {doc.document_type.replace(/_/g, " ")}
+                        )}
+                        {doc.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {doc.description}
                           </p>
-                        </div>
-                      </div>
-                      {doc.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {doc.description}
-                        </p>
-                      )}
-                      <div className="mt-auto pt-2">
-                        <a
-                          href={doc.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                        >
-                          <FileText className="h-4 w-4" />
-                          பார்வையிட / View
-                        </a>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                        )}
+                        {!isImage && (
+                          <div className="mt-auto pt-2">
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                            >
+                              <Eye className="h-4 w-4" />
+                              பார்வையிட / View
+                            </a>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
