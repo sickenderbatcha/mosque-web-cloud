@@ -309,8 +309,8 @@ const AboutPage = () => {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
                         >
-                          <Download className="h-4 w-4" />
-                          பதிவிறக்கம் / Download
+                          <FileText className="h-4 w-4" />
+                          பார்வையிட / View
                         </a>
                       </div>
                     </CardContent>
