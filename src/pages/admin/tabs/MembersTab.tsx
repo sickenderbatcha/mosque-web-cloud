@@ -1562,6 +1562,42 @@ const MembersTab = () => {
           )}
         </CardContent>
       </Card>
+      {/* Password Reset Result Dialog */}
+      <Dialog open={!!resetPasswordResult} onOpenChange={(open) => { if (!open) setResetPasswordResult(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Password Reset Successful</DialogTitle>
+            <div className="text-sm text-muted-foreground">
+              New password for <strong>{resetPasswordResult?.name}</strong>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Input 
+                readOnly 
+                value={resetPasswordResult?.password || ""} 
+                className="font-mono text-lg tracking-wider text-center"
+              />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard.writeText(resetPasswordResult?.password || "");
+                  setPasswordCopied(true);
+                  setTimeout(() => setPasswordCopied(false), 2000);
+                }}
+              >
+                {passwordCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {resetPasswordResult?.notificationSent 
+                ? "This password has also been sent to the member's registered contact."
+                : "⚠️ Notification could not be sent. Please share this password manually."}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
