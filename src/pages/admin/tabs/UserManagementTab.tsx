@@ -90,6 +90,8 @@ const UserManagementTab = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithMember | null>(null);
+  const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string; notificationSent: boolean } | null>(null);
+  const [passwordCopied, setPasswordCopied] = useState(false);
 
   useEffect(() => {
     fetchUsers();
