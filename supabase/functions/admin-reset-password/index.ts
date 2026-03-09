@@ -118,7 +118,7 @@ serve(async (req) => {
       .from("user_roles")
       .select("role")
       .eq("user_id", adminUser.id)
-      .eq("role", "admin")
+      .in("role", ["admin", "superadmin"])
       .maybeSingle();
 
     if (!roleData) {
