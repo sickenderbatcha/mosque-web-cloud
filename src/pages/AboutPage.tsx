@@ -45,7 +45,31 @@ const AboutPage = () => {
     };
 
     fetchGalleryImages();
-  }, []);
+
+    const fetchDocuments = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("admin_pdf_documents")
+          .select("id, document_name, document_type, description, file_path")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const docs = (data || []).map((doc) => {
+          const { data: urlData } = supabase.storage
+            .from("admin-documents")
+            .getPublicUrl(doc.file_path);
+          return { ...doc, file_url: urlData.publicUrl };
+        });
+        setDocuments(docs);
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      } finally {
+        setLoadingDocuments(false);
+      }
+    };
+
+    fetchDocuments();
 
   if (isLoading) {
     return (
