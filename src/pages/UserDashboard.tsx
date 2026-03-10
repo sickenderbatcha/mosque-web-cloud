@@ -392,17 +392,49 @@ const UserDashboard = () => {
       setCertificatePayments((certPaymentsRes.data as CertificatePayment[]) || []);
 
       // Fetch receipt numbers from income table for all completed certificates (sequential only)
-      const allCompletedIds = [
-        ...(nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id),
-        ...(heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id),
-        ...(certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id),
+      // For NOC/Heir: income uses certificate_payments.id as reference_id, so we need to map payment→cert
+      const completedNocIds = (nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id);
+      const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id);
+      const completedCertPaymentIds = (certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id);
+
+      // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs
+      const nocHeirCertIds = [...completedNocIds, ...completedHeirIds];
+      let nocHeirPaymentMap: Record<string, string> = {}; // payment.id → cert.id (noc/heir)
+      let nocHeirPaymentIds: string[] = [];
+      if (nocHeirCertIds.length > 0) {
+        const { data: nocHeirPayments } = await supabase
+          .from("certificate_payments")
+          .select("id, reference_id")
+          .in("reference_id", nocHeirCertIds)
+          .eq("payment_status", "completed");
+        if (nocHeirPayments) {
+          nocHeirPayments.forEach((p: any) => {
+            nocHeirPaymentMap[p.id] = p.reference_id;
+            nocHeirPaymentIds.push(p.id);
+          });
+        }
+      }
+
+      const allLookupIds = [
+        ...nocHeirPaymentIds,
+        ...completedCertPaymentIds,
       ];
 
-      const receiptMap = await getLatestSequentialReceiptMap({
-        referenceIds: allCompletedIds,
-        referenceTypes: ["certificate_payment", "noc_certificate", "heir_certificate"],
+      const rawReceiptMap = await getLatestSequentialReceiptMap({
+        referenceIds: allLookupIds,
+        referenceTypes: ["certificate_payment"],
       });
-      setCertReceiptNumberMap(receiptMap);
+
+      // Remap: for NOC/Heir, map receipt from payment ID back to cert ID
+      const finalMap: Record<string, string> = {};
+      for (const [paymentId, receiptNum] of Object.entries(rawReceiptMap)) {
+        if (nocHeirPaymentMap[paymentId]) {
+          finalMap[nocHeirPaymentMap[paymentId]] = receiptNum;
+        } else {
+          finalMap[paymentId] = receiptNum;
+        }
+      }
+      setCertReceiptNumberMap(finalMap);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
