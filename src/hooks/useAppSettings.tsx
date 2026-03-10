@@ -161,6 +161,7 @@ export const useAppSettings = (keys?: string[]) => {
         persistCachedSettings(freshSettings);
       }
 
+      setError(null);
       setSettings(settingsMap);
     } catch (err) {
       console.error("useAppSettings catch error:", err);
