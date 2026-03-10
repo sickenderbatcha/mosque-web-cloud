@@ -379,7 +379,7 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
             <div class="receipt-number">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண்</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
-              ${donation.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${donation.razorpayPaymentId}</div>` : ''}
+              ${donation.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Ref: ${donation.razorpayPaymentId}</div>` : ''}
             </div>
 
             <div class="footer">
