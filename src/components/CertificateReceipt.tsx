@@ -275,7 +275,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
             <div class="receipt-number">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
-              ${data.transactionId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${data.transactionId}</div>` : ""}
+              ${data.transactionId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Ref: ${data.transactionId}</div>` : ""}
             </div>
 
             <div class="footer">
