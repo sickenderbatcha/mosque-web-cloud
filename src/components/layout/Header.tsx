@@ -37,6 +37,13 @@ const allOnlineServicesItems = [
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
 
+const HEADER_SETTING_KEYS = [
+  "header_bismillah", "header_title_ta", "header_title_en",
+  "header_font_bismillah_mobile", "header_font_bismillah_desktop",
+  "header_font_ta_mobile", "header_font_ta_desktop",
+  "header_font_en_mobile", "header_font_en_desktop",
+];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -46,13 +53,7 @@ const Header = () => {
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
 
-  const headerSettingKeys = [
-  "header_bismillah", "header_title_ta", "header_title_en",
-  "header_font_bismillah_mobile", "header_font_bismillah_desktop",
-  "header_font_ta_mobile", "header_font_ta_desktop",
-  "header_font_en_mobile", "header_font_en_desktop"];
-
-  const { settings: fontSettings } = useAppSettings(headerSettingKeys);
+  const { settings: fontSettings } = useAppSettings(HEADER_SETTING_KEYS);
 
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;

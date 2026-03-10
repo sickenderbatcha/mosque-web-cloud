@@ -139,7 +139,7 @@ export const useOverflowDebug = (enabled: boolean = true) => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(highlightOverflow, 200);
     };
-    let resizeTimeout: NodeJS.Timeout;
+    let resizeTimeout: ReturnType<typeof setTimeout>;
     window.addEventListener("resize", handleResize);
 
     // Re-run on DOM mutations (for dynamically added content)
@@ -147,7 +147,7 @@ export const useOverflowDebug = (enabled: boolean = true) => {
       clearTimeout(mutationTimeout);
       mutationTimeout = setTimeout(highlightOverflow, 300);
     });
-    let mutationTimeout: NodeJS.Timeout;
+    let mutationTimeout: ReturnType<typeof setTimeout>;
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Cleanup
