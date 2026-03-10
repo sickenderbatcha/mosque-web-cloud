@@ -105,12 +105,30 @@ import { useRef, useState, useEffect } from "react";
 
         if (!refId) return;
 
-        const refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
+        // For NOC/Heir: income uses certificate_payments.id as reference_id,
+        // but cash_payment_requests.reference_id points to noc/heir cert id.
+        // We need to resolve the payment ID first.
+        let lookupId = refId;
+        let refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
+        if (request.service_type === "noc" || request.service_type === "heir") {
+          const { data: paymentData } = await supabase
+            .from("certificate_payments")
+            .select("id")
+            .eq("reference_id", refId)
+            .eq("payment_status", "completed")
+            .order("created_at", { ascending: false })
+            .limit(1);
+          if (paymentData && paymentData.length > 0) {
+            lookupId = paymentData[0].id;
+            refTypes = ["certificate_payment"];
+          }
+        }
+
         if (refTypes.length === 0) return;
 
         // Retry up to 12 times (income record may be created by DB trigger with slight delay)
         const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
-          referenceId: refId,
+          referenceId: lookupId,
           referenceTypes: refTypes,
           retries: 12,
           retryDelayMs: 800,
