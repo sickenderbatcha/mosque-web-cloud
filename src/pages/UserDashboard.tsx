@@ -1896,7 +1896,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {heirRequests.map((heir) => {
-                          const canPrintDownload = heir.payment_status === "completed" && heir.status === "approved";
+                          const canPrintDownload = (heir.payment_status === "completed" || heir.payment_status === "paid") && heir.status === "approved";
                           const heirRecord: HeirRecordType = {
                             id: heir.id,
                             applicant_name: heir.applicant_name,
