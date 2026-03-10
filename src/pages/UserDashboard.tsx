@@ -208,6 +208,8 @@ const UserDashboard = () => {
   
   // Receipt number map for certificates (from income table)
   const [certReceiptNumberMap, setCertReceiptNumberMap] = useState<Record<string, string>>({});
+  // Payment method map for NOC/Heir certificates (cert.id → payment_method)
+  const [certPaymentMethodMap, setCertPaymentMethodMap] = useState<Record<string, string>>({});
 
   // Booking receipt state
   const [showBookingReceipt, setShowBookingReceipt] = useState<{
@@ -398,20 +400,23 @@ const UserDashboard = () => {
       const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed" || h.payment_status === "paid").map((h: any) => h.id);
       const completedCertPaymentIds = (certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id);
 
-      // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs
+      // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs and payment method
       const nocHeirCertIds = [...completedNocIds, ...completedHeirIds];
       let nocHeirPaymentMap: Record<string, string> = {}; // payment.id → cert.id (noc/heir)
+      let nocHeirPaymentMethodMap: Record<string, string> = {}; // cert.id → payment_method
       let nocHeirPaymentIds: string[] = [];
       if (nocHeirCertIds.length > 0) {
         const { data: nocHeirPayments } = await supabase
           .from("certificate_payments")
-          .select("id, reference_id")
+          .select("id, reference_id, payment_method")
           .in("reference_id", nocHeirCertIds)
           .in("payment_status", ["completed", "paid"]);
         if (nocHeirPayments) {
           nocHeirPayments.forEach((p: any) => {
             nocHeirPaymentMap[p.id] = p.reference_id;
             nocHeirPaymentIds.push(p.id);
+            // Store payment method mapped by cert id
+            nocHeirPaymentMethodMap[p.reference_id] = p.payment_method || "online";
           });
         }
       }
@@ -436,6 +441,7 @@ const UserDashboard = () => {
         }
       }
       setCertReceiptNumberMap(finalMap);
+      setCertPaymentMethodMap(nocHeirPaymentMethodMap);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -1740,7 +1746,7 @@ const UserDashboard = () => {
                                       receiptNumber: certReceiptNumberMap[noc.id] || "",
                                       referenceId: noc.id,
                                       referenceType: "noc_certificate",
-                                      paymentMethod: "online",
+                                      paymentMethod: certPaymentMethodMap[noc.id] || "online",
                                       createdAt: noc.created_at,
                                       additionalInfo: {
                                         "தந்தை பெயர்": noc.father_name,
@@ -1963,7 +1969,7 @@ const UserDashboard = () => {
                                       receiptNumber: certReceiptNumberMap[heir.id] || "",
                                       referenceId: heir.id,
                                       referenceType: "heir_certificate",
-                                      paymentMethod: "online",
+                                      paymentMethod: certPaymentMethodMap[heir.id] || "online",
                                       createdAt: heir.created_at,
                                       additionalInfo: {
                                         "இறந்தவர் தந்தை": heir.deceased_father_name,

@@ -86,6 +86,7 @@ interface CashPaymentRequest {
   id: string;
   service_type: string;
   reference_id: string | null;
+  user_id: string | null;
   amount: number;
   applicant_name: string;
   applicant_phone: string;
@@ -193,6 +194,7 @@ const CashPaymentRequestsTab = () => {
             applicant_name: request.applicant_name,
             applicant_phone: request.applicant_phone,
             applicant_email: request.applicant_email,
+            user_id: request.user_id,
             transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
           })
           .eq("id", existingPayment.id);
@@ -211,6 +213,7 @@ const CashPaymentRequestsTab = () => {
         applicant_name: request.applicant_name,
         applicant_phone: request.applicant_phone,
         applicant_email: request.applicant_email,
+        user_id: request.user_id,
         amount: request.amount,
         payment_status: "pending",
         payment_method: "cash",
