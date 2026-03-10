@@ -1969,7 +1969,7 @@ const UserDashboard = () => {
                                       receiptNumber: certReceiptNumberMap[heir.id] || "",
                                       referenceId: heir.id,
                                       referenceType: "heir_certificate",
-                                      paymentMethod: "online",
+                                      paymentMethod: certPaymentMethodMap[heir.id] || "online",
                                       createdAt: heir.created_at,
                                       additionalInfo: {
                                         "இறந்தவர் தந்தை": heir.deceased_father_name,
