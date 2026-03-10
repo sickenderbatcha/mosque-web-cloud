@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
