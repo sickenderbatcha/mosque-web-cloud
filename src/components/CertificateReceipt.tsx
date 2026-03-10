@@ -83,7 +83,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
           .from("certificate_payments")
           .select("id")
           .eq("reference_id", data.referenceId)
-          .eq("payment_status", "completed")
+          .in("payment_status", ["completed", "paid"])
           .order("created_at", { ascending: false })
           .limit(1);
 

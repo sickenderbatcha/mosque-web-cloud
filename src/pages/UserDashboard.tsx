@@ -394,8 +394,8 @@ const UserDashboard = () => {
 
       // Fetch receipt numbers from income table for all completed certificates (sequential only)
       // For NOC/Heir: income uses certificate_payments.id as reference_id, so we need to map payment→cert
-      const completedNocIds = (nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id);
-      const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id);
+      const completedNocIds = (nocRes.data || []).filter((n: any) => n.payment_status === "completed" || n.payment_status === "paid").map((n: any) => n.id);
+      const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed" || h.payment_status === "paid").map((h: any) => h.id);
       const completedCertPaymentIds = (certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id);
 
       // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs
@@ -407,7 +407,7 @@ const UserDashboard = () => {
           .from("certificate_payments")
           .select("id, reference_id")
           .in("reference_id", nocHeirCertIds)
-          .eq("payment_status", "completed");
+          .in("payment_status", ["completed", "paid"]);
         if (nocHeirPayments) {
           nocHeirPayments.forEach((p: any) => {
             nocHeirPaymentMap[p.id] = p.reference_id;
@@ -1671,7 +1671,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {nocRequests.map((noc) => {
-                          const canPrintDownload = noc.payment_status === "completed" && noc.status === "approved";
+                          const canPrintDownload = (noc.payment_status === "completed" || noc.payment_status === "paid") && noc.status === "approved";
                           const nocRecord: NocRecord = {
                             id: noc.id,
                             applicant_name: noc.applicant_name,
@@ -1702,7 +1702,7 @@ const UserDashboard = () => {
                                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                                   <span className="font-semibold">{noc.applicant_name}</span>
                                   {getNocStatusBadge(noc.status)}
-                                  {noc.payment_status === "completed" && (
+                                  {(noc.payment_status === "completed" || noc.payment_status === "paid") && (
                                     <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
                                   )}
                                 </div>
@@ -1726,7 +1726,7 @@ const UserDashboard = () => {
                               
                               {/* Preview/Print/Download Actions */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                {noc.payment_status === "completed" && (
+                                {(noc.payment_status === "completed" || noc.payment_status === "paid") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -1896,7 +1896,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {heirRequests.map((heir) => {
-                          const canPrintDownload = heir.payment_status === "completed" && heir.status === "approved";
+                          const canPrintDownload = (heir.payment_status === "completed" || heir.payment_status === "paid") && heir.status === "approved";
                           const heirRecord: HeirRecordType = {
                             id: heir.id,
                             applicant_name: heir.applicant_name,
@@ -1925,7 +1925,7 @@ const UserDashboard = () => {
                                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                                   <span className="font-semibold">{heir.deceased_name}</span>
                                   {getHeirStatusBadge(heir.status)}
-                                  {heir.payment_status === "completed" && (
+                                  {(heir.payment_status === "completed" || heir.payment_status === "paid") && (
                                     <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
                                   )}
                                 </div>
@@ -1949,7 +1949,7 @@ const UserDashboard = () => {
                               
                               {/* Preview/Print/Download Actions */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                {heir.payment_status === "completed" && (
+                                {(heir.payment_status === "completed" || heir.payment_status === "paid") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
