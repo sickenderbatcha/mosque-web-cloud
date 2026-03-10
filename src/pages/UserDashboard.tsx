@@ -1783,13 +1783,31 @@ const UserDashboard = () => {
                                     </Button>
                                   </>
                                 ) : (
-                                  <span className="text-xs text-muted-foreground italic">
-                                    {noc.payment_status !== "completed" 
-                                      ? "Payment required" 
-                                      : noc.status !== "approved" 
-                                        ? "Awaiting approval" 
-                                        : ""}
-                                  </span>
+                                  <>
+                                    {noc.status === "pending" && noc.payment_status === "completed" && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => submitNocForApproval(noc.id)}
+                                        disabled={submittingNocId === noc.id}
+                                      >
+                                        {submittingNocId === noc.id ? (
+                                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                        ) : (
+                                          <FileCheck className="h-4 w-4 mr-1" />
+                                        )}
+                                        <span className="font-tamil">அனுமதிக்கு சமர்ப்பி</span>
+                                      </Button>
+                                    )}
+                                    <span className="text-xs text-muted-foreground italic">
+                                      {noc.payment_status !== "completed" 
+                                        ? "Payment required" 
+                                        : noc.status === "submitted"
+                                          ? "Awaiting approval"
+                                          : noc.status === "pending"
+                                            ? "Submit for approval"
+                                            : ""}
+                                    </span>
+                                  </>
                                 )}
                               </div>
                             </div>
