@@ -208,6 +208,8 @@ const UserDashboard = () => {
   
   // Receipt number map for certificates (from income table)
   const [certReceiptNumberMap, setCertReceiptNumberMap] = useState<Record<string, string>>({});
+  // Payment method map for NOC/Heir certificates (cert.id → payment_method)
+  const [certPaymentMethodMap, setCertPaymentMethodMap] = useState<Record<string, string>>({});
 
   // Booking receipt state
   const [showBookingReceipt, setShowBookingReceipt] = useState<{
