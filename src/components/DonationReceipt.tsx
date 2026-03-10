@@ -538,7 +538,7 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண்</p>
               <p className="font-mono font-bold">{formattedReceiptNumber}</p>
               {donation.razorpayPaymentId && (
-                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {donation.razorpayPaymentId}</p>
+                <p className="text-xs text-muted-foreground mt-2">Ref: {donation.razorpayPaymentId}</p>
               )}
             </div>
 

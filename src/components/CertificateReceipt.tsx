@@ -556,7 +556,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
               <p className="font-mono font-bold text-lg">{formattedReceiptNumber}</p>
               {data.transactionId && (
-                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {data.transactionId}</p>
+                <p className="text-xs text-muted-foreground mt-2">Ref: {data.transactionId}</p>
               )}
             </div>
 

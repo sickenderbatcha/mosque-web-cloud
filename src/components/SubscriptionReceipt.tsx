@@ -526,7 +526,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
               <p className="font-mono font-bold">{formattedReceiptNumber}</p>
               {razorpayRef && (
-                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {razorpayRef}</p>
+                <p className="text-xs text-muted-foreground mt-2">Ref: {razorpayRef}</p>
               )}
             </div>
 

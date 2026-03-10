@@ -520,7 +520,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
               <p className="font-mono font-bold">{formattedReceiptNumber}</p>
               {booking.razorpayPaymentId && (
-                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {booking.razorpayPaymentId}</p>
+                <p className="text-xs text-muted-foreground mt-2">Ref: {booking.razorpayPaymentId}</p>
               )}
             </div>
 

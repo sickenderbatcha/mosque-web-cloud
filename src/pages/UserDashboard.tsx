@@ -2148,7 +2148,7 @@ const UserDashboard = () => {
                                 )}
                                 {cp.razorpay_payment_id && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    Razorpay Ref: {cp.razorpay_payment_id}
+                                    Ref: {cp.razorpay_payment_id}
                                   </div>
                                 )}
                               </div>
