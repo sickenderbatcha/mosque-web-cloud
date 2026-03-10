@@ -1726,7 +1726,7 @@ const UserDashboard = () => {
                               
                               {/* Preview/Print/Download Actions */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                {noc.payment_status === "completed" && (
+                                {(noc.payment_status === "completed" || noc.payment_status === "paid") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
