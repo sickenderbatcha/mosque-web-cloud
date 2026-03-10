@@ -197,13 +197,13 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md border-b border-border shadow-soft">
       {/* Bismillah */}
       <div className="w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 py-1.5 text-center">
-        <span
-          className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
-          dir="rtl"
-          style={{ fontSize: getBismillahSize() }}>
+          <span
+            className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
+            dir="rtl"
+            style={{ fontSize: getBismillahSize() }}>
 
-          {fontSettings.header_bismillah || "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"}
-        </span>
+            {headerBismillah}
+          </span>
       </div>
       
       {/* Main header */}
