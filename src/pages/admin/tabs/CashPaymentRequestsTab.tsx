@@ -193,6 +193,7 @@ const CashPaymentRequestsTab = () => {
             applicant_name: request.applicant_name,
             applicant_phone: request.applicant_phone,
             applicant_email: request.applicant_email,
+            user_id: request.user_id,
             transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
           })
           .eq("id", existingPayment.id);
