@@ -22,14 +22,17 @@ export const useAppSettings = (keys?: string[]) => {
   const [error, setError] = useState<string | null>(null);
 
   const keysKey = keys?.join(",") || "";
+  const keysRef = useRef(keys);
+  keysRef.current = keys;
   const channelIdRef = useRef(`app_settings_${Math.random().toString(36).slice(2, 9)}`);
 
   const fetchSettings = useCallback(async () => {
     try {
+      const currentKeys = keysRef.current;
       let query = supabase.from("app_settings").select("key, value");
 
-      if (keys && keys.length > 0) {
-        query = query.in("key", keys);
+      if (currentKeys && currentKeys.length > 0) {
+        query = query.in("key", currentKeys);
       }
 
       const { data, error: fetchError } = await query;
@@ -40,13 +43,13 @@ export const useAppSettings = (keys?: string[]) => {
         return;
       }
 
+      const settingsMap: AppSettings = { ...defaultSettings };
       if (data && data.length > 0) {
-        const settingsMap = data.reduce((acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        }, { ...defaultSettings } as AppSettings);
-        setSettings(settingsMap);
+        data.forEach((item) => {
+          settingsMap[item.key] = item.value;
+        });
       }
+      setSettings(settingsMap);
     } catch (err) {
       console.error("useAppSettings catch error:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch settings");
