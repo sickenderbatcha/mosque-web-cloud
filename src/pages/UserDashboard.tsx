@@ -398,20 +398,23 @@ const UserDashboard = () => {
       const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed" || h.payment_status === "paid").map((h: any) => h.id);
       const completedCertPaymentIds = (certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id);
 
-      // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs
+      // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs and payment method
       const nocHeirCertIds = [...completedNocIds, ...completedHeirIds];
       let nocHeirPaymentMap: Record<string, string> = {}; // payment.id → cert.id (noc/heir)
+      let nocHeirPaymentMethodMap: Record<string, string> = {}; // cert.id → payment_method
       let nocHeirPaymentIds: string[] = [];
       if (nocHeirCertIds.length > 0) {
         const { data: nocHeirPayments } = await supabase
           .from("certificate_payments")
-          .select("id, reference_id")
+          .select("id, reference_id, payment_method")
           .in("reference_id", nocHeirCertIds)
           .in("payment_status", ["completed", "paid"]);
         if (nocHeirPayments) {
           nocHeirPayments.forEach((p: any) => {
             nocHeirPaymentMap[p.id] = p.reference_id;
             nocHeirPaymentIds.push(p.id);
+            // Store payment method mapped by cert id
+            nocHeirPaymentMethodMap[p.reference_id] = p.payment_method || "online";
           });
         }
       }
