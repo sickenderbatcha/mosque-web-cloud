@@ -132,6 +132,7 @@ export const HeaderSettingsProvider = ({ children }: { children: ReactNode }) =>
       setIsResolved(true);
     } catch (error) {
       console.error("Failed to load header settings:", error);
+      setIsResolved(true);
     } finally {
       setIsLoading(false);
     }
