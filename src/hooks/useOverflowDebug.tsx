@@ -147,7 +147,7 @@ export const useOverflowDebug = (enabled: boolean = true) => {
       clearTimeout(mutationTimeout);
       mutationTimeout = setTimeout(highlightOverflow, 300);
     });
-    let mutationTimeout: NodeJS.Timeout;
+    let mutationTimeout: ReturnType<typeof setTimeout>;
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Cleanup
