@@ -106,6 +106,10 @@ const getInitialSettings = (keys?: string[]) => {
   return initialSettings;
 };
 
+const hasUsableSettingValue = (value: string | undefined) => {
+  return typeof value === "string" && value.trim().length > 0;
+};
+
 const hasCachedSettings = (keys?: string[]) => {
   const cachedSettings = loadCachedSettings();
 
@@ -113,10 +117,7 @@ const hasCachedSettings = (keys?: string[]) => {
     return Object.keys(cachedSettings).length > 0;
   }
 
-  return keys.some((key) => {
-    const value = cachedSettings[key];
-    return typeof value === "string" && value.trim().length > 0;
-  });
+  return keys.every((key) => hasUsableSettingValue(cachedSettings[key]));
 };
 
 export const useAppSettings = (keys?: string[]) => {
