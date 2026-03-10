@@ -6,69 +6,36 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { Type, Save, RotateCcw, Smartphone, Monitor } from "lucide-react";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { useHeaderSettings } from "@/hooks/useHeaderSettings";
 import { upsertAppSetting } from "@/lib/appSettingsUtils";
-
-const SETTING_KEYS = [
-  "header_bismillah",
-  "header_title_ta",
-  "header_title_en",
-  "header_font_bismillah_mobile",
-  "header_font_bismillah_desktop",
-  "header_font_ta_mobile",
-  "header_font_ta_desktop",
-  "header_font_en_mobile",
-  "header_font_en_desktop",
-];
-
-const DEFAULTS = {
-  header_bismillah: "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ",
-  header_title_ta: "இளையான்குடி நெசவுபட்டடை தொழுகை மேடை பள்ளிவாசல்",
-  header_title_en: "Ilayangudi Nesavupattadai Thozhugai Medai Pallivasal",
-  header_font_bismillah_mobile: "14",
-  header_font_bismillah_desktop: "14",
-  header_font_ta_mobile: "24",
-  header_font_ta_desktop: "36",
-  header_font_en_mobile: "14",
-  header_font_en_desktop: "16",
-};
+import {
+  HEADER_SETTING_DESCRIPTIONS,
+  HEADER_SETTING_KEYS,
+  HEADER_SETTINGS_DEFAULTS,
+  type HeaderSettings,
+} from "@/lib/headerSettings";
 
 const HeaderTextsSettings = () => {
-  const { settings, isLoading } = useAppSettings(SETTING_KEYS);
-  const [formData, setFormData] = useState(DEFAULTS);
+  const { settings, isLoading, applySettings } = useHeaderSettings();
+  const [formData, setFormData] = useState<HeaderSettings>(HEADER_SETTINGS_DEFAULTS);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoading) {
-      setFormData({
-        header_bismillah: settings.header_bismillah || DEFAULTS.header_bismillah,
-        header_title_ta: settings.header_title_ta || DEFAULTS.header_title_ta,
-        header_title_en: settings.header_title_en || DEFAULTS.header_title_en,
-        header_font_bismillah_mobile: settings.header_font_bismillah_mobile || DEFAULTS.header_font_bismillah_mobile,
-        header_font_bismillah_desktop: settings.header_font_bismillah_desktop || DEFAULTS.header_font_bismillah_desktop,
-        header_font_ta_mobile: settings.header_font_ta_mobile || DEFAULTS.header_font_ta_mobile,
-        header_font_ta_desktop: settings.header_font_ta_desktop || DEFAULTS.header_font_ta_desktop,
-        header_font_en_mobile: settings.header_font_en_mobile || DEFAULTS.header_font_en_mobile,
-        header_font_en_desktop: settings.header_font_en_desktop || DEFAULTS.header_font_en_desktop,
-      });
+      setFormData(settings);
     }
-  }, [isLoading, JSON.stringify(settings)]);
+  }, [isLoading, settings]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await Promise.all([
-        upsertAppSetting("header_bismillah", formData.header_bismillah, "Header Bismillah text (Arabic)"),
-        upsertAppSetting("header_title_ta", formData.header_title_ta, "Header title in Tamil"),
-        upsertAppSetting("header_title_en", formData.header_title_en, "Header title in English"),
-        upsertAppSetting("header_font_bismillah_mobile", formData.header_font_bismillah_mobile, "Bismillah font size - mobile (px)"),
-        upsertAppSetting("header_font_bismillah_desktop", formData.header_font_bismillah_desktop, "Bismillah font size - desktop (px)"),
-        upsertAppSetting("header_font_ta_mobile", formData.header_font_ta_mobile, "Tamil title font size - mobile (px)"),
-        upsertAppSetting("header_font_ta_desktop", formData.header_font_ta_desktop, "Tamil title font size - desktop (px)"),
-        upsertAppSetting("header_font_en_mobile", formData.header_font_en_mobile, "English title font size - mobile (px)"),
-        upsertAppSetting("header_font_en_desktop", formData.header_font_en_desktop, "English title font size - desktop (px)"),
-      ]);
+      await Promise.all(
+        HEADER_SETTING_KEYS.map((key) =>
+          upsertAppSetting(key, formData[key], HEADER_SETTING_DESCRIPTIONS[key]),
+        ),
+      );
+      applySettings(formData);
       toast({ title: "Settings Saved", description: "Header texts and font sizes have been updated successfully." });
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to save settings.", variant: "destructive" });
@@ -77,9 +44,9 @@ const HeaderTextsSettings = () => {
     }
   };
 
-  const handleReset = () => setFormData(DEFAULTS);
+  const handleReset = () => setFormData(HEADER_SETTINGS_DEFAULTS);
 
-  const FontSizeSlider = ({ label, icon: Icon, settingKey, min = 10, max = 60 }: { label: string; icon: typeof Smartphone; settingKey: keyof typeof DEFAULTS; min?: number; max?: number }) => (
+  const FontSizeSlider = ({ label, icon: Icon, settingKey, min = 10, max = 60 }: { label: string; icon: typeof Smartphone; settingKey: keyof HeaderSettings; min?: number; max?: number }) => (
     <div className="flex items-center gap-3">
       <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       <span className="text-xs text-muted-foreground w-16 flex-shrink-0">{label}</span>
