@@ -407,7 +407,7 @@ const UserDashboard = () => {
           .from("certificate_payments")
           .select("id, reference_id")
           .in("reference_id", nocHeirCertIds)
-          .eq("payment_status", "completed");
+          .in("payment_status", ["completed", "paid"]);
         if (nocHeirPayments) {
           nocHeirPayments.forEach((p: any) => {
             nocHeirPaymentMap[p.id] = p.reference_id;
