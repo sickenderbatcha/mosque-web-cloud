@@ -189,6 +189,7 @@ const UserDashboard = () => {
   // NOC preview state
   const [previewNocRecord, setPreviewNocRecord] = useState<NocRecord | null>(null);
   const [nocPreviewOpen, setNocPreviewOpen] = useState(false);
+  const [submittingNocId, setSubmittingNocId] = useState<string | null>(null);
   
   // Heir preview state
   const [previewHeirRecord, setPreviewHeirRecord] = useState<HeirRecordType | null>(null);
