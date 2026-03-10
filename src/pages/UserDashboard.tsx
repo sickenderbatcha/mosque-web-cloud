@@ -1784,7 +1784,7 @@ const UserDashboard = () => {
                                   </>
                                 ) : (
                                   <>
-                                    {noc.status === "pending" && noc.payment_status === "completed" && (
+                                    {(noc.status === "pending" || noc.status === "payment_pending") && noc.payment_status === "completed" && (
                                       <Button
                                         size="sm"
                                         onClick={() => submitNocForApproval(noc.id)}
@@ -1803,7 +1803,7 @@ const UserDashboard = () => {
                                         ? "Payment required" 
                                         : noc.status === "submitted"
                                           ? "Awaiting approval"
-                                          : noc.status === "pending"
+                                          : (noc.status === "pending" || noc.status === "payment_pending")
                                             ? "Submit for approval"
                                             : ""}
                                     </span>
