@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tamil Unicode font CSS - embedded for offline support
 const getTamilFontCSS = () => `
@@ -65,19 +66,40 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
     const fetchReceiptNumber = async () => {
       setReceiptLoading(true);
 
+      // If receiptNumber was already provided and looks valid, use it directly
+      if (data.receiptNumber && data.receiptNumber !== "" && data.receiptNumber !== "PENDING") {
+        setReceiptNumber(data.receiptNumber);
+        setReceiptLoading(false);
+        return;
+      }
+
+      // For NOC/Heir certificates, income uses certificate_payments.id as reference_id
+      // We need to find the payment record first, then look up via that ID
+      let lookupId = data.referenceId;
+      const isNocOrHeir = data.referenceType === "noc_certificate" || data.referenceType === "heir_certificate";
+
+      if (isNocOrHeir) {
+        const { data: paymentData } = await supabase
+          .from("certificate_payments")
+          .select("id")
+          .eq("reference_id", data.referenceId)
+          .eq("payment_status", "completed")
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (paymentData && paymentData.length > 0) {
+          lookupId = paymentData[0].id;
+        }
+      }
+
       const map = await getLatestSequentialReceiptMap({
-        referenceIds: [data.referenceId],
-        referenceTypes: [
-          data.referenceType,
-          "certificate_payment",
-          "noc_certificate",
-          "heir_certificate",
-        ].filter(Boolean),
+        referenceIds: [lookupId],
+        referenceTypes: ["certificate_payment"],
         retries: 10,
         retryDelayMs: 1500,
       });
 
-      const found = map[data.referenceId] || "";
+      const found = map[lookupId] || "";
       setReceiptNumber(found || data.transactionId || "PENDING");
       setReceiptLoading(false);
     };
@@ -87,7 +109,7 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
       setReceiptNumber(data.transactionId || "PENDING");
       setReceiptLoading(false);
     });
-  }, [data.referenceId, data.referenceType]);
+  }, [data.referenceId, data.referenceType, data.receiptNumber, data.transactionId]);
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
