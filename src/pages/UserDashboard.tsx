@@ -858,6 +858,35 @@ const UserDashboard = () => {
     }
   };
 
+  const submitNocForApproval = async (nocId: string) => {
+    setSubmittingNocId(nocId);
+    try {
+      const { error } = await supabase
+        .from("noc_certificates")
+        .update({ status: "submitted" })
+        .eq("id", nocId)
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+
+      setNocRequests(prev =>
+        prev.map(n => n.id === nocId ? { ...n, status: "submitted" } : n)
+      );
+      toast({
+        title: "சமர்ப்பிக்கப்பட்டது",
+        description: "NOC கோரிக்கை நிர்வாகிக்கு அனுப்பப்பட்டது",
+      });
+    } catch (err: any) {
+      toast({
+        title: "பிழை",
+        description: err.message || "சமர்ப்பிக்க இயலவில்லை",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingNocId(null);
+    }
+  };
+
 
   if (loading) {
     return (
