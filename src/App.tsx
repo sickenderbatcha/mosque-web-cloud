@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/useTheme";
+import { HeaderSettingsProvider } from "./hooks/useHeaderSettings";
 import ScrollToTop from "./components/ScrollToTop";
 import { useOverflowDebug } from "./hooks/useOverflowDebug";
 import Layout from "./components/layout/Layout";
@@ -83,12 +84,14 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <ScrollToTop />
-            <AppContent />
-          </AuthProvider>
-        </BrowserRouter>
+        <HeaderSettingsProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <ScrollToTop />
+              <AppContent />
+            </AuthProvider>
+          </BrowserRouter>
+        </HeaderSettingsProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

@@ -15,8 +15,9 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useTheme, DarkMode } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { useMenuVisibility } from "@/hooks/useMenuVisibility";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { useHeaderSettings } from "@/hooks/useHeaderSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HEADER_SETTINGS_DEFAULTS } from "@/lib/headerSettings";
 
 const allMenuItems = [
 { path: "/", labelTamil: "முகப்பு", labelEnglish: "Home", visKey: "nav_home" as const, access: "public" },
@@ -36,14 +37,6 @@ const allOnlineServicesItems = [
 { path: "/services", labelTamil: "சான்றிதழ்கள்", labelEnglish: "Certificates", visKey: "nav_service_certificates" as const },
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
-
-const HEADER_SETTING_KEYS = [
-  "header_bismillah", "header_title_ta", "header_title_en",
-  "header_font_bismillah_mobile", "header_font_bismillah_desktop",
-  "header_font_ta_mobile", "header_font_ta_desktop",
-  "header_font_en_mobile", "header_font_en_desktop",
-];
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -52,18 +45,11 @@ const Header = () => {
   const { darkMode, setDarkMode, isDark } = useTheme();
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
+  const { settings: headerSettings, isResolved: headerSettingsResolved } = useHeaderSettings();
 
-  const { settings: fontSettings, isLoading: headerSettingsLoading } = useAppSettings(HEADER_SETTING_KEYS);
-
-  const hasCustomHeaderValue = [
-    fontSettings.header_bismillah,
-    fontSettings.header_title_ta,
-    fontSettings.header_title_en,
-  ].some((value) => typeof value === "string" && value.trim().length > 0);
-
-  const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
-  const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
-  const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "20" : fontSettings.header_font_en_desktop || "30"}px`;
+  const getBismillahSize = () => `${isMobile ? headerSettings.header_font_bismillah_mobile || "14" : headerSettings.header_font_bismillah_desktop || "14"}px`;
+  const getTamilSize = () => `${isMobile ? headerSettings.header_font_ta_mobile || "24" : headerSettings.header_font_ta_desktop || "36"}px`;
+  const getEnglishSize = () => `${isMobile ? headerSettings.header_font_en_mobile || "14" : headerSettings.header_font_en_desktop || "16"}px`;
 
   const resolveHeaderText = (value: string | undefined, fallback: string) => {
     const normalizedValue = value?.trim();
@@ -71,16 +57,21 @@ const Header = () => {
       return normalizedValue;
     }
 
-    if (headerSettingsLoading || hasCustomHeaderValue) {
-      return "";
-    }
-
-    return fallback;
+    return headerSettingsResolved ? fallback : "";
   };
 
-  const headerBismillah = resolveHeaderText(fontSettings.header_bismillah, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ");
-  const headerTitleTa = resolveHeaderText(fontSettings.header_title_ta, "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்");
-  const headerTitleEn = resolveHeaderText(fontSettings.header_title_en, "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal");
+  const headerBismillah = resolveHeaderText(
+    headerSettings.header_bismillah,
+    HEADER_SETTINGS_DEFAULTS.header_bismillah,
+  );
+  const headerTitleTa = resolveHeaderText(
+    headerSettings.header_title_ta,
+    HEADER_SETTINGS_DEFAULTS.header_title_ta,
+  );
+  const headerTitleEn = resolveHeaderText(
+    headerSettings.header_title_en,
+    HEADER_SETTINGS_DEFAULTS.header_title_en,
+  );
 
   const menuItems = allMenuItems.filter((item) => isVisible(item.visKey));
   const onlineServicesItems = allOnlineServicesItems.filter((item) => isVisible(item.visKey));
