@@ -189,6 +189,7 @@ const UserDashboard = () => {
   // NOC preview state
   const [previewNocRecord, setPreviewNocRecord] = useState<NocRecord | null>(null);
   const [nocPreviewOpen, setNocPreviewOpen] = useState(false);
+  const [submittingNocId, setSubmittingNocId] = useState<string | null>(null);
   
   // Heir preview state
   const [previewHeirRecord, setPreviewHeirRecord] = useState<HeirRecordType | null>(null);
@@ -854,6 +855,35 @@ const UserDashboard = () => {
       });
     } finally {
       setPayingBookingId(null);
+    }
+  };
+
+  const submitNocForApproval = async (nocId: string) => {
+    setSubmittingNocId(nocId);
+    try {
+      const { error } = await supabase
+        .from("noc_certificates")
+        .update({ status: "submitted" })
+        .eq("id", nocId)
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+
+      setNocRequests(prev =>
+        prev.map(n => n.id === nocId ? { ...n, status: "submitted" } : n)
+      );
+      toast({
+        title: "சமர்ப்பிக்கப்பட்டது",
+        description: "NOC கோரிக்கை நிர்வாகிக்கு அனுப்பப்பட்டது",
+      });
+    } catch (err: any) {
+      toast({
+        title: "பிழை",
+        description: err.message || "சமர்ப்பிக்க இயலவில்லை",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingNocId(null);
     }
   };
 
@@ -1753,13 +1783,31 @@ const UserDashboard = () => {
                                     </Button>
                                   </>
                                 ) : (
-                                  <span className="text-xs text-muted-foreground italic">
-                                    {noc.payment_status !== "completed" 
-                                      ? "Payment required" 
-                                      : noc.status !== "approved" 
-                                        ? "Awaiting approval" 
-                                        : ""}
-                                  </span>
+                                  <>
+                                    {noc.status === "pending" && noc.payment_status === "completed" && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => submitNocForApproval(noc.id)}
+                                        disabled={submittingNocId === noc.id}
+                                      >
+                                        {submittingNocId === noc.id ? (
+                                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                        ) : (
+                                          <FileCheck className="h-4 w-4 mr-1" />
+                                        )}
+                                        <span className="font-tamil">அனுமதிக்கு சமர்ப்பி</span>
+                                      </Button>
+                                    )}
+                                    <span className="text-xs text-muted-foreground italic">
+                                      {noc.payment_status !== "completed" 
+                                        ? "Payment required" 
+                                        : noc.status === "submitted"
+                                          ? "Awaiting approval"
+                                          : noc.status === "pending"
+                                            ? "Submit for approval"
+                                            : ""}
+                                    </span>
+                                  </>
                                 )}
                               </div>
                             </div>
