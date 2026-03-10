@@ -287,7 +287,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
             <div class="transaction-id">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
-              ${booking.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${booking.razorpayPaymentId}</div>` : ''}
+              ${booking.razorpayPaymentId ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Ref: ${booking.razorpayPaymentId}</div>` : ''}
             </div>
 
             ${booking.paymentMethod?.toLowerCase() !== 'cash' ? `<div style="background: #fff8e1; border: 1px solid #f9a825; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
@@ -520,7 +520,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <p className="text-xs text-muted-foreground mb-1">ரசீது எண் / Receipt No.</p>
               <p className="font-mono font-bold">{formattedReceiptNumber}</p>
               {booking.razorpayPaymentId && (
-                <p className="text-xs text-muted-foreground mt-2">Razorpay Ref: {booking.razorpayPaymentId}</p>
+                <p className="text-xs text-muted-foreground mt-2">Ref: {booking.razorpayPaymentId}</p>
               )}
             </div>
 
