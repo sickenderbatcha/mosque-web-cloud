@@ -1803,7 +1803,7 @@ const UserDashboard = () => {
                                         ? "Payment required" 
                                         : noc.status === "submitted"
                                           ? "Awaiting approval"
-                                          : noc.status === "pending"
+                                          : (noc.status === "pending" || noc.status === "payment_pending")
                                             ? "Submit for approval"
                                             : ""}
                                     </span>
