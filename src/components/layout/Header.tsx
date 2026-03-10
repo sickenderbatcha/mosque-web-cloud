@@ -53,11 +53,24 @@ const Header = () => {
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
 
-  const { settings: fontSettings } = useAppSettings(HEADER_SETTING_KEYS);
+  const { settings: fontSettings, isLoading: headerSettingsLoading } = useAppSettings(HEADER_SETTING_KEYS);
 
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
   const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "20" : fontSettings.header_font_en_desktop || "30"}px`;
+
+  const resolveHeaderText = (value: string | undefined, fallback: string) => {
+    const normalizedValue = value?.trim();
+    if (normalizedValue) {
+      return normalizedValue;
+    }
+
+    return headerSettingsLoading ? "" : fallback;
+  };
+
+  const headerBismillah = resolveHeaderText(fontSettings.header_bismillah, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ");
+  const headerTitleTa = resolveHeaderText(fontSettings.header_title_ta, "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்");
+  const headerTitleEn = resolveHeaderText(fontSettings.header_title_en, "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal");
 
   const menuItems = allMenuItems.filter((item) => isVisible(item.visKey));
   const onlineServicesItems = allOnlineServicesItems.filter((item) => isVisible(item.visKey));
@@ -184,13 +197,13 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-md border-b border-border shadow-soft">
       {/* Bismillah */}
       <div className="w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 py-1.5 text-center">
-        <span
-          className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
-          dir="rtl"
-          style={{ fontSize: getBismillahSize() }}>
+          <span
+            className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
+            dir="rtl"
+            style={{ fontSize: getBismillahSize() }}>
 
-          {fontSettings.header_bismillah || "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"}
-        </span>
+            {headerBismillah}
+          </span>
       </div>
       
       {/* Main header */}
@@ -199,10 +212,10 @@ const Header = () => {
         <div className="py-4 text-center border-b border-border/50">
           <Link to="/" className="inline-block">
             <h1 className="font-bold font-tamil text-primary leading-tight" style={{ fontSize: getTamilSize() }}>
-              {fontSettings.header_title_ta || "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்"}
+              {headerTitleTa}
             </h1>
             <p className="text-muted-foreground mt-1 font-display text-3xl" style={{ fontSize: getEnglishSize() }}>
-              {fontSettings.header_title_en || "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal"}
+              {headerTitleEn}
             </p>
           </Link>
         </div>

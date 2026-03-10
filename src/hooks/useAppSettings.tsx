@@ -16,9 +16,112 @@ const defaultSettings: AppSettings = {
   website_url: "",
 };
 
+const APP_SETTINGS_CACHE_KEY = "app_settings_cache_v1";
+let inMemorySettingsCache: Record<string, string> | null = null;
+
+const getCacheStorage = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.localStorage;
+};
+
+const loadCachedSettings = (): Record<string, string> => {
+  if (inMemorySettingsCache) {
+    return inMemorySettingsCache;
+  }
+
+  const storage = getCacheStorage();
+  if (!storage) {
+    inMemorySettingsCache = {};
+    return inMemorySettingsCache;
+  }
+
+  try {
+    const rawCache = storage.getItem(APP_SETTINGS_CACHE_KEY);
+    if (!rawCache) {
+      inMemorySettingsCache = {};
+      return inMemorySettingsCache;
+    }
+
+    const parsedCache = JSON.parse(rawCache);
+    if (parsedCache && typeof parsedCache === "object" && !Array.isArray(parsedCache)) {
+      const sanitizedCache: Record<string, string> = {};
+
+      Object.entries(parsedCache).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          sanitizedCache[key] = value;
+        }
+      });
+
+      inMemorySettingsCache = sanitizedCache;
+      return inMemorySettingsCache;
+    }
+  } catch (error) {
+    console.warn("Failed to read app settings cache:", error);
+  }
+
+  inMemorySettingsCache = {};
+  return inMemorySettingsCache;
+};
+
+const persistCachedSettings = (nextSettings: Record<string, string>) => {
+  const mergedSettings = {
+    ...loadCachedSettings(),
+    ...nextSettings,
+  };
+
+  inMemorySettingsCache = mergedSettings;
+
+  const storage = getCacheStorage();
+  if (!storage) {
+    return;
+  }
+
+  try {
+    storage.setItem(APP_SETTINGS_CACHE_KEY, JSON.stringify(mergedSettings));
+  } catch (error) {
+    console.warn("Failed to persist app settings cache:", error);
+  }
+};
+
+const getInitialSettings = (keys?: string[]) => {
+  const cachedSettings = loadCachedSettings();
+  const initialSettings: AppSettings = { ...defaultSettings };
+
+  if (!keys || keys.length === 0) {
+    return {
+      ...initialSettings,
+      ...cachedSettings,
+    };
+  }
+
+  keys.forEach((key) => {
+    if (typeof cachedSettings[key] === "string") {
+      initialSettings[key] = cachedSettings[key];
+    }
+  });
+
+  return initialSettings;
+};
+
+const hasCachedSettings = (keys?: string[]) => {
+  const cachedSettings = loadCachedSettings();
+
+  if (!keys || keys.length === 0) {
+    return Object.keys(cachedSettings).length > 0;
+  }
+
+  return keys.some((key) => {
+    const value = cachedSettings[key];
+    return typeof value === "string" && value.trim().length > 0;
+  });
+};
+
 export const useAppSettings = (keys?: string[]) => {
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
-  const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState<AppSettings>(() => getInitialSettings(keys));
+  const [isLoading, setIsLoading] = useState(() => !hasCachedSettings(keys));
   const [error, setError] = useState<string | null>(null);
 
   const keysKey = keys?.join(",") || "";
@@ -43,12 +146,20 @@ export const useAppSettings = (keys?: string[]) => {
         return;
       }
 
-      const settingsMap: AppSettings = { ...defaultSettings };
+      const settingsMap = getInitialSettings(currentKeys);
+      const freshSettings: Record<string, string> = {};
+
       if (data && data.length > 0) {
         data.forEach((item) => {
           settingsMap[item.key] = item.value;
+          freshSettings[item.key] = item.value;
         });
       }
+
+      if (Object.keys(freshSettings).length > 0) {
+        persistCachedSettings(freshSettings);
+      }
+
       setSettings(settingsMap);
     } catch (err) {
       console.error("useAppSettings catch error:", err);
@@ -59,7 +170,8 @@ export const useAppSettings = (keys?: string[]) => {
   }, [keysKey]);
 
   useEffect(() => {
-    setIsLoading(true);
+    setSettings(getInitialSettings(keysRef.current));
+    setIsLoading(!hasCachedSettings(keysRef.current));
     setError(null);
     fetchSettings();
   }, [fetchSettings]);
@@ -76,14 +188,16 @@ export const useAppSettings = (keys?: string[]) => {
           table: "app_settings",
         },
         (payload) => {
-          // If we're filtering by keys, only refetch if the changed key is relevant
-          if (keys && keys.length > 0) {
+          const currentKeys = keysRef.current;
+
+          if (currentKeys && currentKeys.length > 0) {
             const changedKey =
               (payload.new as any)?.key || (payload.old as any)?.key;
-            if (changedKey && !keys.includes(changedKey)) {
-              return; // Not a key we care about
+            if (changedKey && !currentKeys.includes(changedKey)) {
+              return;
             }
           }
+
           fetchSettings();
         }
       )
