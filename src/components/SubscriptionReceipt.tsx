@@ -343,7 +343,7 @@ const SubscriptionReceipt = ({ subscription, onClose, requireAction = false }: S
             <div class="transaction-id">
               <div style="font-size: 10px; color: #666; margin-bottom: 5px;">ரசீது எண் / Receipt No.</div>
               <div style="font-weight: bold;">${formattedReceiptNumber}</div>
-              ${razorpayRef ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Razorpay Ref: ${razorpayRef}</div>` : ''}
+              ${razorpayRef ? `<div style="font-size: 10px; color: #666; margin-top: 5px;">Ref: ${razorpayRef}</div>` : ''}
             </div>
 
             <div class="footer">
