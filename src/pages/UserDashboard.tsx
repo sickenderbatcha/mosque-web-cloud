@@ -1671,7 +1671,7 @@ const UserDashboard = () => {
                     ) : (
                       <div className="space-y-4">
                         {nocRequests.map((noc) => {
-                          const canPrintDownload = noc.payment_status === "completed" && noc.status === "approved";
+                          const canPrintDownload = (noc.payment_status === "completed" || noc.payment_status === "paid") && noc.status === "approved";
                           const nocRecord: NocRecord = {
                             id: noc.id,
                             applicant_name: noc.applicant_name,
