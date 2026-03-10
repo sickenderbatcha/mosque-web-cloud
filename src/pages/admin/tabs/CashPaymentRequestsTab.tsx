@@ -212,6 +212,7 @@ const CashPaymentRequestsTab = () => {
         applicant_name: request.applicant_name,
         applicant_phone: request.applicant_phone,
         applicant_email: request.applicant_email,
+        user_id: request.user_id,
         amount: request.amount,
         payment_status: "pending",
         payment_method: "cash",
