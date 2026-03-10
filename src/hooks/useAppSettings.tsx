@@ -47,9 +47,15 @@ const loadCachedSettings = (): Record<string, string> => {
 
     const parsedCache = JSON.parse(rawCache);
     if (parsedCache && typeof parsedCache === "object" && !Array.isArray(parsedCache)) {
-      inMemorySettingsCache = Object.fromEntries(
-        Object.entries(parsedCache).filter(([, value]) => typeof value === "string")
-      );
+      const sanitizedCache: Record<string, string> = {};
+
+      Object.entries(parsedCache).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          sanitizedCache[key] = value;
+        }
+      });
+
+      inMemorySettingsCache = sanitizedCache;
       return inMemorySettingsCache;
     }
   } catch (error) {

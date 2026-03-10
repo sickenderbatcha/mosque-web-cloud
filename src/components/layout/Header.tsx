@@ -212,10 +212,10 @@ const Header = () => {
         <div className="py-4 text-center border-b border-border/50">
           <Link to="/" className="inline-block">
             <h1 className="font-bold font-tamil text-primary leading-tight" style={{ fontSize: getTamilSize() }}>
-              {fontSettings.header_title_ta || "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்"}
+              {headerTitleTa}
             </h1>
             <p className="text-muted-foreground mt-1 font-display text-3xl" style={{ fontSize: getEnglishSize() }}>
-              {fontSettings.header_title_en || "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal"}
+              {headerTitleEn}
             </p>
           </Link>
         </div>
