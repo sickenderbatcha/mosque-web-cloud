@@ -419,6 +419,24 @@ const UserDashboard = () => {
             nocHeirPaymentMethodMap[p.reference_id] = p.payment_method || "online";
           });
         }
+
+        // Fallback: for certs without certificate_payments, check cash_payment_requests
+        const unmappedCertIds = nocHeirCertIds.filter((id) => !nocHeirPaymentMethodMap[id]);
+        if (unmappedCertIds.length > 0) {
+          const { data: cashRequests } = await supabase
+            .from("cash_payment_requests")
+            .select("reference_id, status")
+            .in("reference_id", unmappedCertIds)
+            .in("service_type", ["noc", "heir"])
+            .in("status", ["approved", "paid"]);
+          if (cashRequests) {
+            cashRequests.forEach((cr: any) => {
+              if (cr.reference_id && !nocHeirPaymentMethodMap[cr.reference_id]) {
+                nocHeirPaymentMethodMap[cr.reference_id] = "cash";
+              }
+            });
+          }
+        }
       }
 
       const allLookupIds = [
