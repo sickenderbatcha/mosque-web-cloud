@@ -441,6 +441,7 @@ const UserDashboard = () => {
         }
       }
       setCertReceiptNumberMap(finalMap);
+      setCertPaymentMethodMap(nocHeirPaymentMethodMap);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
