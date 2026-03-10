@@ -53,11 +53,24 @@ const Header = () => {
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
 
-  const { settings: fontSettings } = useAppSettings(HEADER_SETTING_KEYS);
+  const { settings: fontSettings, isLoading: headerSettingsLoading } = useAppSettings(HEADER_SETTING_KEYS);
 
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
   const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "20" : fontSettings.header_font_en_desktop || "30"}px`;
+
+  const resolveHeaderText = (value: string | undefined, fallback: string) => {
+    const normalizedValue = value?.trim();
+    if (normalizedValue) {
+      return normalizedValue;
+    }
+
+    return headerSettingsLoading ? "" : fallback;
+  };
+
+  const headerBismillah = resolveHeaderText(fontSettings.header_bismillah, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ");
+  const headerTitleTa = resolveHeaderText(fontSettings.header_title_ta, "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்");
+  const headerTitleEn = resolveHeaderText(fontSettings.header_title_en, "Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal");
 
   const menuItems = allMenuItems.filter((item) => isVisible(item.visKey));
   const onlineServicesItems = allOnlineServicesItems.filter((item) => isVisible(item.visKey));
