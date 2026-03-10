@@ -1949,7 +1949,7 @@ const UserDashboard = () => {
                               
                               {/* Preview/Print/Download Actions */}
                               <div className="flex items-center gap-2 flex-wrap">
-                                {heir.payment_status === "completed" && (
+                                {(heir.payment_status === "completed" || heir.payment_status === "paid") && (
                                   <Button
                                     variant="outline"
                                     size="sm"
