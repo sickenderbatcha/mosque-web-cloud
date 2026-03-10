@@ -1702,7 +1702,7 @@ const UserDashboard = () => {
                                 <div className="flex items-center gap-3 mb-2 flex-wrap">
                                   <span className="font-semibold">{noc.applicant_name}</span>
                                   {getNocStatusBadge(noc.status)}
-                                  {noc.payment_status === "completed" && (
+                                  {(noc.payment_status === "completed" || noc.payment_status === "paid") && (
                                     <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
                                   )}
                                 </div>
