@@ -394,8 +394,8 @@ const UserDashboard = () => {
 
       // Fetch receipt numbers from income table for all completed certificates (sequential only)
       // For NOC/Heir: income uses certificate_payments.id as reference_id, so we need to map payment→cert
-      const completedNocIds = (nocRes.data || []).filter((n: any) => n.payment_status === "completed").map((n: any) => n.id);
-      const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed").map((h: any) => h.id);
+      const completedNocIds = (nocRes.data || []).filter((n: any) => n.payment_status === "completed" || n.payment_status === "paid").map((n: any) => n.id);
+      const completedHeirIds = (heirRes.data || []).filter((h: any) => h.payment_status === "completed" || h.payment_status === "paid").map((h: any) => h.id);
       const completedCertPaymentIds = (certPaymentsRes.data || []).filter((c: any) => c.payment_status === "completed").map((c: any) => c.id);
 
       // Fetch certificate_payments linked to NOC/Heir certificates to get payment IDs
