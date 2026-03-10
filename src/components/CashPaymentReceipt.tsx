@@ -153,7 +153,7 @@ import { useRef, useState, useEffect } from "react";
               applicant_phone: request.applicant_phone,
               applicant_email: request.applicant_email,
               amount: request.amount,
-              payment_status: "completed",
+              payment_status: "pending",
               payment_method: "cash",
               transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
             })
@@ -162,7 +162,14 @@ import { useRef, useState, useEffect } from "react";
 
           if (createError) throw createError;
 
-          return createdPayment?.id ?? null;
+          const { error: finalizeError } = await supabase
+            .from("certificate_payments")
+            .update({ payment_status: "completed", payment_method: "cash" })
+            .eq("id", createdPayment.id);
+
+          if (finalizeError) throw finalizeError;
+
+          return createdPayment.id;
         };
 
         if (request.service_type === "noc" || request.service_type === "heir") {
