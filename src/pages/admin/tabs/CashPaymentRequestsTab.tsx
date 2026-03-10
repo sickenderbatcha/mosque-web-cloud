@@ -86,6 +86,7 @@ interface CashPaymentRequest {
   id: string;
   service_type: string;
   reference_id: string | null;
+  user_id: string | null;
   amount: number;
   applicant_name: string;
   applicant_phone: string;
