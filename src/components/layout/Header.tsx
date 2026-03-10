@@ -55,6 +55,12 @@ const Header = () => {
 
   const { settings: fontSettings, isLoading: headerSettingsLoading } = useAppSettings(HEADER_SETTING_KEYS);
 
+  const hasCustomHeaderValue = [
+    fontSettings.header_bismillah,
+    fontSettings.header_title_ta,
+    fontSettings.header_title_en,
+  ].some((value) => typeof value === "string" && value.trim().length > 0);
+
   const getBismillahSize = () => `${isMobile ? fontSettings.header_font_bismillah_mobile || "14" : fontSettings.header_font_bismillah_desktop || "14"}px`;
   const getTamilSize = () => `${isMobile ? fontSettings.header_font_ta_mobile || "24" : fontSettings.header_font_ta_desktop || "36"}px`;
   const getEnglishSize = () => `${isMobile ? fontSettings.header_font_en_mobile || "20" : fontSettings.header_font_en_desktop || "30"}px`;
@@ -65,7 +71,11 @@ const Header = () => {
       return normalizedValue;
     }
 
-    return headerSettingsLoading ? "" : fallback;
+    if (headerSettingsLoading || hasCustomHeaderValue) {
+      return "";
+    }
+
+    return fallback;
   };
 
   const headerBismillah = resolveHeaderText(fontSettings.header_bismillah, "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ");
