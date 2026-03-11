@@ -875,7 +875,7 @@ const ServicesPage = () => {
                           )}
 
                           {/* Print/Download buttons - locked until paid */}
-                          <div className="flex gap-4 pt-4">
+                          <div className="flex flex-wrap gap-4 pt-4">
                             <Button
                               variant="gold"
                               size="lg"
@@ -1072,7 +1072,7 @@ const ServicesPage = () => {
                           )}
 
                           {/* Print/Download buttons - locked until paid */}
-                          <div className="flex gap-4 pt-4">
+                          <div className="flex flex-wrap gap-4 pt-4">
                             <Button
                               variant="gold"
                               size="lg"
