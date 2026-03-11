@@ -1252,24 +1252,24 @@ const ServicesPage = () => {
                             </div>
                           )}
 
-                          <div className="flex gap-4 pt-4">
+                          <div className="flex gap-2 pt-4">
                             <Button
                               variant="gold"
-                              size="lg"
+                              className="flex-1 min-w-0"
                               disabled={!canPrintOrDownload || isPrinting}
                               onClick={handlePrint}
                             >
                               {isPrinting ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 className="h-4 w-4 mr-1 shrink-0 animate-spin" />
                               ) : !canPrintOrDownload ? (
-                                <Lock className="h-4 w-4 mr-2" />
+                                <Lock className="h-4 w-4 mr-1 shrink-0" />
                               ) : (
-                                <Printer className="h-4 w-4 mr-2" />
+                                <Printer className="h-4 w-4 mr-1 shrink-0" />
                               )}
-                              <span className="font-tamil">அச்சிடு</span>
+                              <span className="font-tamil truncate">அச்சிடு</span>
                             </Button>
-                            <Button variant="outline" size="lg">
-                              <span className="font-tamil">ரத்துசெய்</span>
+                            <Button variant="outline" className="flex-1 min-w-0">
+                              <span className="font-tamil truncate">ரத்துசெய்</span>
                             </Button>
                           </div>
                           {!canPrintOrDownload && (
