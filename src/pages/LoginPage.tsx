@@ -663,26 +663,25 @@ const LoginPage = () => {
                 </p>
               )}
 
-              <div className="flex gap-4 pt-2">
+              <div className="flex gap-2 pt-2">
                 <Button 
                   type="submit" 
                   variant="default" 
-                  size="lg" 
-                  className="flex-1" 
+                  className="flex-1 min-w-0" 
                   disabled={loading || (isSignUp && !memberDetails)}
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      <span className="font-tamil">{isSignUp ? "பதிவு செய்" : "உள்நுழை"}</span>
+                      <LogIn className="h-4 w-4 mr-1 shrink-0" />
+                      <span className="font-tamil truncate">{isSignUp ? "பதிவு செய்" : "உள்நுழை"}</span>
                     </>
                   )}
                 </Button>
-                <Button type="button" variant="outline" size="lg" asChild>
+                <Button type="button" variant="outline" className="flex-1 min-w-0" asChild>
                   <Link to="/">
-                    <span className="font-tamil">ரத்துசெய்</span>
+                    <span className="font-tamil truncate">ரத்துசெய்</span>
                   </Link>
                 </Button>
               </div>
