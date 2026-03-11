@@ -667,7 +667,7 @@ const ServicesPage = () => {
           >
             <FileText className="h-16 w-16 mx-auto mb-4 text-secondary" />
             <h1 className="text-3xl md:text-5xl font-bold font-tamil text-primary-foreground mb-4">
-              சேவைகள்
+              சான்றிதழ்கள்
             </h1>
             <p className="text-primary-foreground/80 font-display text-xl">
               Services - Certificates & Documents
