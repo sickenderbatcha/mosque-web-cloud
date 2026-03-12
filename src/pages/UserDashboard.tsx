@@ -491,6 +491,20 @@ const UserDashboard = () => {
         }
       });
 
+      console.log("[Dashboard Receipt Debug]", {
+        completedNocIds,
+        completedHeirIds,
+        completedCertPaymentIds,
+        nocHeirCertIds,
+        nocHeirPaymentIds,
+        nocHeirPaymentMap,
+        allLookupIds,
+        rawReceiptMap,
+        legacyNocHeirReceiptMap,
+        finalMap,
+        nocHeirPaymentMethodMap,
+      });
+
       setCertReceiptNumberMap(finalMap);
       setCertPaymentMethodMap(nocHeirPaymentMethodMap);
     } catch (error) {
