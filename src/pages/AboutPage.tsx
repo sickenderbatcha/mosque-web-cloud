@@ -72,6 +72,25 @@ const AboutPage = () => {
     };
 
     fetchDocuments();
+
+    const fetchCommitteeMembers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("management_committee")
+          .select("id, name, position, father_name, photo_url, qualification")
+          .eq("is_current", true)
+          .order("sort_order", { ascending: true });
+
+        if (error) throw error;
+        setCommitteeMembers(data || []);
+      } catch (error) {
+        console.error("Error fetching committee:", error);
+      } finally {
+        setLoadingCommittee(false);
+      }
+    };
+
+    fetchCommitteeMembers();
   }, []);
 
   if (isLoading) {
