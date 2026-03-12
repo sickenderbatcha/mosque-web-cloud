@@ -32,6 +32,7 @@ import PdfDocumentsTab from "./tabs/PdfDocumentsTab";
 import BackupRestoreTab from "./tabs/BackupRestoreTab";
 import AssetManagementTab from "./tabs/AssetManagementTab";
 import OnlinePaymentsTab from "./tabs/OnlinePaymentsTab";
+import CommitteeTab from "./tabs/CommitteeTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("donations");
