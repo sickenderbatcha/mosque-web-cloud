@@ -73,11 +73,16 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
         return;
       }
 
-      // For NOC/Heir certificates, income uses certificate_payments.id as reference_id
-      // We need to find the payment record first, then look up via that ID
-      let lookupId = data.referenceId;
       const isNocOrHeir = data.referenceType === "noc_certificate" || data.referenceType === "heir_certificate";
+      const lookupIds: string[] = [];
+      const addLookupId = (value?: string | null) => {
+        if (!value) return;
+        if (!lookupIds.includes(value)) {
+          lookupIds.push(value);
+        }
+      };
 
+      // For NOC/Heir certificates, try payment-id based lookup first (current flow)
       if (isNocOrHeir) {
         const { data: paymentData } = await supabase
           .from("certificate_payments")
@@ -85,21 +90,24 @@ const CertificateReceipt = ({ data, onClose, requireAction = false }: Certificat
           .eq("reference_id", data.referenceId)
           .in("payment_status", ["completed", "paid"])
           .order("created_at", { ascending: false })
-          .limit(1);
+          .limit(5);
 
-        if (paymentData && paymentData.length > 0) {
-          lookupId = paymentData[0].id;
-        }
+        paymentData?.forEach((row: { id: string }) => addLookupId(row.id));
       }
 
+      // Legacy fallback: lookup directly by certificate id
+      addLookupId(data.referenceId);
+
       const map = await getLatestSequentialReceiptMap({
-        referenceIds: [lookupId],
-        referenceTypes: ["certificate_payment"],
+        referenceIds: lookupIds,
+        referenceTypes: isNocOrHeir
+          ? ["certificate_payment", "noc_certificate", "heir_certificate"]
+          : ["certificate_payment"],
         retries: 10,
         retryDelayMs: 1500,
       });
 
-      const found = map[lookupId] || "";
+      const found = lookupIds.map((id) => map[id]).find(Boolean) || "";
       setReceiptNumber(found || data.transactionId || "PENDING");
       setReceiptLoading(false);
     };
