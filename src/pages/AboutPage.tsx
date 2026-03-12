@@ -20,6 +20,8 @@ const AboutPage = () => {
   const [loadingGallery, setLoadingGallery] = useState(true);
   const [documents, setDocuments] = useState<{ id: string; document_name: string; document_type: string; description: string | null; file_path: string; file_url: string }[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(true);
+  const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
+  const [loadingCommittee, setLoadingCommittee] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
@@ -70,6 +72,25 @@ const AboutPage = () => {
     };
 
     fetchDocuments();
+
+    const fetchCommitteeMembers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("management_committee")
+          .select("id, name, position, father_name, photo_url, qualification")
+          .eq("is_current", true)
+          .order("sort_order", { ascending: true });
+
+        if (error) throw error;
+        setCommitteeMembers(data || []);
+      } catch (error) {
+        console.error("Error fetching committee:", error);
+      } finally {
+        setLoadingCommittee(false);
+      }
+    };
+
+    fetchCommitteeMembers();
   }, []);
 
   if (isLoading) {
@@ -366,31 +387,71 @@ const AboutPage = () => {
             <div className="section-divider mt-6" />
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
-            {[
-              { role: "தலைவர்", roleEn: "Trustee" },
-              { role: "துணைத் தலைவர்", roleEn: "Deputy Trustee" },
-              { role: "செயலாளர்", roleEn: "Secretary" },
-              { role: "துணைச் செயலாளர்", roleEn: "Deputy Secretary" },
-              { role: "பொருளாளர்", roleEn: "Treasurer" },
-            ].map((member, index) => (
-              <motion.div
-                key={member.role}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="font-tamil font-semibold text-foreground">{member.role}</h3>
-                  <p className="text-sm text-muted-foreground">{member.roleEn}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {loadingCommittee ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : committeeMembers.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
+              {committeeMembers.map((member, index) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
+                    {member.photo_url ? (
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-primary/20">
+                        <img
+                          src={member.photo_url}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-10 w-10 text-primary" />
+                      </div>
+                    )}
+                    <h3 className="font-tamil font-semibold text-foreground">{member.name}</h3>
+                    <p className="text-sm text-primary font-medium">{member.position}</p>
+                    {member.father_name && (
+                      <p className="text-xs text-muted-foreground mt-1">S/o {member.father_name}</p>
+                    )}
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
+              {[
+                { role: "தலைவர்", roleEn: "Trustee" },
+                { role: "துணைத் தலைவர்", roleEn: "Deputy Trustee" },
+                { role: "செயலாளர்", roleEn: "Secretary" },
+                { role: "துணைச் செயலாளர்", roleEn: "Deputy Secretary" },
+                { role: "பொருளாளர்", roleEn: "Treasurer" },
+              ].map((member, index) => (
+                <motion.div
+                  key={member.role}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-10 w-10 text-primary" />
+                    </div>
+                    <h3 className="font-tamil font-semibold text-foreground">{member.role}</h3>
+                    <p className="text-sm text-muted-foreground">{member.roleEn}</p>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

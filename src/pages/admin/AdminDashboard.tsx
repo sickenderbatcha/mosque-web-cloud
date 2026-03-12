@@ -32,6 +32,7 @@ import PdfDocumentsTab from "./tabs/PdfDocumentsTab";
 import BackupRestoreTab from "./tabs/BackupRestoreTab";
 import AssetManagementTab from "./tabs/AssetManagementTab";
 import OnlinePaymentsTab from "./tabs/OnlinePaymentsTab";
+import CommitteeTab from "./tabs/CommitteeTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("donations");
@@ -290,6 +291,10 @@ const AdminDashboard = () => {
               <FilePlus2 className="h-4 w-4" />
               <span className="hidden sm:inline">PDF Docs</span>
             </TabsTrigger>
+            <TabsTrigger value="committee" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Committee</span>
+            </TabsTrigger>
             <TabsTrigger value="asset-management" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Assets</span>
@@ -407,6 +412,10 @@ const AdminDashboard = () => {
               pendingFile={pendingPdfFile}
               onPendingFileConsumed={() => setPendingPdfFile(null)}
             />
+          </TabsContent>
+
+          <TabsContent value="committee">
+            <CommitteeTab />
           </TabsContent>
 
           <TabsContent value="asset-management">

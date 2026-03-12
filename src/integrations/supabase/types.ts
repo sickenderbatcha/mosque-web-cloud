@@ -1275,6 +1275,7 @@ export type Database = {
           id: string
           is_current: boolean | null
           name: string
+          photo_url: string | null
           position: string
           qualification: string | null
           sort_order: number | null
@@ -1288,6 +1289,7 @@ export type Database = {
           id?: string
           is_current?: boolean | null
           name: string
+          photo_url?: string | null
           position: string
           qualification?: string | null
           sort_order?: number | null
@@ -1301,6 +1303,7 @@ export type Database = {
           id?: string
           is_current?: boolean | null
           name?: string
+          photo_url?: string | null
           position?: string
           qualification?: string | null
           sort_order?: number | null
