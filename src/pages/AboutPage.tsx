@@ -387,31 +387,71 @@ const AboutPage = () => {
             <div className="section-divider mt-6" />
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
-            {[
-              { role: "தலைவர்", roleEn: "Trustee" },
-              { role: "துணைத் தலைவர்", roleEn: "Deputy Trustee" },
-              { role: "செயலாளர்", roleEn: "Secretary" },
-              { role: "துணைச் செயலாளர்", roleEn: "Deputy Secretary" },
-              { role: "பொருளாளர்", roleEn: "Treasurer" },
-            ].map((member, index) => (
-              <motion.div
-                key={member.role}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="font-tamil font-semibold text-foreground">{member.role}</h3>
-                  <p className="text-sm text-muted-foreground">{member.roleEn}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {loadingCommittee ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : committeeMembers.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
+              {committeeMembers.map((member, index) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
+                    {member.photo_url ? (
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-primary/20">
+                        <img
+                          src={member.photo_url}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-10 w-10 text-primary" />
+                      </div>
+                    )}
+                    <h3 className="font-tamil font-semibold text-foreground">{member.name}</h3>
+                    <p className="text-sm text-primary font-medium">{member.position}</p>
+                    {member.father_name && (
+                      <p className="text-xs text-muted-foreground mt-1">S/o {member.father_name}</p>
+                    )}
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
+              {[
+                { role: "தலைவர்", roleEn: "Trustee" },
+                { role: "துணைத் தலைவர்", roleEn: "Deputy Trustee" },
+                { role: "செயலாளர்", roleEn: "Secretary" },
+                { role: "துணைச் செயலாளர்", roleEn: "Deputy Secretary" },
+                { role: "பொருளாளர்", roleEn: "Treasurer" },
+              ].map((member, index) => (
+                <motion.div
+                  key={member.role}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-10 w-10 text-primary" />
+                    </div>
+                    <h3 className="font-tamil font-semibold text-foreground">{member.role}</h3>
+                    <p className="text-sm text-muted-foreground">{member.roleEn}</p>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
