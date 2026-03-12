@@ -20,6 +20,8 @@ const AboutPage = () => {
   const [loadingGallery, setLoadingGallery] = useState(true);
   const [documents, setDocuments] = useState<{ id: string; document_name: string; document_type: string; description: string | null; file_path: string; file_url: string }[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(true);
+  const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
+  const [loadingCommittee, setLoadingCommittee] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
