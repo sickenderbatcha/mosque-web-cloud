@@ -2020,7 +2020,7 @@ const UserDashboard = () => {
                                       receiptNumber: certReceiptNumberMap[heir.id] || "",
                                       referenceId: heir.id,
                                       referenceType: "heir_certificate",
-                                      paymentMethod: certPaymentMethodMap[heir.id] || "online",
+                                      paymentMethod: certPaymentMethodMap[heir.id] || (heir.payment_status === "paid" ? "cash" : "online"),
                                       createdAt: heir.created_at,
                                       additionalInfo: {
                                         "இறந்தவர் தந்தை": heir.deceased_father_name,
