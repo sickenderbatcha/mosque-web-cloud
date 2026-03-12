@@ -1797,7 +1797,7 @@ const UserDashboard = () => {
                                       receiptNumber: certReceiptNumberMap[noc.id] || "",
                                       referenceId: noc.id,
                                       referenceType: "noc_certificate",
-                                      paymentMethod: certPaymentMethodMap[noc.id] || "online",
+                                      paymentMethod: certPaymentMethodMap[noc.id] || (noc.payment_status === "paid" ? "cash" : "online"),
                                       createdAt: noc.created_at,
                                       additionalInfo: {
                                         "தந்தை பெயர்": noc.father_name,
