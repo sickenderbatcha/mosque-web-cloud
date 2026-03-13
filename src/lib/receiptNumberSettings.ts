@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: ReceiptNumberSettings = {
   certificate_noc_prefix: "NOC-",
   certificate_heir_prefix: "HEIR-",
   certificate_general_prefix: "CERT-",
+  rental_prefix: "RENT-",
 };
 
 // Keys used in app_settings
