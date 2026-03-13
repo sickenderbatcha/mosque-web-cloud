@@ -213,6 +213,19 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
             மொத்தம்: ₹{data.totalAmount.toLocaleString()}
           </div>
 
+          <div style={{ fontSize: 13, marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+              <span style={{ fontWeight: "bold" }}>செலுத்தும் முறை:</span>
+              <span>{data.paymentMethod === "Cash" ? "ரொக்கம் (Cash)" : data.paymentMethod === "Cheque" ? "காசோலை (Cheque)" : data.paymentMethod === "UPI" ? "UPI" : "வங்கி பரிமாற்றம் (Bank Transfer)"}</span>
+            </div>
+            {data.remarks && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                <span style={{ fontWeight: "bold" }}>குறிப்பு:</span>
+                <span>{data.remarks}</span>
+              </div>
+            )}
+          </div>
+
           <div style={{ textAlign: "center", marginTop: 15, fontSize: 10, borderTop: "1px solid #ccc", paddingTop: 8 }}>
             <p>{settings.footerMessage}</p>
             <p>{settings.footerMessageEn}</p>
