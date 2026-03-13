@@ -25,6 +25,7 @@ interface RentalReceiptData {
 interface RentalReceiptProps {
   data: RentalReceiptData;
   onClose: () => void;
+  isReprint?: boolean;
 }
 
 const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
