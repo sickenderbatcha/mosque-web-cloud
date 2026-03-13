@@ -9,22 +9,16 @@ export const upsertAppSetting = async (
   value: string,
   description?: string
 ): Promise<void> => {
-  const { data: existing } = await supabase
+  const { error } = await supabase
     .from("app_settings")
-    .select("id")
-    .eq("key", key)
-    .maybeSingle();
-
-  if (existing) {
-    const { error } = await supabase
-      .from("app_settings")
-      .update({ value, updated_at: new Date().toISOString() })
-      .eq("key", key);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("app_settings")
-      .insert({ key, value, description: description || null });
-    if (error) throw error;
-  }
+    .upsert(
+      {
+        key,
+        value,
+        description: description || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" }
+    );
+  if (error) throw error;
 };
