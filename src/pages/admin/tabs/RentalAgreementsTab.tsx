@@ -52,7 +52,7 @@ const emptyForm = {
   agreement_start_date: "",
   agreement_end_date: "",
   rent_increase_period: "",
-  increase_percentage: 0,
+  increase_percentage: "" as any,
   agreement_status: "active",
   status_change_date: "",
   rent_calculate_from: "",
