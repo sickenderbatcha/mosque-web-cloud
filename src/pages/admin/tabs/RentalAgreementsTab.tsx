@@ -369,6 +369,7 @@ const RentalAgreementsTab = () => {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button size="sm" variant="ghost" onClick={() => handleEdit(a)}><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" title="வாடகை பெறு" onClick={() => setCollectRentAgreement(a)}><IndianRupee className="h-4 w-4 text-primary" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </TableCell>
