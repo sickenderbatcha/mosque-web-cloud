@@ -308,6 +308,29 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
                   </div>
                 )}
 
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">செலுத்தும் முறை (Payment Method)</Label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="Cash">ரொக்கம் (Cash)</option>
+                    <option value="Cheque">காசோலை (Cheque)</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Bank Transfer">வங்கி பரிமாற்றம் (Bank Transfer)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">குறிப்புகள் (Remarks)</Label>
+                  <Input
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="காசோலை எண் / குறிப்பு எண் (Cheque No. / Reference)"
+                  />
+                </div>
+
                 <Button
                   onClick={handleCollectRent}
                   disabled={saving || selectedCount === 0}
