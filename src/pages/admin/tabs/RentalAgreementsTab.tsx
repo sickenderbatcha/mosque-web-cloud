@@ -322,9 +322,9 @@ const RentalAgreementsTab = () => {
           onSearchChange={setSearchValue}
           searchPlaceholder="Search tenant name, father name, shop number..."
           filters={[
-            { label: "Category", value: "category", options: [{ label: "Shop", value: "shop" }, { label: "House", value: "house" }, { label: "Tharai", value: "tharai" }] },
+            { label: "Category", value: "category", options: [{ label: "கடை", value: "shop" }, { label: "வீடு", value: "house" }, { label: "தரை", value: "tharai" }] },
             { label: "Status", value: "status", options: [{ label: "Active", value: "active" }, { label: "Expired", value: "expired" }, { label: "Terminated", value: "terminated" }, { label: "Renewed", value: "renewed" }] },
-            { label: "Rent Type", value: "rent_type", options: [{ label: "Monthly", value: "monthly" }, { label: "Lease", value: "lease" }] },
+            { label: "Rent Type", value: "rent_type", options: [{ label: "மாதம்", value: "monthly" }, { label: "லீஸ்", value: "lease" }] },
           ]}
           filterValues={filterValues}
           onFilterChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
