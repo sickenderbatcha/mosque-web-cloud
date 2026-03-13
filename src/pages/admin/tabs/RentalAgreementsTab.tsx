@@ -259,8 +259,8 @@ const RentalAgreementsTab = () => {
                 <Select value={form.rent_type} onValueChange={(v) => setForm({ ...form, rent_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="lease">Lease</SelectItem>
+                    <SelectItem value="monthly">மாதம்</SelectItem>
+                    <SelectItem value="lease">லீஸ்</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
