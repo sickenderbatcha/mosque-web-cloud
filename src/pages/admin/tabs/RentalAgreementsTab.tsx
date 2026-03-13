@@ -232,7 +232,7 @@ const RentalAgreementsTab = () => {
                 <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Shop பிரீமிஸ் (Premises)</Label>
+                <Label>வளாகம் (Premises)</Label>
                 <Input value={form.shop_premises} onChange={(e) => setForm({ ...form, shop_premises: e.target.value })} />
               </div>
               <div className="space-y-2">
