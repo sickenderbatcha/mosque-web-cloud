@@ -25,15 +25,16 @@ interface RentalReceiptData {
 interface RentalReceiptProps {
   data: RentalReceiptData;
   onClose: () => void;
+  isReprint?: boolean;
 }
 
-const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
+const RentalReceipt = ({ data, onClose, isReprint = false }: RentalReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings } = useReceiptHeaderSettings();
   const [incomeCreated, setIncomeCreated] = useState(false);
 
   const createIncomeEntry = async () => {
-    if (incomeCreated) return;
+    if (incomeCreated || isReprint) return;
 
     const monthsDesc = data.months.join(", ");
     const descParts = [`கடை எண்: ${data.shop_number || "-"}`, `வளாகம்: ${data.shop_premises || "-"}`, `மாதங்கள்: ${monthsDesc}`];

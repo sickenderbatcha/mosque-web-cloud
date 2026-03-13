@@ -11,11 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Home, IndianRupee } from "lucide-react";
+import { Plus, Pencil, Trash2, Home, IndianRupee, History } from "lucide-react";
 import TableFilter from "@/components/admin/TableFilter";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import RentCollectionDialog from "@/components/admin/RentCollectionDialog";
+import RentalPaymentHistoryDialog from "@/components/admin/RentalPaymentHistoryDialog";
 
 interface RentalAgreement {
   id: string;
@@ -70,6 +71,7 @@ const RentalAgreementsTab = () => {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [collectRentAgreement, setCollectRentAgreement] = useState<any>(null);
+  const [historyAgreement, setHistoryAgreement] = useState<any>(null);
 
   useEffect(() => {
     fetchAgreements();
@@ -370,6 +372,7 @@ const RentalAgreementsTab = () => {
                       <div className="flex gap-1">
                         <Button size="sm" variant="ghost" onClick={() => handleEdit(a)}><Pencil className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" title="வாடகை பெறு" onClick={() => setCollectRentAgreement(a)}><IndianRupee className="h-4 w-4 text-primary" /></Button>
+                        <Button size="sm" variant="ghost" title="வாடகை வரலாறு / மறு அச்சிடு" onClick={() => setHistoryAgreement(a)}><History className="h-4 w-4 text-primary" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </TableCell>
@@ -385,6 +388,11 @@ const RentalAgreementsTab = () => {
         agreement={collectRentAgreement}
         open={!!collectRentAgreement}
         onOpenChange={(open) => { if (!open) setCollectRentAgreement(null); }}
+      />
+      <RentalPaymentHistoryDialog
+        agreement={historyAgreement}
+        open={!!historyAgreement}
+        onOpenChange={(open) => { if (!open) setHistoryAgreement(null); }}
       />
     </Card>
   );
