@@ -340,16 +340,16 @@ const RentalAgreementsTab = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Father</TableHead>
-                  <TableHead>Shop #</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Rent Type</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Start</TableHead>
-                  <TableHead>End</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>வாடகை தாரர்</TableHead>
+                  <TableHead>தந்தை</TableHead>
+                  <TableHead>எண்</TableHead>
+                  <TableHead>வகை</TableHead>
+                  <TableHead>வாடகை முறை</TableHead>
+                  <TableHead>தொகை</TableHead>
+                  <TableHead>ஆரம்பம்</TableHead>
+                  <TableHead>முடிவு</TableHead>
+                  <TableHead>நிலை</TableHead>
+                  <TableHead>செயல்</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
