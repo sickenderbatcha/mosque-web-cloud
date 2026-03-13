@@ -92,6 +92,22 @@ const AboutPage = () => {
     };
 
     fetchCommitteeMembers();
+
+    const fetchMosquePhotos = async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["mosque1_photo_url", "mosque2_photo_url"]);
+      if (data) {
+        const photos = { mosque1: "", mosque2: "" };
+        data.forEach((item) => {
+          if (item.key === "mosque1_photo_url") photos.mosque1 = item.value;
+          if (item.key === "mosque2_photo_url") photos.mosque2 = item.value;
+        });
+        setMosquePhotos(photos);
+      }
+    };
+    fetchMosquePhotos();
   }, []);
 
   if (isLoading) {
