@@ -16,6 +16,7 @@ import TableFilter from "@/components/admin/TableFilter";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import RentCollectionDialog from "@/components/admin/RentCollectionDialog";
+import RentalPaymentHistoryDialog from "@/components/admin/RentalPaymentHistoryDialog";
 
 interface RentalAgreement {
   id: string;
