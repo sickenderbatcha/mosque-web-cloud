@@ -190,11 +190,23 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full bg-card shadow-medium">
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Building className="h-7 w-7 text-primary" />
+              <Card className="h-full bg-card shadow-medium overflow-hidden">
+                {mosquePhotos.mosque1 && (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img
+                      src={mosquePhotos.mosque1}
+                      alt="பள்ளிவாசல் 1"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
+                )}
+                <CardHeader>
+                  {!mosquePhotos.mosque1 && (
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                      <Building className="h-7 w-7 text-primary" />
+                    </div>
+                  )}
                   <CardTitle className="font-tamil text-xl">
                     {get("about_mosques", "mosque1_title", "தொழுகை மேடை பள்ளிவாசல்")}
                   </CardTitle>
