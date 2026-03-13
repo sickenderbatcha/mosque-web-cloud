@@ -171,6 +171,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
         totalAmount: editableAmount,
         receiptNumber: receiptNum,
         date: new Date().toLocaleDateString("ta-IN"),
+        agreementId: agreement.id,
+        createdBy: user?.id || null,
       });
     }
     setSaving(false);

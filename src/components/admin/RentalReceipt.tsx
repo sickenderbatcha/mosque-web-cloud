@@ -1,8 +1,10 @@
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Eye, X } from "lucide-react";
+import { Printer, Download, X } from "lucide-react";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
+import { toast } from "sonner";
 
 interface RentalReceiptData {
   tenant_name: string;
@@ -14,6 +16,8 @@ interface RentalReceiptData {
   totalAmount: number;
   receiptNumber: string;
   date: string;
+  agreementId: string;
+  createdBy: string | null;
 }
 
 interface RentalReceiptProps {
@@ -24,8 +28,35 @@ interface RentalReceiptProps {
 const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings } = useReceiptHeaderSettings();
+  const [incomeCreated, setIncomeCreated] = useState(false);
 
-  const handlePrint = () => {
+  const createIncomeEntry = async () => {
+    if (incomeCreated) return;
+
+    const monthsDesc = data.months.join(", ");
+    const { error } = await supabase.from("income").insert({
+      amount: data.totalAmount,
+      category: "வாடகை வருமானம் (Rental Income)",
+      source: data.tenant_name,
+      description: `கடை எண்: ${data.shop_number || "-"} | வளாகம்: ${data.shop_premises || "-"} | மாதங்கள்: ${monthsDesc}`,
+      income_date: new Date().toISOString().split("T")[0],
+      payment_method: "Cash",
+      receipt_number: data.receiptNumber,
+      reference_type: "rental",
+      created_by: data.createdBy,
+    }) as any;
+
+    if (error) {
+      console.error("Failed to create income entry:", error);
+      toast.error("வருமான பதிவு உருவாக்க முடியவில்லை");
+    } else {
+      setIncomeCreated(true);
+    }
+  };
+
+  const handlePrint = async () => {
+    await createIncomeEntry();
+
     const printContent = receiptRef.current;
     if (!printContent) return;
     const printWindow = window.open("", "_blank");
@@ -61,7 +92,9 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
     printWindow.document.close();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    await createIncomeEntry();
+
     const printContent = receiptRef.current;
     if (!printContent) return;
 
@@ -113,7 +146,6 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
 
       <div ref={receiptRef}>
         <div className="receipt" style={{ maxWidth: 400, margin: "0 auto", border: "2px solid", padding: 20 }}>
-          {/* Header */}
           <div className="header" style={{ textAlign: "center", borderBottom: "2px solid", paddingBottom: 10, marginBottom: 15 }}>
             <h2 style={{ margin: 0, fontSize: 16 }}>{settings.organizationNameTa}</h2>
             <p style={{ margin: "2px 0", fontSize: 11 }}>{settings.organizationNameEn}</p>
