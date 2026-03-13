@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general";
+export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general" | "rental";
 
 export interface ReceiptNumberSettings {
   booking_prefix: string;
