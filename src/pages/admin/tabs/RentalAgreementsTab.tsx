@@ -380,6 +380,12 @@ const RentalAgreementsTab = () => {
           </div>
         )}
       </CardContent>
+
+      <RentCollectionDialog
+        agreement={collectRentAgreement}
+        open={!!collectRentAgreement}
+        onOpenChange={(open) => { if (!open) setCollectRentAgreement(null); }}
+      />
     </Card>
   );
 };
