@@ -389,6 +389,11 @@ const RentalAgreementsTab = () => {
         open={!!collectRentAgreement}
         onOpenChange={(open) => { if (!open) setCollectRentAgreement(null); }}
       />
+      <RentalPaymentHistoryDialog
+        agreement={historyAgreement}
+        open={!!historyAgreement}
+        onOpenChange={(open) => { if (!open) setHistoryAgreement(null); }}
+      />
     </Card>
   );
 };
