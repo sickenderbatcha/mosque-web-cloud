@@ -209,7 +209,7 @@ const RentalAgreementsTab = () => {
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <CardTitle className="flex items-center gap-2">
           <Home className="h-5 w-5" />
-          வாடகை ஒப்பந்த விவரம் (Rental Agreement)
+          வாடகை ஒப்பந்தம் மேலாண்மை (Rental Agreement)
         </CardTitle>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
