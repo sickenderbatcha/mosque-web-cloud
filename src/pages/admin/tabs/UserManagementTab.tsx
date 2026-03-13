@@ -16,13 +16,12 @@ import {
   ShieldOff,
   Users,
   UserCheck,
-  ChevronLeft,
-  ChevronRight,
   AlertTriangle,
   Unlink,
   Copy,
   Check,
 } from "lucide-react";
+import TablePagination from "@/components/admin/TablePagination";
 import {
   Dialog,
   DialogContent,
