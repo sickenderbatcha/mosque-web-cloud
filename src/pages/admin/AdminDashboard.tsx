@@ -296,6 +296,10 @@ const AdminDashboard = () => {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Committee</span>
             </TabsTrigger>
+            <TabsTrigger value="rental-agreements" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Rental</span>
+            </TabsTrigger>
             <TabsTrigger value="asset-management" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Assets</span>
