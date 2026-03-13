@@ -22,6 +22,7 @@ const AboutPage = () => {
   const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
   const [loadingCommittee, setLoadingCommittee] = useState(true);
+  const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
