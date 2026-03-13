@@ -185,7 +185,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
       amount: editableAmount / selectedCount,
       receipt_number: receiptNum,
       payment_date: new Date().toISOString().split("T")[0],
-      payment_method: "Cash",
+      payment_method: paymentMethod,
+      remarks: remarks || null,
       created_by: user?.id || null,
     }));
 
@@ -208,6 +209,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
         date: new Date().toLocaleDateString("ta-IN"),
         agreementId: agreement.id,
         createdBy: user?.id || null,
+        paymentMethod,
+        remarks,
       });
     }
     setSaving(false);
