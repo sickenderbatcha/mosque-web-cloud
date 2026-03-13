@@ -18,6 +18,8 @@ interface RentalReceiptData {
   date: string;
   agreementId: string;
   createdBy: string | null;
+  paymentMethod: string;
+  remarks: string;
 }
 
 interface RentalReceiptProps {
