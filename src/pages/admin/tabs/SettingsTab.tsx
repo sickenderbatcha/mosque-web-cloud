@@ -151,11 +151,17 @@ const SettingsTab = () => {
   const addIncomeCategory = () => {
     const trimmed = newCategoryInput.trim();
     if (!trimmed) return;
-    if (incomeCategories.includes(trimmed)) {
+
+    const isDuplicate = incomeCategories.some(
+      (category) => category.trim().toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (isDuplicate) {
       toast({ title: "Duplicate", description: "This category already exists.", variant: "destructive" });
       return;
     }
-    setIncomeCategories([...incomeCategories, trimmed]);
+
+    setIncomeCategories((prev) => [...prev, trimmed]);
     setNewCategoryInput("");
   };
 
@@ -165,8 +171,28 @@ const SettingsTab = () => {
 
   const saveIncomeCategories = async () => {
     setSavingCategories(true);
+
+    const pendingCategory = newCategoryInput.trim();
+    const hasPendingCategory = pendingCategory.length > 0;
+    const isPendingDuplicate =
+      hasPendingCategory &&
+      incomeCategories.some(
+        (category) => category.trim().toLowerCase() === pendingCategory.toLowerCase()
+      );
+
+    const categoriesToSave =
+      hasPendingCategory && !isPendingDuplicate
+        ? [...incomeCategories, pendingCategory]
+        : incomeCategories;
+
     try {
-      await upsertAppSetting("income_categories", JSON.stringify(incomeCategories), "Configurable income categories for income management");
+      await upsertAppSetting(
+        "income_categories",
+        JSON.stringify(categoriesToSave),
+        "Configurable income categories for income management"
+      );
+      setIncomeCategories(categoriesToSave);
+      setNewCategoryInput("");
       toast({ title: "Categories Saved", description: "Income categories updated successfully." });
       setIncomeCategoriesDialogOpen(false);
     } catch (error: any) {
