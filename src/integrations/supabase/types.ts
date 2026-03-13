@@ -2070,6 +2070,53 @@ export type Database = {
         }
         Relationships: []
       }
+      rental_payments: {
+        Row: {
+          agreement_id: string
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          payment_date: string
+          payment_method: string | null
+          payment_month: number
+          payment_year: number
+          receipt_number: string | null
+        }
+        Insert: {
+          agreement_id: string
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payment_date?: string
+          payment_method?: string | null
+          payment_month: number
+          payment_year: number
+          receipt_number?: string | null
+        }
+        Update: {
+          agreement_id?: string
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payment_date?: string
+          payment_method?: string | null
+          payment_month?: number
+          payment_year?: number
+          receipt_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_payments_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "rental_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_slots: {
         Row: {
           amount: number | null
