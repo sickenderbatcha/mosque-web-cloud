@@ -64,37 +64,57 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
 
     const printContent = receiptRef.current;
     if (!printContent) return;
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
 
-    printWindow.document.write(`
+    const printStyles = `
+      body { font-family: 'Noto Sans Tamil', Arial, sans-serif; margin: 20px; color: #000; }
+      .receipt { max-width: 400px; margin: 0 auto; border: 2px solid #000; padding: 20px; }
+      .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+      .header h2 { margin: 0; font-size: 16px; }
+      .header p { margin: 2px 0; font-size: 11px; }
+      .title { text-align: center; font-weight: bold; font-size: 16px; margin: 10px 0; text-decoration: underline; }
+      .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+      .row .label { font-weight: bold; }
+      .months { margin: 8px 0; padding: 8px; border: 1px solid #ccc; }
+      .months-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+      .month-item { font-size: 12px; padding: 2px 0; }
+      .total { border-top: 2px solid #000; margin-top: 10px; padding-top: 8px; font-size: 16px; font-weight: bold; text-align: right; }
+      .footer { text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 8px; }
+      @media print { body { margin: 0; } }
+    `;
+
+    // Try iframe-based printing (works better on mobile)
+    let iframe = document.getElementById("print-iframe") as HTMLIFrameElement | null;
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "print-iframe";
+      iframe.style.position = "fixed";
+      iframe.style.top = "-10000px";
+      iframe.style.left = "-10000px";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
       <html>
         <head>
           <title>வாடகை இரசீது - ${data.receiptNumber}</title>
-          <style>
-            body { font-family: 'Noto Sans Tamil', Arial, sans-serif; margin: 20px; color: #000; }
-            .receipt { max-width: 400px; margin: 0 auto; border: 2px solid #000; padding: 20px; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-            .header h2 { margin: 0; font-size: 16px; }
-            .header p { margin: 2px 0; font-size: 11px; }
-            .title { text-align: center; font-weight: bold; font-size: 16px; margin: 10px 0; text-decoration: underline; }
-            .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
-            .row .label { font-weight: bold; }
-            .months { margin: 8px 0; padding: 8px; border: 1px solid #ccc; }
-            .months-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-            .month-item { font-size: 12px; padding: 2px 0; }
-            .total { border-top: 2px solid #000; margin-top: 10px; padding-top: 8px; font-size: 16px; font-weight: bold; text-align: right; }
-            .footer { text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 8px; }
-            @media print { body { margin: 0; } }
-          </style>
+          <style>${printStyles}</style>
         </head>
-        <body>
-          ${printContent.innerHTML}
-          <script>window.onload = function() { window.print(); window.close(); }</script>
-        </body>
+        <body>${printContent.innerHTML}</body>
       </html>
     `);
-    printWindow.document.close();
+    doc.close();
+
+    // Wait for content to render then print
+    setTimeout(() => {
+      iframe!.contentWindow?.focus();
+      iframe!.contentWindow?.print();
+    }, 300);
   };
 
   const handleDownload = async () => {
