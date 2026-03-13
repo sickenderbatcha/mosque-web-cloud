@@ -47,12 +47,12 @@ const emptyForm = {
   shop_address: "",
   category: "shop",
   rent_type: "monthly",
-  rent_amount: 0,
-  advance_amount: 0,
+  rent_amount: "" as any,
+  advance_amount: "" as any,
   agreement_start_date: "",
   agreement_end_date: "",
   rent_increase_period: "",
-  increase_percentage: 0,
+  increase_percentage: "" as any,
   agreement_status: "active",
   status_change_date: "",
   rent_calculate_from: "",
@@ -248,9 +248,9 @@ const RentalAgreementsTab = () => {
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="shop">Shop</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="tharai">Tharai</SelectItem>
+                    <SelectItem value="shop">கடை</SelectItem>
+                    <SelectItem value="house">வீடு</SelectItem>
+                    <SelectItem value="tharai">தரை</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -259,8 +259,8 @@ const RentalAgreementsTab = () => {
                 <Select value={form.rent_type} onValueChange={(v) => setForm({ ...form, rent_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="lease">Lease</SelectItem>
+                    <SelectItem value="monthly">மாதம்</SelectItem>
+                    <SelectItem value="lease">லீஸ்</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -322,9 +322,9 @@ const RentalAgreementsTab = () => {
           onSearchChange={setSearchValue}
           searchPlaceholder="Search tenant name, father name, shop number..."
           filters={[
-            { label: "Category", value: "category", options: [{ label: "Shop", value: "shop" }, { label: "House", value: "house" }, { label: "Tharai", value: "tharai" }] },
+            { label: "Category", value: "category", options: [{ label: "கடை", value: "shop" }, { label: "வீடு", value: "house" }, { label: "தரை", value: "tharai" }] },
             { label: "Status", value: "status", options: [{ label: "Active", value: "active" }, { label: "Expired", value: "expired" }, { label: "Terminated", value: "terminated" }, { label: "Renewed", value: "renewed" }] },
-            { label: "Rent Type", value: "rent_type", options: [{ label: "Monthly", value: "monthly" }, { label: "Lease", value: "lease" }] },
+            { label: "Rent Type", value: "rent_type", options: [{ label: "மாதம்", value: "monthly" }, { label: "லீஸ்", value: "lease" }] },
           ]}
           filterValues={filterValues}
           onFilterChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
