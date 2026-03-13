@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Users, UserCheck, UserX, Download, KeyRound, Loader2, Upload, FileDown, ImagePlus, User, X, ChevronLeft, ChevronRight, Trash2, Copy, Check } from "lucide-react";
+import { Plus, Edit, Users, UserCheck, UserX, Download, KeyRound, Loader2, Upload, FileDown, ImagePlus, User, X, Trash2, Copy, Check } from "lucide-react";
+import TablePagination from "@/components/admin/TablePagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import MemberFamilySection from "@/components/admin/MemberFamilySection";
 import { Progress } from "@/components/ui/progress";
