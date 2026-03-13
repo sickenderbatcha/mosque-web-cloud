@@ -69,6 +69,7 @@ const RentalAgreementsTab = () => {
   const [saving, setSaving] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [collectRentAgreement, setCollectRentAgreement] = useState<any>(null);
 
   useEffect(() => {
     fetchAgreements();
