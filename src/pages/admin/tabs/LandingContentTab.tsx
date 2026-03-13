@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Save, RotateCcw, Edit2, Check, X, Globe, Type } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MosquePhotoUpload from "@/components/admin/MosquePhotoUpload";
 
 
 interface ContentItem {
@@ -314,6 +315,12 @@ const LandingContentTab = () => {
                   {SECTION_LABELS[section]}
                 </h3>
               </div>
+              {section === "about_mosques" && (
+                <div className="grid gap-4 md:grid-cols-2 mb-6">
+                  <MosquePhotoUpload mosqueKey="mosque1" label="பள்ளிவாசல் 1 (Mosque 1)" />
+                  <MosquePhotoUpload mosqueKey="mosque2" label="பள்ளிவாசல் 2 (Mosque 2)" />
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 {getSectionContent(section).map(renderContentItem)}
               </div>

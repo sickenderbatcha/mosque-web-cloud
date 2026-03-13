@@ -22,6 +22,7 @@ const AboutPage = () => {
   const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
   const [loadingCommittee, setLoadingCommittee] = useState(true);
+  const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
@@ -91,6 +92,22 @@ const AboutPage = () => {
     };
 
     fetchCommitteeMembers();
+
+    const fetchMosquePhotos = async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["mosque1_photo_url", "mosque2_photo_url"]);
+      if (data) {
+        const photos = { mosque1: "", mosque2: "" };
+        data.forEach((item) => {
+          if (item.key === "mosque1_photo_url") photos.mosque1 = item.value;
+          if (item.key === "mosque2_photo_url") photos.mosque2 = item.value;
+        });
+        setMosquePhotos(photos);
+      }
+    };
+    fetchMosquePhotos();
   }, []);
 
   if (isLoading) {
@@ -173,11 +190,23 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full bg-card shadow-medium">
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Building className="h-7 w-7 text-primary" />
+              <Card className="h-full bg-card shadow-medium overflow-hidden">
+                {mosquePhotos.mosque1 && (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img
+                      src={mosquePhotos.mosque1}
+                      alt="பள்ளிவாசல் 1"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
+                )}
+                <CardHeader>
+                  {!mosquePhotos.mosque1 && (
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                      <Building className="h-7 w-7 text-primary" />
+                    </div>
+                  )}
                   <CardTitle className="font-tamil text-xl">
                     {get("about_mosques", "mosque1_title", "தொழுகை மேடை பள்ளிவாசல்")}
                   </CardTitle>
@@ -195,11 +224,23 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full bg-card shadow-medium">
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-xl bg-secondary/20 flex items-center justify-center mb-4">
-                    <Building className="h-7 w-7 text-secondary" />
+              <Card className="h-full bg-card shadow-medium overflow-hidden">
+                {mosquePhotos.mosque2 && (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img
+                      src={mosquePhotos.mosque2}
+                      alt="பள்ளிவாசல் 2"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
+                )}
+                <CardHeader>
+                  {!mosquePhotos.mosque2 && (
+                    <div className="w-14 h-14 rounded-xl bg-secondary/20 flex items-center justify-center mb-4">
+                      <Building className="h-7 w-7 text-secondary" />
+                    </div>
+                  )}
                   <CardTitle className="font-tamil text-xl">
                     {get("about_mosques", "mosque2_title", "ஜுமுஆ பள்ளிவாசல்")}
                   </CardTitle>
