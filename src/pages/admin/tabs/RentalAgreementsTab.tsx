@@ -11,10 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Home } from "lucide-react";
+import { Plus, Pencil, Trash2, Home, IndianRupee } from "lucide-react";
 import TableFilter from "@/components/admin/TableFilter";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
+import RentCollectionDialog from "@/components/admin/RentCollectionDialog";
 
 interface RentalAgreement {
   id: string;
