@@ -248,9 +248,9 @@ const RentalAgreementsTab = () => {
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="shop">Shop</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="tharai">Tharai</SelectItem>
+                    <SelectItem value="shop">கடை</SelectItem>
+                    <SelectItem value="house">வீடு</SelectItem>
+                    <SelectItem value="tharai">தரை</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
