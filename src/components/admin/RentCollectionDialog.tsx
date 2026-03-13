@@ -50,6 +50,7 @@ const parseRentCalculateFrom = (val: string | null): { month: number; year: numb
 
 const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionDialogProps) => {
   const { user } = useAuth();
+  const { getReceiptNumber } = useReceiptNumberSettings();
   const [pendingMonths, setPendingMonths] = useState<PendingMonth[]>([]);
   const [editableAmount, setEditableAmount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
