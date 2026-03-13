@@ -28,7 +28,7 @@ interface RentalReceiptProps {
   isReprint?: boolean;
 }
 
-const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
+const RentalReceipt = ({ data, onClose, isReprint = false }: RentalReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   const { settings } = useReceiptHeaderSettings();
   const [incomeCreated, setIncomeCreated] = useState(false);
