@@ -56,6 +56,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [remarks, setRemarks] = useState("");
 
   const fetchPaidMonths = useCallback(async () => {
     if (!agreement) return;
