@@ -21,6 +21,7 @@ const RECEIPT_TYPE_LABELS: { key: keyof ReceiptNumberSettingsType; label: string
   { key: "certificate_noc_prefix", label: "NOC சான்றிதழ் ரசீது (NOC Certificate Receipt)", example: "NOC-" },
   { key: "certificate_heir_prefix", label: "வாரிசு சான்றிதழ் ரசீது (Heir Certificate Receipt)", example: "HEIR-" },
   { key: "certificate_general_prefix", label: "பொது சான்றிதழ் ரசீது (General Certificate Receipt)", example: "CERT-" },
+  { key: "rental_prefix", label: "வாடகை ரசீது (Rental Receipt)", example: "RENT-" },
 ];
 
 const ReceiptNumberSettings = () => {
