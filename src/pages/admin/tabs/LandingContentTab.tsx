@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Save, RotateCcw, Edit2, Check, X, Globe, Type } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MosquePhotoUpload from "@/components/admin/MosquePhotoUpload";
 
 
 interface ContentItem {
