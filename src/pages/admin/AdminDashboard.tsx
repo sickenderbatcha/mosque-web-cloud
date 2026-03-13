@@ -423,6 +423,10 @@ const AdminDashboard = () => {
             <CommitteeTab />
           </TabsContent>
 
+          <TabsContent value="rental-agreements">
+            <RentalAgreementsTab />
+          </TabsContent>
+
           <TabsContent value="asset-management">
             <AssetManagementTab />
           </TabsContent>
