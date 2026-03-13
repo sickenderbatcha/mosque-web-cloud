@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet } from "lucide-react";
+import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet, Home } from "lucide-react";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,7 @@ import BackupRestoreTab from "./tabs/BackupRestoreTab";
 import AssetManagementTab from "./tabs/AssetManagementTab";
 import OnlinePaymentsTab from "./tabs/OnlinePaymentsTab";
 import CommitteeTab from "./tabs/CommitteeTab";
+import RentalAgreementsTab from "./tabs/RentalAgreementsTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("donations");
@@ -295,6 +296,10 @@ const AdminDashboard = () => {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Committee</span>
             </TabsTrigger>
+            <TabsTrigger value="rental-agreements" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Rental</span>
+            </TabsTrigger>
             <TabsTrigger value="asset-management" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Assets</span>
@@ -416,6 +421,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="committee">
             <CommitteeTab />
+          </TabsContent>
+
+          <TabsContent value="rental-agreements">
+            <RentalAgreementsTab />
           </TabsContent>
 
           <TabsContent value="asset-management">

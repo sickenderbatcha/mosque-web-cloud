@@ -1998,6 +1998,78 @@ export type Database = {
           },
         ]
       }
+      rental_agreements: {
+        Row: {
+          address: string
+          advance_amount: number | null
+          agreement_end_date: string | null
+          agreement_start_date: string
+          agreement_status: string
+          category: string
+          created_at: string
+          created_by: string | null
+          father_name: string
+          id: string
+          increase_percentage: number | null
+          rent_amount: number
+          rent_calculate_from: string | null
+          rent_increase_period: string | null
+          rent_type: string
+          shop_address: string | null
+          shop_number: string | null
+          shop_premises: string | null
+          status_change_date: string | null
+          tenant_name: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          advance_amount?: number | null
+          agreement_end_date?: string | null
+          agreement_start_date: string
+          agreement_status?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          father_name: string
+          id?: string
+          increase_percentage?: number | null
+          rent_amount?: number
+          rent_calculate_from?: string | null
+          rent_increase_period?: string | null
+          rent_type?: string
+          shop_address?: string | null
+          shop_number?: string | null
+          shop_premises?: string | null
+          status_change_date?: string | null
+          tenant_name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          advance_amount?: number | null
+          agreement_end_date?: string | null
+          agreement_start_date?: string
+          agreement_status?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          father_name?: string
+          id?: string
+          increase_percentage?: number | null
+          rent_amount?: number
+          rent_calculate_from?: string | null
+          rent_increase_period?: string | null
+          rent_type?: string
+          shop_address?: string | null
+          shop_number?: string | null
+          shop_premises?: string | null
+          status_change_date?: string | null
+          tenant_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_slots: {
         Row: {
           amount: number | null
