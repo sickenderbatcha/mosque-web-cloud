@@ -138,12 +138,43 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
     });
   };
 
+  const getNextSequentialNumber = async (): Promise<string> => {
+    const currentYear = new Date().getFullYear();
+    
+    // Try to get and increment the sequence atomically
+    const { data: existing } = await supabase
+      .from("receipt_sequences")
+      .select("last_number")
+      .eq("receipt_type", "rental")
+      .eq("year", currentYear)
+      .single() as any;
+
+    let nextNumber: number;
+    
+    if (existing) {
+      nextNumber = (existing.last_number || 0) + 1;
+      await supabase
+        .from("receipt_sequences")
+        .update({ last_number: nextNumber, updated_at: new Date().toISOString() })
+        .eq("receipt_type", "rental")
+        .eq("year", currentYear) as any;
+    } else {
+      nextNumber = 1;
+      await supabase
+        .from("receipt_sequences")
+        .insert({ receipt_type: "rental", year: currentYear, last_number: 1 }) as any;
+    }
+
+    const serialStr = String(nextNumber).padStart(4, "0");
+    return getReceiptNumber("rental", `${currentYear}/${serialStr}`);
+  };
+
   const handleCollectRent = async () => {
     if (!agreement || selectedCount === 0) return;
     setSaving(true);
 
     const selectedMonths = pendingMonths.filter(p => p.selected);
-    const receiptNum = `RENT-${Date.now()}`;
+    const receiptNum = await getNextSequentialNumber();
 
     const payments = selectedMonths.map(m => ({
       agreement_id: agreement.id,
