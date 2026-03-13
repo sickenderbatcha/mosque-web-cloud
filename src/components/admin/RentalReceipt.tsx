@@ -18,6 +18,8 @@ interface RentalReceiptData {
   date: string;
   agreementId: string;
   createdBy: string | null;
+  paymentMethod: string;
+  remarks: string;
 }
 
 interface RentalReceiptProps {
@@ -34,13 +36,16 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
     if (incomeCreated) return;
 
     const monthsDesc = data.months.join(", ");
+    const descParts = [`கடை எண்: ${data.shop_number || "-"}`, `வளாகம்: ${data.shop_premises || "-"}`, `மாதங்கள்: ${monthsDesc}`];
+    if (data.remarks) descParts.push(`குறிப்பு: ${data.remarks}`);
+    
     const { error } = await supabase.from("income").insert({
       amount: data.totalAmount,
       category: "வாடகை வருமானம் (Rental Income)",
       source: data.tenant_name,
-      description: `கடை எண்: ${data.shop_number || "-"} | வளாகம்: ${data.shop_premises || "-"} | மாதங்கள்: ${monthsDesc}`,
+      description: descParts.join(" | "),
       income_date: new Date().toISOString().split("T")[0],
-      payment_method: "Cash",
+      payment_method: data.paymentMethod,
       receipt_number: data.receiptNumber,
       reference_type: "rental",
       created_by: data.createdBy,
@@ -206,6 +211,19 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
 
           <div style={{ borderTop: "2px solid", marginTop: 10, paddingTop: 8, fontSize: 16, fontWeight: "bold", textAlign: "right" }}>
             மொத்தம்: ₹{data.totalAmount.toLocaleString()}
+          </div>
+
+          <div style={{ fontSize: 13, marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+              <span style={{ fontWeight: "bold" }}>செலுத்தும் முறை:</span>
+              <span>{data.paymentMethod === "Cash" ? "ரொக்கம் (Cash)" : data.paymentMethod === "Cheque" ? "காசோலை (Cheque)" : data.paymentMethod === "UPI" ? "UPI" : "வங்கி பரிமாற்றம் (Bank Transfer)"}</span>
+            </div>
+            {data.remarks && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+                <span style={{ fontWeight: "bold" }}>குறிப்பு:</span>
+                <span>{data.remarks}</span>
+              </div>
+            )}
           </div>
 
           <div style={{ textAlign: "center", marginTop: 15, fontSize: 10, borderTop: "1px solid #ccc", paddingTop: 8 }}>

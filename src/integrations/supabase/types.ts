@@ -2082,6 +2082,7 @@ export type Database = {
           payment_month: number
           payment_year: number
           receipt_number: string | null
+          remarks: string | null
         }
         Insert: {
           agreement_id: string
@@ -2094,6 +2095,7 @@ export type Database = {
           payment_month: number
           payment_year: number
           receipt_number?: string | null
+          remarks?: string | null
         }
         Update: {
           agreement_id?: string
@@ -2106,6 +2108,7 @@ export type Database = {
           payment_month?: number
           payment_year?: number
           receipt_number?: string | null
+          remarks?: string | null
         }
         Relationships: [
           {

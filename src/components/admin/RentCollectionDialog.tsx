@@ -56,6 +56,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [remarks, setRemarks] = useState("");
 
   const fetchPaidMonths = useCallback(async () => {
     if (!agreement) return;
@@ -183,7 +185,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
       amount: editableAmount / selectedCount,
       receipt_number: receiptNum,
       payment_date: new Date().toISOString().split("T")[0],
-      payment_method: "Cash",
+      payment_method: paymentMethod,
+      remarks: remarks || null,
       created_by: user?.id || null,
     }));
 
@@ -206,6 +209,8 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
         date: new Date().toLocaleDateString("ta-IN"),
         agreementId: agreement.id,
         createdBy: user?.id || null,
+        paymentMethod,
+        remarks,
       });
     }
     setSaving(false);
@@ -302,6 +307,29 @@ const RentCollectionDialog = ({ agreement, open, onOpenChange }: RentCollectionD
                     </div>
                   </div>
                 )}
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">செலுத்தும் முறை (Payment Method)</Label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="Cash">ரொக்கம் (Cash)</option>
+                    <option value="Cheque">காசோலை (Cheque)</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Bank Transfer">வங்கி பரிமாற்றம் (Bank Transfer)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">குறிப்புகள் (Remarks)</Label>
+                  <Input
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    placeholder="காசோலை எண் / குறிப்பு எண் (Cheque No. / Reference)"
+                  />
+                </div>
 
                 <Button
                   onClick={handleCollectRent}
