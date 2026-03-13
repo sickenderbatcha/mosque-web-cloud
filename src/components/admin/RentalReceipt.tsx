@@ -36,13 +36,16 @@ const RentalReceipt = ({ data, onClose }: RentalReceiptProps) => {
     if (incomeCreated) return;
 
     const monthsDesc = data.months.join(", ");
+    const descParts = [`கடை எண்: ${data.shop_number || "-"}`, `வளாகம்: ${data.shop_premises || "-"}`, `மாதங்கள்: ${monthsDesc}`];
+    if (data.remarks) descParts.push(`குறிப்பு: ${data.remarks}`);
+    
     const { error } = await supabase.from("income").insert({
       amount: data.totalAmount,
       category: "வாடகை வருமானம் (Rental Income)",
       source: data.tenant_name,
-      description: `கடை எண்: ${data.shop_number || "-"} | வளாகம்: ${data.shop_premises || "-"} | மாதங்கள்: ${monthsDesc}`,
+      description: descParts.join(" | "),
       income_date: new Date().toISOString().split("T")[0],
-      payment_method: "Cash",
+      payment_method: data.paymentMethod,
       receipt_number: data.receiptNumber,
       reference_type: "rental",
       created_by: data.createdBy,
