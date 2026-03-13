@@ -10,6 +10,7 @@ export interface ReceiptNumberSettings {
   certificate_noc_prefix: string;
   certificate_heir_prefix: string;
   certificate_general_prefix: string;
+  rental_prefix: string;
 }
 
 // Default prefixes
