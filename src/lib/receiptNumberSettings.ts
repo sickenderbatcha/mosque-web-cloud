@@ -34,6 +34,7 @@ const SETTING_KEYS: Record<keyof ReceiptNumberSettings, string> = {
   certificate_noc_prefix: "receipt_num_prefix_cert_noc",
   certificate_heir_prefix: "receipt_num_prefix_cert_heir",
   certificate_general_prefix: "receipt_num_prefix_cert_general",
+  rental_prefix: "receipt_num_prefix_rental",
 };
 
 // No-op for backward compatibility
