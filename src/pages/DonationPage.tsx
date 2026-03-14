@@ -840,7 +840,7 @@ const SubscriptionForm = () => {
                     className="pl-10"
                     value={membershipNumber}
                     onChange={(e) => {
-                      setMembershipNumber(e.target.value);
+                      setMembershipNumber(e.target.value.toUpperCase());
                       setMemberFound(false);
                       setMemberName("");
                       setMemberPhone("");
@@ -1702,7 +1702,7 @@ const DonationPage = () => {
                                 placeholder="Enter membership number"
                                 value={donationMembershipNumber}
                                 onChange={(e) => {
-                                  setDonationMembershipNumber(e.target.value);
+                                  setDonationMembershipNumber(e.target.value.toUpperCase());
                                   if (donationMemberFound) setDonationMemberFound(false);
                                 }}
                                 onKeyDown={(e) => {

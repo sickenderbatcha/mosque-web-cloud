@@ -246,7 +246,7 @@ const MembersDirectoryPage = () => {
                 type="text"
                 placeholder="Search by name, ID, phone, occupation, or address..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                 className="pl-10"
               />
             </div>

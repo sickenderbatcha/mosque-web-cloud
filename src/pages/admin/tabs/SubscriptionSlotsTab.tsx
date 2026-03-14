@@ -479,7 +479,7 @@ const SubscriptionSlotsTab = () => {
                   <Input
                     placeholder="Search by ID, name, or phone..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
                     className="pl-9 pr-9"
                   />
                   {searchQuery && (
