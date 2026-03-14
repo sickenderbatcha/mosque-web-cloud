@@ -189,18 +189,20 @@ const SuperAdminSettingsTab = () => {
     try {
       const { data, error } = await supabase
         .from("app_settings")
-        .select("value")
-        .eq("key", "footer_credit_text")
-        .maybeSingle();
+        .select("key, value")
+        .in("key", ["footer_credit_text", "footer_credit_thumbnail"]);
       if (error) {
-        console.error("Error fetching footer credit text:", error);
+        console.error("Error fetching footer credit settings:", error);
         return;
       }
       if (data) {
-        setFooterCreditText(data.value);
+        data.forEach((item) => {
+          if (item.key === "footer_credit_text") setFooterCreditText(item.value);
+          if (item.key === "footer_credit_thumbnail") setFooterCreditThumbnail(item.value);
+        });
       }
     } catch (error) {
-      console.error("Error fetching footer credit text:", error);
+      console.error("Error fetching footer credit settings:", error);
     }
   };
 
@@ -221,6 +223,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingFooterCredit(false);
+    }
+  };
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 2MB allowed.", variant: "destructive" });
+      return;
+    }
+    setUploadingThumbnail(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `footer-credit-thumbnail.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("certificate-assets")
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("certificate-assets").getPublicUrl(fileName);
+      const url = urlData.publicUrl + "?t=" + Date.now();
+      await upsertAppSetting("footer_credit_thumbnail", url, "Thumbnail photo next to footer credit text");
+      setFooterCreditThumbnail(url);
+      toast({ title: "Thumbnail Uploaded", description: "Footer credit thumbnail saved." });
+    } catch (error: any) {
+      toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const removeThumbnail = async () => {
+    try {
+      await upsertAppSetting("footer_credit_thumbnail", "", "Thumbnail photo next to footer credit text");
+      setFooterCreditThumbnail("");
+      toast({ title: "Thumbnail Removed" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
