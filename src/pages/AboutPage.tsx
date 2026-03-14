@@ -346,8 +346,8 @@ const AboutPage = () => {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card className="bg-card shadow-soft hover:shadow-medium transition-shadow h-full">
-                      <CardContent className="p-5 flex flex-col h-full">
+                    <Card className="bg-card shadow-soft hover:shadow-medium transition-shadow h-full overflow-hidden">
+                      <CardContent className="p-4 sm:p-5 flex flex-col h-full overflow-hidden">
                         {isImage ? (
                           <a
                             href={doc.file_url}
