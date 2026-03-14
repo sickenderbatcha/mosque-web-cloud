@@ -23,6 +23,7 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import OTPVerificationDialog from "@/components/OTPVerificationDialog";
+import MahalPhotoGallery from "@/components/MahalPhotoGallery";
 
 declare global {
   interface Window {
