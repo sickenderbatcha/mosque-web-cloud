@@ -2620,6 +2620,33 @@ const UserDashboard = () => {
                       initialFocus
                       className="pointer-events-auto"
                     />
+                    <div className="flex items-center justify-end gap-2 border-t border-border p-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Reset to original booking date
+                          if (editingBooking) {
+                            setEditBookingData(prev => ({ ...prev, event_date: new Date(editingBooking.event_date) }));
+                          }
+                        }}
+                      >
+                        ரத்து
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          // Close popover by blurring
+                          (document.activeElement as HTMLElement)?.blur();
+                          const popoverTrigger = document.querySelector('[data-state="open"]') as HTMLElement;
+                          popoverTrigger?.click();
+                        }}
+                      >
+                        சரி
+                      </Button>
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
