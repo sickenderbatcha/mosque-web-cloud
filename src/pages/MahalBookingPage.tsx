@@ -23,6 +23,7 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import OTPVerificationDialog from "@/components/OTPVerificationDialog";
+import MahalPhotoGallery from "@/components/MahalPhotoGallery";
 
 declare global {
   interface Window {
@@ -1468,6 +1469,9 @@ const MahalBookingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Mahal Photo Gallery */}
+      <MahalPhotoGallery />
 
       {/* Features Section */}
       <section className="py-12 bg-muted relative z-20">

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X } from "lucide-react";
+import MahalPhotoManager from "@/components/admin/MahalPhotoManager";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import { Slider } from "@/components/ui/slider";
@@ -1137,6 +1138,22 @@ const SettingsTab = () => {
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Mahal Photos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5" />
+            Mahal Photos (மண்டப புகைப்படங்கள்)
+          </CardTitle>
+          <CardDescription>
+            Upload and manage photos displayed on the Mahal booking page
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MahalPhotoManager />
         </CardContent>
       </Card>
 
