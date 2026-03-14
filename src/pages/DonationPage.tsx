@@ -840,7 +840,7 @@ const SubscriptionForm = () => {
                     className="pl-10"
                     value={membershipNumber}
                     onChange={(e) => {
-                      setMembershipNumber(e.target.value);
+                      setMembershipNumber(e.target.value.toUpperCase());
                       setMemberFound(false);
                       setMemberName("");
                       setMemberPhone("");
