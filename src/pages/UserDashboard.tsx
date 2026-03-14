@@ -171,6 +171,7 @@ const UserDashboard = () => {
   });
   const [savingBookingEdit, setSavingBookingEdit] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [bookedDatesForEdit, setBookedDatesForEdit] = useState<string[]>([]);
   
   // Refund request state
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
@@ -607,7 +608,7 @@ const UserDashboard = () => {
     }
   };
 
-  const openEditBookingDialog = (booking: Booking) => {
+  const openEditBookingDialog = async (booking: Booking) => {
     setEditingBooking(booking);
     setEditBookingData({
       event_date: new Date(booking.event_date),
@@ -615,6 +616,19 @@ const UserDashboard = () => {
       end_time: booking.end_time,
     });
     setEditDialogOpen(true);
+
+    // Fetch booked dates to block in calendar
+    const { data } = await supabase.rpc("get_mahal_availability", {
+      _start: format(new Date(), "yyyy-MM-dd"),
+      _end: format(new Date(new Date().getFullYear() + 1, 11, 31), "yyyy-MM-dd"),
+    });
+    if (data) {
+      // Exclude the current booking's own date so user can keep it
+      const blocked = (data as { event_date: string; event_type: string; status: string }[])
+        .filter((b) => b.event_date !== booking.event_date)
+        .map((b) => b.event_date);
+      setBookedDatesForEdit([...new Set(blocked)]);
+    }
   };
 
   const saveBookingEdit = async () => {
@@ -624,6 +638,22 @@ const UserDashboard = () => {
     try {
       const formattedDate = format(editBookingData.event_date, "yyyy-MM-dd");
       
+      // Check for conflicts before saving
+      const { data: conflict } = await supabase.rpc("check_mahal_booking_conflict", {
+        _event_date: formattedDate,
+      });
+      
+      // Allow if same date as original booking, otherwise block
+      if (conflict && conflict[0] && conflict[0].has_conflict && formattedDate !== editingBooking.event_date) {
+        toast({
+          title: "தேதி ஏற்கனவே முன்பதிவு செய்யப்பட்டுள்ளது",
+          description: "இந்த தேதியில் ஏற்கனவே முன்பதிவு உள்ளது. வேறு தேதியைத் தேர்ந்தெடுக்கவும்.",
+          variant: "destructive",
+        });
+        setSavingBookingEdit(false);
+        return;
+      }
+
       const { error } = await supabase
         .from("mahal_bookings")
         .update({
@@ -2572,9 +2602,23 @@ const UserDashboard = () => {
                     <Calendar
                       mode="single"
                       selected={editBookingData.event_date}
-                      onSelect={(date) => setEditBookingData(prev => ({ ...prev, event_date: date }))}
-                      disabled={(date) => date < new Date()}
+                      onSelect={(date) => {
+                        if (date && bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))) {
+                          toast({
+                            title: "தேதி கிடைக்கவில்லை",
+                            description: "இந்த தேதி ஏற்கனவே முன்பதிவு செய்யப்பட்டுள்ளது. வேறு தேதியைத் தேர்ந்தெடுக்கவும்.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setEditBookingData(prev => ({ ...prev, event_date: date }));
+                      }}
+                      disabled={(date) =>
+                        date < new Date() ||
+                        bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))
+                      }
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
