@@ -30,6 +30,7 @@ const Footer = () => {
     "mosque_name_english",
     "mosque_address",
     "footer_credit_text",
+    "footer_credit_thumbnail",
     // Prayer times (manual settings)
     "prayer_fajr",
     "prayer_dhuhr",
