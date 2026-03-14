@@ -82,6 +82,8 @@ const SuperAdminSettingsTab = () => {
   // Footer credit text state
   const [footerCreditText, setFooterCreditText] = useState("Developed by Panduvan Batcha for the Masjid Administration");
   const [savingFooterCredit, setSavingFooterCredit] = useState(false);
+  const [footerCreditThumbnail, setFooterCreditThumbnail] = useState("");
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   // Hero overlay color state
   const [heroOverlayColor, setHeroOverlayColor] = useState("155 82% 20%");
@@ -187,18 +189,20 @@ const SuperAdminSettingsTab = () => {
     try {
       const { data, error } = await supabase
         .from("app_settings")
-        .select("value")
-        .eq("key", "footer_credit_text")
-        .maybeSingle();
+        .select("key, value")
+        .in("key", ["footer_credit_text", "footer_credit_thumbnail"]);
       if (error) {
-        console.error("Error fetching footer credit text:", error);
+        console.error("Error fetching footer credit settings:", error);
         return;
       }
       if (data) {
-        setFooterCreditText(data.value);
+        data.forEach((item) => {
+          if (item.key === "footer_credit_text") setFooterCreditText(item.value);
+          if (item.key === "footer_credit_thumbnail") setFooterCreditThumbnail(item.value);
+        });
       }
     } catch (error) {
-      console.error("Error fetching footer credit text:", error);
+      console.error("Error fetching footer credit settings:", error);
     }
   };
 
@@ -219,6 +223,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingFooterCredit(false);
+    }
+  };
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 2MB allowed.", variant: "destructive" });
+      return;
+    }
+    setUploadingThumbnail(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `footer-credit-thumbnail.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("certificate-assets")
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("certificate-assets").getPublicUrl(fileName);
+      const url = urlData.publicUrl + "?t=" + Date.now();
+      await upsertAppSetting("footer_credit_thumbnail", url, "Thumbnail photo next to footer credit text");
+      setFooterCreditThumbnail(url);
+      toast({ title: "Thumbnail Uploaded", description: "Footer credit thumbnail saved." });
+    } catch (error: any) {
+      toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const removeThumbnail = async () => {
+    try {
+      await upsertAppSetting("footer_credit_thumbnail", "", "Thumbnail photo next to footer credit text");
+      setFooterCreditThumbnail("");
+      toast({ title: "Thumbnail Removed" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
@@ -1261,7 +1302,7 @@ const SuperAdminSettingsTab = () => {
             Configure the developer/credit text displayed in the website footer
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="p-4 border rounded-lg">
             <Label htmlFor="footerCreditText" className="text-sm font-medium mb-2 block">
               Credit Text
@@ -1284,6 +1325,55 @@ const SuperAdminSettingsTab = () => {
                 {savingFooterCredit ? "Saving..." : "Save Footer Text"}
               </Button>
             </div>
+          </div>
+          <div className="p-4 border rounded-lg">
+            <Label className="text-sm font-medium mb-2 block">
+              Credit Thumbnail Photo
+            </Label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Upload a small photo/logo to display next to the credit text in the footer. Max 2MB.
+            </p>
+            {footerCreditThumbnail ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={footerCreditThumbnail}
+                  alt="Credit thumbnail"
+                  className="h-12 w-12 rounded-full object-cover border"
+                />
+                <div className="flex gap-2">
+                  <Label htmlFor="thumbnail-replace" className="cursor-pointer">
+                    <Button size="sm" variant="outline" asChild>
+                      <span><Upload className="h-3 w-3 mr-1" />Replace</span>
+                    </Button>
+                  </Label>
+                  <input
+                    id="thumbnail-replace"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleThumbnailUpload}
+                  />
+                  <Button size="sm" variant="destructive" onClick={removeThumbnail}>
+                    <Trash2 className="h-3 w-3 mr-1" />Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="thumbnail-upload" className="cursor-pointer">
+                  <Button size="sm" variant="outline" asChild disabled={uploadingThumbnail}>
+                    <span><Upload className="h-3 w-3 mr-1" />{uploadingThumbnail ? "Uploading..." : "Upload Thumbnail"}</span>
+                  </Button>
+                </Label>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleThumbnailUpload}
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
