@@ -172,6 +172,8 @@ const UserDashboard = () => {
   const [savingBookingEdit, setSavingBookingEdit] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [bookedDatesForEdit, setBookedDatesForEdit] = useState<string[]>([]);
+  const [editDatePopoverOpen, setEditDatePopoverOpen] = useState(false);
+  const [editDateDraft, setEditDateDraft] = useState<Date | undefined>(undefined);
   
   // Refund request state
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
@@ -2584,7 +2586,10 @@ const UserDashboard = () => {
               
               <div className="space-y-2">
                 <Label>New Event Date</Label>
-                <Popover modal={true}>
+                <Popover modal={true} open={editDatePopoverOpen} onOpenChange={(open) => {
+                  setEditDatePopoverOpen(open);
+                  if (open) setEditDateDraft(editBookingData.event_date);
+                }}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -2601,7 +2606,7 @@ const UserDashboard = () => {
                   <PopoverContent className="w-auto p-0 z-[100]" align="start" sideOffset={4}>
                     <Calendar
                       mode="single"
-                      selected={editBookingData.event_date}
+                      selected={editDateDraft}
                       onSelect={(date) => {
                         if (date && bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))) {
                           toast({
@@ -2611,7 +2616,7 @@ const UserDashboard = () => {
                           });
                           return;
                         }
-                        setEditBookingData(prev => ({ ...prev, event_date: date }));
+                        setEditDateDraft(date ?? undefined);
                       }}
                       disabled={(date) =>
                         date < new Date() ||
@@ -2620,6 +2625,26 @@ const UserDashboard = () => {
                       initialFocus
                       className="pointer-events-auto"
                     />
+                    <div className="flex items-center justify-end gap-2 border-t border-border p-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditDatePopoverOpen(false)}
+                      >
+                        ரத்து
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          setEditBookingData(prev => ({ ...prev, event_date: editDateDraft }));
+                          setEditDatePopoverOpen(false);
+                        }}
+                      >
+                        சரி
+                      </Button>
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
