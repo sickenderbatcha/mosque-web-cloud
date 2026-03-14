@@ -625,6 +625,7 @@ export default function NocCertificatePage() {
                           <FormControl>
                             <Input
                               {...field}
+                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                               placeholder="தந்தை உறுப்பினர் எண்"
                               onBlur={() => fetchFatherMember(field.value)}
                               disabled={isPaid}

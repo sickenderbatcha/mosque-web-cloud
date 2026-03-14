@@ -635,6 +635,7 @@ export default function HeirCertificatePage() {
                             <FormControl>
                               <Input 
                                 {...field} 
+                                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                                 placeholder="உறுப்பினர் எண்" 
                                 disabled={isPaid}
                               />
