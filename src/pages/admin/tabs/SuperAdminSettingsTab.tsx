@@ -1302,7 +1302,7 @@ const SuperAdminSettingsTab = () => {
             Configure the developer/credit text displayed in the website footer
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="p-4 border rounded-lg">
             <Label htmlFor="footerCreditText" className="text-sm font-medium mb-2 block">
               Credit Text
@@ -1325,6 +1325,55 @@ const SuperAdminSettingsTab = () => {
                 {savingFooterCredit ? "Saving..." : "Save Footer Text"}
               </Button>
             </div>
+          </div>
+          <div className="p-4 border rounded-lg">
+            <Label className="text-sm font-medium mb-2 block">
+              Credit Thumbnail Photo
+            </Label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Upload a small photo/logo to display next to the credit text in the footer. Max 2MB.
+            </p>
+            {footerCreditThumbnail ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={footerCreditThumbnail}
+                  alt="Credit thumbnail"
+                  className="h-12 w-12 rounded-full object-cover border"
+                />
+                <div className="flex gap-2">
+                  <Label htmlFor="thumbnail-replace" className="cursor-pointer">
+                    <Button size="sm" variant="outline" asChild>
+                      <span><Upload className="h-3 w-3 mr-1" />Replace</span>
+                    </Button>
+                  </Label>
+                  <input
+                    id="thumbnail-replace"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleThumbnailUpload}
+                  />
+                  <Button size="sm" variant="destructive" onClick={removeThumbnail}>
+                    <Trash2 className="h-3 w-3 mr-1" />Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="thumbnail-upload" className="cursor-pointer">
+                  <Button size="sm" variant="outline" asChild disabled={uploadingThumbnail}>
+                    <span><Upload className="h-3 w-3 mr-1" />{uploadingThumbnail ? "Uploading..." : "Upload Thumbnail"}</span>
+                  </Button>
+                </Label>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleThumbnailUpload}
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

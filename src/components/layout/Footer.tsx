@@ -203,8 +203,15 @@ const Footer = () => {
               © {currentYear} {settings.mosque_name || "இளையான்குடி நெசவுப் பட்டடை தொழுகை மேடைப் பள்ளிவாசல்"}. 
               அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.
             </p>
-            <p className="text-center md:text-right">
-              {settings.footer_credit_text || "Developed by Panduvan Batcha for the Masjid Administration"}
+            <p className="text-center md:text-right flex items-center justify-center md:justify-end gap-2">
+              {settings.footer_credit_thumbnail && (
+                <img
+                  src={settings.footer_credit_thumbnail}
+                  alt=""
+                  className="h-6 w-6 rounded-full object-cover inline-block"
+                />
+              )}
+              <span>{settings.footer_credit_text || "Developed by Panduvan Batcha for the Masjid Administration"}</span>
             </p>
           </div>
         </div>
