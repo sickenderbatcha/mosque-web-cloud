@@ -1141,6 +1141,22 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Mahal Photos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5" />
+            Mahal Photos (மண்டப புகைப்படங்கள்)
+          </CardTitle>
+          <CardDescription>
+            Upload and manage photos displayed on the Mahal booking page
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MahalPhotoManager />
+        </CardContent>
+      </Card>
+
        {/* Booking Payment Timeout Settings */}
        <Card>
          <CardHeader>

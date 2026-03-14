@@ -1470,6 +1470,9 @@ const MahalBookingPage = () => {
         </div>
       </section>
 
+      {/* Mahal Photo Gallery */}
+      <MahalPhotoGallery />
+
       {/* Features Section */}
       <section className="py-12 bg-muted relative z-20">
         <div className="container mx-auto px-4">
