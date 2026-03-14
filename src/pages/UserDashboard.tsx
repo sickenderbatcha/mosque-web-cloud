@@ -608,7 +608,7 @@ const UserDashboard = () => {
     }
   };
 
-  const openEditBookingDialog = (booking: Booking) => {
+  const openEditBookingDialog = async (booking: Booking) => {
     setEditingBooking(booking);
     setEditBookingData({
       event_date: new Date(booking.event_date),
@@ -616,6 +616,19 @@ const UserDashboard = () => {
       end_time: booking.end_time,
     });
     setEditDialogOpen(true);
+
+    // Fetch booked dates to block in calendar
+    const { data } = await supabase.rpc("get_mahal_availability", {
+      _start: format(new Date(), "yyyy-MM-dd"),
+      _end: format(new Date(new Date().getFullYear() + 1, 11, 31), "yyyy-MM-dd"),
+    });
+    if (data) {
+      // Exclude the current booking's own date so user can keep it
+      const blocked = (data as { event_date: string; event_type: string; status: string }[])
+        .filter((b) => b.event_date !== booking.event_date)
+        .map((b) => b.event_date);
+      setBookedDatesForEdit([...new Set(blocked)]);
+    }
   };
 
   const saveBookingEdit = async () => {
