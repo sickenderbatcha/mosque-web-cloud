@@ -1253,7 +1253,7 @@ const MembersTab = () => {
                       <Input 
                         id="member_id" 
                         value={formData.member_id} 
-                        onChange={(e) => setFormData({ ...formData, member_id: e.target.value })} 
+                        onChange={(e) => setFormData({ ...formData, member_id: e.target.value.toUpperCase() })} 
                         required 
                         disabled={!!editingMember}
                         className={(memberIdError || memberIdFormatError) && !editingMember ? "border-destructive" : ""}
