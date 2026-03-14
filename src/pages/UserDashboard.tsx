@@ -2586,7 +2586,10 @@ const UserDashboard = () => {
               
               <div className="space-y-2">
                 <Label>New Event Date</Label>
-                <Popover modal={true}>
+                <Popover modal={true} open={editDatePopoverOpen} onOpenChange={(open) => {
+                  setEditDatePopoverOpen(open);
+                  if (open) setEditDateDraft(editBookingData.event_date);
+                }}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -2603,7 +2606,7 @@ const UserDashboard = () => {
                   <PopoverContent className="w-auto p-0 z-[100]" align="start" sideOffset={4}>
                     <Calendar
                       mode="single"
-                      selected={editBookingData.event_date}
+                      selected={editDateDraft}
                       onSelect={(date) => {
                         if (date && bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))) {
                           toast({
@@ -2613,7 +2616,7 @@ const UserDashboard = () => {
                           });
                           return;
                         }
-                        setEditBookingData(prev => ({ ...prev, event_date: date }));
+                        setEditDateDraft(date ?? undefined);
                       }}
                       disabled={(date) =>
                         date < new Date() ||
@@ -2627,12 +2630,7 @@ const UserDashboard = () => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          // Reset to original booking date
-                          if (editingBooking) {
-                            setEditBookingData(prev => ({ ...prev, event_date: new Date(editingBooking.event_date) }));
-                          }
-                        }}
+                        onClick={() => setEditDatePopoverOpen(false)}
                       >
                         ரத்து
                       </Button>
@@ -2640,10 +2638,8 @@ const UserDashboard = () => {
                         type="button"
                         size="sm"
                         onClick={() => {
-                          // Close popover by blurring
-                          (document.activeElement as HTMLElement)?.blur();
-                          const popoverTrigger = document.querySelector('[data-state="open"]') as HTMLElement;
-                          popoverTrigger?.click();
+                          setEditBookingData(prev => ({ ...prev, event_date: editDateDraft }));
+                          setEditDatePopoverOpen(false);
                         }}
                       >
                         சரி
