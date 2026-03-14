@@ -1702,7 +1702,7 @@ const DonationPage = () => {
                                 placeholder="Enter membership number"
                                 value={donationMembershipNumber}
                                 onChange={(e) => {
-                                  setDonationMembershipNumber(e.target.value);
+                                  setDonationMembershipNumber(e.target.value.toUpperCase());
                                   if (donationMemberFound) setDonationMemberFound(false);
                                 }}
                                 onKeyDown={(e) => {
