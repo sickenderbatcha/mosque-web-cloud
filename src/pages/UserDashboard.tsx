@@ -2602,9 +2602,23 @@ const UserDashboard = () => {
                     <Calendar
                       mode="single"
                       selected={editBookingData.event_date}
-                      onSelect={(date) => setEditBookingData(prev => ({ ...prev, event_date: date }))}
-                      disabled={(date) => date < new Date()}
+                      onSelect={(date) => {
+                        if (date && bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))) {
+                          toast({
+                            title: "தேதி கிடைக்கவில்லை",
+                            description: "இந்த தேதி ஏற்கனவே முன்பதிவு செய்யப்பட்டுள்ளது. வேறு தேதியைத் தேர்ந்தெடுக்கவும்.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setEditBookingData(prev => ({ ...prev, event_date: date }));
+                      }}
+                      disabled={(date) =>
+                        date < new Date() ||
+                        bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))
+                      }
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
