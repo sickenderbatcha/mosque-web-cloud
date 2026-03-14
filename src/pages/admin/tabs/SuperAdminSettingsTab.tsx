@@ -82,6 +82,8 @@ const SuperAdminSettingsTab = () => {
   // Footer credit text state
   const [footerCreditText, setFooterCreditText] = useState("Developed by Panduvan Batcha for the Masjid Administration");
   const [savingFooterCredit, setSavingFooterCredit] = useState(false);
+  const [footerCreditThumbnail, setFooterCreditThumbnail] = useState("");
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   // Hero overlay color state
   const [heroOverlayColor, setHeroOverlayColor] = useState("155 82% 20%");
