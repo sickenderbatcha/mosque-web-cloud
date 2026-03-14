@@ -171,6 +171,7 @@ const UserDashboard = () => {
   });
   const [savingBookingEdit, setSavingBookingEdit] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [bookedDatesForEdit, setBookedDatesForEdit] = useState<string[]>([]);
   
   // Refund request state
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
