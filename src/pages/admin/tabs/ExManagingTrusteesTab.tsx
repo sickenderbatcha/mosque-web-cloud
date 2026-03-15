@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Plus, Trash2, Upload, X, Pencil } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, X, Pencil, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
