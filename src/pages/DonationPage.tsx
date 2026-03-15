@@ -837,7 +837,10 @@ const SubscriptionForm = () => {
                   <Input
                     id="membership-number"
                     placeholder="Enter Membership Number"
-                    className="pl-10"
+                    className="pl-10 uppercase"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
                     value={membershipNumber}
                     onChange={(e) => {
                       setMembershipNumber(e.target.value.toUpperCase());
