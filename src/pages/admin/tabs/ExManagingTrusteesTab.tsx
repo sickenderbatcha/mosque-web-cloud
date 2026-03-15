@@ -230,9 +230,17 @@ const ExManagingTrusteesTab = () => {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <Card key={item.id} className={`${!item.is_active ? "opacity-60" : ""}`}>
               <CardContent className="p-4 flex gap-4 items-start">
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === 0} onClick={() => moveItem(index, "up")}>
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === items.length - 1} onClick={() => moveItem(index, "down")}>
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                </div>
                 {item.photo_url && (
                   <img
                     src={item.photo_url}
