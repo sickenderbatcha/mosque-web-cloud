@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Plus, Trash2, Upload, X, Pencil } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, X, Pencil, ArrowUp, ArrowDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -178,6 +178,29 @@ const ExManagingTrusteesTab = () => {
     }
   };
 
+  const moveItem = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= items.length) return;
+
+    const currentItem = items[index];
+    const swapItem = items[swapIndex];
+
+    const { error: e1 } = await supabase
+      .from("ex_managing_trustees")
+      .update({ sort_order: swapItem.sort_order })
+      .eq("id", currentItem.id);
+    const { error: e2 } = await supabase
+      .from("ex_managing_trustees")
+      .update({ sort_order: currentItem.sort_order })
+      .eq("id", swapItem.id);
+
+    if (e1 || e2) {
+      toast({ title: "Failed to reorder", variant: "destructive" });
+    } else {
+      fetchItems();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -207,9 +230,17 @@ const ExManagingTrusteesTab = () => {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <Card key={item.id} className={`${!item.is_active ? "opacity-60" : ""}`}>
               <CardContent className="p-4 flex gap-4 items-start">
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === 0} onClick={() => moveItem(index, "up")}>
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === items.length - 1} onClick={() => moveItem(index, "down")}>
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                </div>
                 {item.photo_url && (
                   <img
                     src={item.photo_url}
