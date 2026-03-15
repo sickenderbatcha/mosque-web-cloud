@@ -110,6 +110,23 @@ const AboutPage = () => {
       }
     };
     fetchMosquePhotos();
+
+    const fetchBelongItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("belong_to_us_items")
+          .select("id, title, title_tamil, description, description_tamil, image_url")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        setBelongItems(data || []);
+      } catch (error) {
+        console.error("Error fetching belong items:", error);
+      } finally {
+        setLoadingBelong(false);
+      }
+    };
+    fetchBelongItems();
   }, []);
 
   if (isLoading) {
