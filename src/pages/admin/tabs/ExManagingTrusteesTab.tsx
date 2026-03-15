@@ -178,6 +178,29 @@ const ExManagingTrusteesTab = () => {
     }
   };
 
+  const moveItem = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= items.length) return;
+
+    const currentItem = items[index];
+    const swapItem = items[swapIndex];
+
+    const { error: e1 } = await supabase
+      .from("ex_managing_trustees")
+      .update({ sort_order: swapItem.sort_order })
+      .eq("id", currentItem.id);
+    const { error: e2 } = await supabase
+      .from("ex_managing_trustees")
+      .update({ sort_order: currentItem.sort_order })
+      .eq("id", swapItem.id);
+
+    if (e1 || e2) {
+      toast({ title: "Failed to reorder", variant: "destructive" });
+    } else {
+      fetchItems();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
