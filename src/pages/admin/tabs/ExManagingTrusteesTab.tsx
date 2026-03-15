@@ -233,9 +233,11 @@ const ExManagingTrusteesTab = () => {
           {items.map((item, index) => (
             <Card key={item.id} className={`${!item.is_active ? "opacity-60" : ""}`}>
               <CardContent className="p-4 space-y-3">
-                <div className="flex items-center justify-between gap-1">
-                  <h3 className="font-semibold text-foreground truncate min-w-0 flex-1">{item.name}</h3>
-                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="font-semibold text-foreground min-w-0 break-words sm:truncate sm:flex-1">
+                    {item.name}
+                  </h3>
+                  <div className="flex items-center gap-0.5 flex-shrink-0 self-end sm:self-auto">
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === 0} onClick={() => moveItem(index, "up")}>
                       <ArrowUp className="h-3.5 w-3.5" />
                     </Button>
