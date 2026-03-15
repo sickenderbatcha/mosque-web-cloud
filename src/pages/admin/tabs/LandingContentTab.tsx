@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MosquePhotoUpload from "@/components/admin/MosquePhotoUpload";
 import BelongToUsTab from "./BelongToUsTab";
+import ExManagingTrusteesTab from "./ExManagingTrusteesTab";
 
 
 interface ContentItem {
