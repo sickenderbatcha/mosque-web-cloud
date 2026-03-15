@@ -310,6 +310,10 @@ const LandingContentTab = () => {
             <TabsTrigger value="belong_to_us" className="text-xs">Belong To Us</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="belong_to_us">
+            <BelongToUsTab />
+          </TabsContent>
+
           {["hero", "about", "services", "cta", "disclaimer", "about_hero", "about_history", "about_mosques", "about_wakf", "about_management"].map((section) => (
             <TabsContent key={section} value={section}>
               <div className="mb-4">

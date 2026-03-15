@@ -57,10 +57,6 @@ const SuperAdminDashboard = () => {
           <TabsContent value="database-manager">
             <DatabaseManagerTab />
           </TabsContent>
-
-          <TabsContent value="belong-to-us">
-            <BelongToUsTab />
-          </TabsContent>
         </Tabs>
       </div>
     </div>
