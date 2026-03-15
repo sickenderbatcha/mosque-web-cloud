@@ -233,27 +233,25 @@ const ExManagingTrusteesTab = () => {
           {items.map((item, index) => (
             <Card key={item.id} className={`${!item.is_active ? "opacity-60" : ""}`}>
               <CardContent className="p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-1">
+                  <h3 className="font-semibold text-foreground truncate min-w-0 flex-1">{item.name}</h3>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === 0} onClick={() => moveItem(index, "up")}>
-                      <ArrowUp className="h-4 w-4" />
+                      <ArrowUp className="h-3.5 w-3.5" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === items.length - 1} onClick={() => moveItem(index, "down")}>
-                      <ArrowDown className="h-4 w-4" />
+                      <ArrowDown className="h-3.5 w-3.5" />
                     </Button>
-                    <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
-                  </div>
-                <div className="flex items-center gap-0.5 flex-shrink-0">
                     <Switch
                       checked={item.is_active ?? true}
                       onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
-                      className="scale-90"
+                      className="scale-75"
                     />
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(item.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
