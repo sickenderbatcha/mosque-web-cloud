@@ -25,6 +25,8 @@ const AboutPage = () => {
   const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
   const [belongItems, setBelongItems] = useState<{ id: string; title: string; title_tamil: string | null; description: string | null; description_tamil: string | null; image_url: string | null }[]>([]);
   const [loadingBelong, setLoadingBelong] = useState(true);
+  const [exTrustees, setExTrustees] = useState<{ id: string; name: string; name_tamil: string | null; description: string | null; description_tamil: string | null; photo_url: string | null }[]>([]);
+  const [loadingExTrustees, setLoadingExTrustees] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
@@ -127,6 +129,23 @@ const AboutPage = () => {
       }
     };
     fetchBelongItems();
+
+    const fetchExTrustees = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("ex_managing_trustees")
+          .select("id, name, name_tamil, description, description_tamil, photo_url")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        setExTrustees(data || []);
+      } catch (error) {
+        console.error("Error fetching ex trustees:", error);
+      } finally {
+        setLoadingExTrustees(false);
+      }
+    };
+    fetchExTrustees();
   }, []);
 
   if (isLoading) {
@@ -576,6 +595,67 @@ const AboutPage = () => {
           )}
         </div>
       </section>
+
+      {/* Ex Managing Trustees Section */}
+      {exTrustees.length > 0 && (
+        <section className="py-16 bg-muted">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-2xl md:text-3xl font-bold font-tamil text-foreground mb-4">
+                முன்னாள் நிர்வாகத் தலைவர்கள்
+              </h2>
+              <p className="text-muted-foreground font-display">
+                Ex Managing Trustees
+              </p>
+              <div className="section-divider mt-6" />
+            </motion.div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              {exTrustees.map((trustee, index) => (
+                <motion.div
+                  key={trustee.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center p-6 bg-card shadow-soft hover:shadow-medium transition-shadow">
+                    {trustee.photo_url ? (
+                      <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-2 border-primary/20">
+                        <img
+                          src={trustee.photo_url}
+                          alt={trustee.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-12 w-12 text-primary" />
+                      </div>
+                    )}
+                    <h3 className="font-semibold text-foreground">{trustee.name}</h3>
+                    {trustee.name_tamil && (
+                      <p className="text-sm font-tamil text-primary mt-1">{trustee.name_tamil}</p>
+                    )}
+                    {trustee.description && (
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{trustee.description}</p>
+                    )}
+                    {trustee.description_tamil && (
+                      <p className="text-xs text-muted-foreground font-tamil mt-1 line-clamp-2">{trustee.description_tamil}</p>
+                    )}
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Photo Gallery Section */}
       <section className="py-16 bg-background">
