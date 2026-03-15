@@ -316,6 +316,10 @@ const LandingContentTab = () => {
             <BelongToUsTab />
           </TabsContent>
 
+          <TabsContent value="ex_trustees">
+            <ExManagingTrusteesTab />
+          </TabsContent>
+
           {["hero", "about", "services", "cta", "disclaimer", "about_hero", "about_history", "about_mosques", "about_wakf", "about_management"].map((section) => (
             <TabsContent key={section} value={section}>
               <div className="mb-4">
