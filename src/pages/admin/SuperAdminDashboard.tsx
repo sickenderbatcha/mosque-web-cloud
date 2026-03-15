@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Shield, Globe, Database, Settings, TableProperties, Landmark } from "lucide-react";
+import { Shield, Globe, Database, Settings, TableProperties } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataManagementTab from "./tabs/DataManagementTab";
 import LandingContentTab from "./tabs/LandingContentTab";
 import SuperAdminSettingsTab from "./tabs/SuperAdminSettingsTab";
 import DatabaseManagerTab from "./tabs/DatabaseManagerTab";
-import BelongToUsTab from "./tabs/BelongToUsTab";
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("landing-content");
@@ -41,10 +40,6 @@ const SuperAdminDashboard = () => {
               <TableProperties className="h-4 w-4" />
               <span>Database</span>
             </TabsTrigger>
-            <TabsTrigger value="belong-to-us" className="flex items-center gap-2">
-              <Landmark className="h-4 w-4" />
-              <span>Belong To Us</span>
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
@@ -61,10 +56,6 @@ const SuperAdminDashboard = () => {
 
           <TabsContent value="database-manager">
             <DatabaseManagerTab />
-          </TabsContent>
-
-          <TabsContent value="belong-to-us">
-            <BelongToUsTab />
           </TabsContent>
         </Tabs>
       </div>

@@ -10,6 +10,7 @@ import { Loader2, Save, RotateCcw, Edit2, Check, X, Globe, Type } from "lucide-r
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MosquePhotoUpload from "@/components/admin/MosquePhotoUpload";
+import BelongToUsTab from "./BelongToUsTab";
 
 
 interface ContentItem {
@@ -306,7 +307,12 @@ const LandingContentTab = () => {
             <TabsTrigger value="about_mosques" className="text-xs">Mosques</TabsTrigger>
             <TabsTrigger value="about_wakf" className="text-xs">Wakf</TabsTrigger>
             <TabsTrigger value="about_management" className="text-xs">Management</TabsTrigger>
+            <TabsTrigger value="belong_to_us" className="text-xs">Belong To Us</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="belong_to_us">
+            <BelongToUsTab />
+          </TabsContent>
 
           {["hero", "about", "services", "cta", "disclaimer", "about_hero", "about_history", "about_mosques", "about_wakf", "about_management"].map((section) => (
             <TabsContent key={section} value={section}>
