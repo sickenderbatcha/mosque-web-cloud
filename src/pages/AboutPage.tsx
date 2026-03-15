@@ -129,6 +129,23 @@ const AboutPage = () => {
       }
     };
     fetchBelongItems();
+
+    const fetchExTrustees = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("ex_managing_trustees")
+          .select("id, name, name_tamil, description, description_tamil, photo_url")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        setExTrustees(data || []);
+      } catch (error) {
+        console.error("Error fetching ex trustees:", error);
+      } finally {
+        setLoadingExTrustees(false);
+      }
+    };
+    fetchExTrustees();
   }, []);
 
   if (isLoading) {
