@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Building, History, MapPin, Users, BookOpen, Loader2, Images, ChevronRight, FileText, Eye } from "lucide-react";
+import { Building, History, MapPin, Users, BookOpen, Loader2, Images, ChevronRight, FileText, Eye, Landmark } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLandingContent } from "@/hooks/useLandingContent";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,8 @@ const AboutPage = () => {
   const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
   const [loadingCommittee, setLoadingCommittee] = useState(true);
   const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
+  const [belongItems, setBelongItems] = useState<{ id: string; title: string; title_tamil: string | null; description: string | null; description_tamil: string | null; image_url: string | null }[]>([]);
+  const [loadingBelong, setLoadingBelong] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
@@ -108,6 +110,23 @@ const AboutPage = () => {
       }
     };
     fetchMosquePhotos();
+
+    const fetchBelongItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("belong_to_us_items")
+          .select("id, title, title_tamil, description, description_tamil, image_url")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
+        if (error) throw error;
+        setBelongItems(data || []);
+      } catch (error) {
+        console.error("Error fetching belong items:", error);
+      } finally {
+        setLoadingBelong(false);
+      }
+    };
+    fetchBelongItems();
   }, []);
 
   if (isLoading) {
@@ -303,6 +322,68 @@ const AboutPage = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Belong To Us Section */}
+      {belongItems.length > 0 && (
+        <section className="py-16 bg-muted">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Landmark className="h-8 w-8 text-primary" />
+                <h2 className="text-2xl md:text-3xl font-bold font-tamil text-foreground">
+                  எங்களுக்கு பாத்தியப்பட்டவைகள்
+                </h2>
+              </div>
+              <p className="text-muted-foreground font-display">
+                Belong To Us
+              </p>
+              <div className="section-divider mt-6" />
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {belongItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="h-full bg-card shadow-soft hover:shadow-medium transition-shadow overflow-hidden">
+                    {item.image_url && (
+                      <div className="w-full h-52 overflow-hidden">
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="p-5">
+                      <h3 className="font-bold text-foreground text-lg mb-1">{item.title}</h3>
+                      {item.title_tamil && (
+                        <p className="text-sm font-tamil text-primary mb-2">{item.title_tamil}</p>
+                      )}
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-2">{item.description}</p>
+                      )}
+                      {item.description_tamil && (
+                        <p className="text-sm text-muted-foreground font-tamil leading-relaxed">{item.description_tamil}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Documents Section */}
       <section className="py-16 bg-muted">
