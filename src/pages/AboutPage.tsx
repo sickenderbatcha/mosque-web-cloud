@@ -25,6 +25,8 @@ const AboutPage = () => {
   const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
   const [belongItems, setBelongItems] = useState<{ id: string; title: string; title_tamil: string | null; description: string | null; description_tamil: string | null; image_url: string | null }[]>([]);
   const [loadingBelong, setLoadingBelong] = useState(true);
+  const [exTrustees, setExTrustees] = useState<{ id: string; name: string; name_tamil: string | null; description: string | null; description_tamil: string | null; photo_url: string | null }[]>([]);
+  const [loadingExTrustees, setLoadingExTrustees] = useState(true);
 
   // Helper to get content with fallback
   const get = (section: string, key: string, fallback: string) => {
