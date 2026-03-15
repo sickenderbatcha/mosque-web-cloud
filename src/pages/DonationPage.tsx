@@ -1703,6 +1703,10 @@ const DonationPage = () => {
                             <div className="flex gap-2">
                               <Input
                                 placeholder="Enter membership number"
+                                className="uppercase"
+                                autoCapitalize="characters"
+                                autoCorrect="off"
+                                spellCheck={false}
                                 value={donationMembershipNumber}
                                 onChange={(e) => {
                                   setDonationMembershipNumber(e.target.value.toUpperCase());

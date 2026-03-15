@@ -247,7 +247,10 @@ const MembersDirectoryPage = () => {
                 placeholder="Search by name, ID, phone, occupation, or address..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-                className="pl-10"
+                className="pl-10 uppercase"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </div>
             <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
