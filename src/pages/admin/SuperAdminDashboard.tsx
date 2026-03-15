@@ -41,6 +41,10 @@ const SuperAdminDashboard = () => {
               <TableProperties className="h-4 w-4" />
               <span>Database</span>
             </TabsTrigger>
+            <TabsTrigger value="belong-to-us" className="flex items-center gap-2">
+              <Landmark className="h-4 w-4" />
+              <span>Belong To Us</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
