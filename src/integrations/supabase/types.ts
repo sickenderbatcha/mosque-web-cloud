@@ -770,6 +770,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ex_managing_trustees: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          description_tamil: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          name_tamil: string | null
+          photo_url: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          description_tamil?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          name_tamil?: string | null
+          photo_url?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          description_tamil?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          name_tamil?: string | null
+          photo_url?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number

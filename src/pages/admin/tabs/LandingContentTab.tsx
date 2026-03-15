@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MosquePhotoUpload from "@/components/admin/MosquePhotoUpload";
 import BelongToUsTab from "./BelongToUsTab";
+import ExManagingTrusteesTab from "./ExManagingTrusteesTab";
 
 
 interface ContentItem {
@@ -308,10 +309,15 @@ const LandingContentTab = () => {
             <TabsTrigger value="about_wakf" className="text-xs">Wakf</TabsTrigger>
             <TabsTrigger value="about_management" className="text-xs">Management</TabsTrigger>
             <TabsTrigger value="belong_to_us" className="text-xs">Belong To Us</TabsTrigger>
+            <TabsTrigger value="ex_trustees" className="text-xs">Ex Trustees</TabsTrigger>
           </TabsList>
 
           <TabsContent value="belong_to_us">
             <BelongToUsTab />
+          </TabsContent>
+
+          <TabsContent value="ex_trustees">
+            <ExManagingTrusteesTab />
           </TabsContent>
 
           {["hero", "about", "services", "cta", "disclaimer", "about_hero", "about_history", "about_mosques", "about_wakf", "about_management"].map((section) => (
