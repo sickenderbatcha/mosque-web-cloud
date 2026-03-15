@@ -279,6 +279,48 @@ export type Database = {
           },
         ]
       }
+      belong_to_us_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          description_tamil: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          sort_order: number | null
+          title: string
+          title_tamil: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          description_tamil?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          title: string
+          title_tamil?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          description_tamil?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          title?: string
+          title_tamil?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       booking_otp_tokens: {
         Row: {
           attempts: number
