@@ -75,6 +75,10 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
+  // Back office homepage visibility toggle
+  const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
+  const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
+
   // Booking alert message state
   const [bookingAlertMessage, setBookingAlertMessage] = useState("தேதி கிடைக்கிறதா என்பது நிர்வாகத்தால் சரிபார்க்கப்படும். உங்கள் முன்பதிவு நிலை குறித்து தொலைபேசி வழியாக அறிவிக்கப்படும்.");
   const [savingAlertMessage, setSavingAlertMessage] = useState(false);
