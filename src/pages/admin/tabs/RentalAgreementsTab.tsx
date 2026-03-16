@@ -237,7 +237,14 @@ const RentalAgreementsTab = () => {
               </div>
               <div className="space-y-2">
                 <Label>வளாகம் (Premises)</Label>
-                <Input value={form.shop_premises} onChange={(e) => setForm({ ...form, shop_premises: e.target.value })} />
+                <Select value={form.shop_premises} onValueChange={(v) => setForm({ ...form, shop_premises: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select premises" /></SelectTrigger>
+                  <SelectContent>
+                    {premisesList.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>கடை எண் (Shop Number)</Label>
