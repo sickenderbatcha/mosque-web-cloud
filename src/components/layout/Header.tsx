@@ -37,6 +37,16 @@ const allOnlineServicesItems = [
 { path: "/services", labelTamil: "சான்றிதழ்கள்", labelEnglish: "Certificates", visKey: "nav_service_certificates" as const },
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
+const backOfficeItems = [
+{ path: "/backoffice/income", labelTamil: "வரவு", labelEnglish: "Income" },
+{ path: "/backoffice/expenses", labelTamil: "செலவு", labelEnglish: "Expenses" },
+{ path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register" },
+{ path: "/backoffice/outside-marriage", labelTamil: "வெளி திருமணப் பதிவு", labelEnglish: "Outside Marriage" },
+{ path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register" },
+{ path: "/backoffice/rental", labelTamil: "வாடகை ஒப்பந்தம்", labelEnglish: "Rental" },
+{ path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets" },
+];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
