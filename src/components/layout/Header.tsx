@@ -38,8 +38,8 @@ const allOnlineServicesItems = [
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
 const backOfficeItems = [
-{ path: "/backoffice/income", labelTamil: "வரவு", labelEnglish: "Income" },
-{ path: "/backoffice/expenses", labelTamil: "செலவு", labelEnglish: "Expenses" },
+  { path: "/backoffice/income", labelTamil: "வரவு மேலாண்மை", labelEnglish: "Income Management" },
+  { path: "/backoffice/expenses", labelTamil: "செலவு மேலாண்மை", labelEnglish: "Expenses Management" },
 { path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register" },
 { path: "/backoffice/outside-marriage", labelTamil: "வெளி திருமணப் பதிவு", labelEnglish: "Outside Marriage" },
 { path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register" },
