@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, Heart, Building2, FileText, Users, ChevronRight, IndianRupee, Receipt, Landmark, Globe, Skull, Home, Package } from "lucide-react";
+import { Calendar, Heart, Building2, FileText, Users, ChevronRight, IndianRupee, Receipt, Landmark, Globe, Home, Package } from "lucide-react";
+import MuslimGraveIcon from "@/components/icons/MuslimGraveIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PrayerTimes from "@/components/PrayerTimes";
@@ -85,7 +86,7 @@ const HomePage = () => {
     { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses", visKey: "card_backoffice_expenses" as const },
     { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage", visKey: "card_backoffice_marriage" as const },
     { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage", visKey: "card_backoffice_outside_marriage" as const },
-    { icon: Skull, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const },
+    { icon: MuslimGraveIcon, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const },
     { icon: Home, titleTamil: "வாடகை மேலாண்மை", titleEnglish: "Rent Management", path: "/backoffice/rental", visKey: "card_backoffice_rental" as const },
     { icon: Package, titleTamil: "சொத்து மேலாண்மை", titleEnglish: "Assets Management", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const },
   ];
