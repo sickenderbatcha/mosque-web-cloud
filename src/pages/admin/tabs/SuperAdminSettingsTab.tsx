@@ -1359,12 +1359,12 @@ const SuperAdminSettingsTab = () => {
           <div className="p-4 border rounded-lg space-y-3">
             <h4 className="font-medium text-sm mb-2">Back Office Homepage Cards (பின் அலுவலக அட்டைகள்)</h4>
             {[
-              { key: "card_backoffice_income" as const, label: "வரவு மேலாண்மை / Income Management Card" },
+              { key: "card_backoffice_income" as const, label: "வருமானம் மேலாண்மை / Income Management Card" },
               { key: "card_backoffice_expenses" as const, label: "செலவு மேலாண்மை / Expenses Management Card" },
               { key: "card_backoffice_marriage" as const, label: "திருமணப் பதிவு / Marriage Register Card" },
-              { key: "card_backoffice_outside_marriage" as const, label: "வெளி திருமணம் / Outside Marriage Card" },
+              { key: "card_backoffice_outside_marriage" as const, label: "வெளியூர் திருமணப் பதிவு / Outside Marriage Card" },
               { key: "card_backoffice_death" as const, label: "இறப்புப் பதிவு / Death Register Card" },
-              { key: "card_backoffice_rental" as const, label: "வாடகை / Rental Card" },
+              { key: "card_backoffice_rental" as const, label: "வாடகை மேலாண்மை / Rental Card" },
               { key: "card_backoffice_assets" as const, label: "சொத்துக்கள் / Assets Card" },
             ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between py-1">
