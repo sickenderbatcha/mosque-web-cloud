@@ -1375,6 +1375,7 @@ const SuperAdminSettingsTab = () => {
                 />
               </div>
             ))}
+          </div>
 
           <div className="flex justify-end">
             <Button
