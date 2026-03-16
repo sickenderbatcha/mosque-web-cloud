@@ -282,8 +282,8 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Back Office Dropdown - Admin/SuperAdmin only */}
-              {isAdmin && (
+              {/* Back Office Dropdown - visible to all, pages restricted to admin */}
+              {(
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -464,8 +464,8 @@ const Header = () => {
                   )}
                   </div>
 
-                  {/* Back Office Section - Mobile (Admin/SuperAdmin only) */}
-                  {isAdmin && (
+                  {/* Back Office Section - Mobile, visible to all */}
+                  {(
                     <div className="pt-4 border-t border-border">
                       <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         பின் அலுவலகப் பணிகள் / Back Office
