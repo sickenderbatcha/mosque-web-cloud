@@ -93,6 +93,12 @@ const SettingsTab = () => {
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [savingCategories, setSavingCategories] = useState(false);
 
+  // Rental premises state
+  const [rentalPremisesDialogOpen, setRentalPremisesDialogOpen] = useState(false);
+  const [rentalPremises, setRentalPremises] = useState<string[]>([]);
+  const [newPremisesInput, setNewPremisesInput] = useState("");
+  const [savingPremises, setSavingPremises] = useState(false);
+
   // Expense categories state
   const [expenseCategoriesDialogOpen, setExpenseCategoriesDialogOpen] = useState(false);
   const [expenseCategories, setExpenseCategories] = useState<string[]>([
@@ -129,6 +135,7 @@ const SettingsTab = () => {
     fetchForcePendingSetting();
     fetchIncomeCategories();
     fetchExpenseCategories();
+    fetchRentalPremises();
   }, []);
 
   const fetchIncomeCategories = async () => {
@@ -198,6 +205,60 @@ const SettingsTab = () => {
       setIncomeCategoriesDialogOpen(false);
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
+    } finally {
+      setSavingCategories(false);
+    }
+  };
+
+  // Rental premises functions
+  const fetchRentalPremises = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "rental_premises")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRentalPremises(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch rental premises:", err);
+    }
+  };
+
+  const addRentalPremise = () => {
+    const trimmed = newPremisesInput.trim();
+    if (!trimmed) return;
+    if (rentalPremises.some((p) => p.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
+      return;
+    }
+    setRentalPremises((prev) => [...prev, trimmed]);
+    setNewPremisesInput("");
+  };
+
+  const removeRentalPremise = (index: number) => {
+    setRentalPremises(rentalPremises.filter((_, i) => i !== index));
+  };
+
+  const saveRentalPremises = async () => {
+    setSavingPremises(true);
+    const pending = newPremisesInput.trim();
+    const hasPending = pending.length > 0;
+    const isDup = hasPending && rentalPremises.some((p) => p.trim().toLowerCase() === pending.toLowerCase());
+    const toSave = hasPending && !isDup ? [...rentalPremises, pending] : rentalPremises;
+
+    try {
+      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list");
+      setRentalPremises(toSave);
+      setNewPremisesInput("");
+      toast({ title: "Saved", description: "Rental premises updated successfully." });
+      setRentalPremisesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save.", variant: "destructive" });
     } finally {
       setSavingCategories(false);
     }
@@ -1039,6 +1100,34 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Rental Premises Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Rental Premises (வாடகை வளாகங்கள்)
+          </CardTitle>
+          <CardDescription>
+            Configure premises options shown in the Rental Agreement form dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {rentalPremises.length === 0 ? (
+              <span className="text-sm text-muted-foreground">No premises configured yet</span>
+            ) : rentalPremises.map((p, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {p}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setRentalPremisesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Premises
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Nonbu Kanji Donation Settings */}
       <Card>
         <CardHeader>
@@ -1802,6 +1891,46 @@ const SettingsTab = () => {
             </Button>
             <Button onClick={saveExpenseCategories} disabled={savingExpenseCategories}>
               {savingExpenseCategories ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rental Premises Dialog */}
+      <Dialog open={rentalPremisesDialogOpen} onOpenChange={setRentalPremisesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Rental Premises (வாடகை வளாகங்கள்)</DialogTitle>
+            <DialogDescription>Add or remove premises shown in the Rental Agreement form.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <TamilInput
+                value={newPremisesInput}
+                onChange={(value) => setNewPremisesInput(value)}
+                placeholder="Type in English, auto-converts to Tamil"
+              />
+              <Button size="sm" onClick={addRentalPremise}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {rentalPremises.map((p, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{p}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRentalPremisesDialogOpen(false); fetchRentalPremises(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveRentalPremises} disabled={savingPremises}>
+              {savingPremises ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

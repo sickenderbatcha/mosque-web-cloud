@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,9 +72,27 @@ const RentalAgreementsTab = () => {
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [collectRentAgreement, setCollectRentAgreement] = useState<any>(null);
   const [historyAgreement, setHistoryAgreement] = useState<any>(null);
+  const [premisesList, setPremisesList] = useState<string[]>([]);
+
+  const fetchPremises = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "rental_premises")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed)) setPremisesList(parsed);
+      }
+    } catch (err) {
+      console.error("Failed to fetch premises:", err);
+    }
+  }, []);
 
   useEffect(() => {
     fetchAgreements();
+    fetchPremises();
   }, []);
 
   const fetchAgreements = async () => {
@@ -237,7 +255,14 @@ const RentalAgreementsTab = () => {
               </div>
               <div className="space-y-2">
                 <Label>வளாகம் (Premises)</Label>
-                <Input value={form.shop_premises} onChange={(e) => setForm({ ...form, shop_premises: e.target.value })} />
+                <Select value={form.shop_premises} onValueChange={(v) => setForm({ ...form, shop_premises: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select premises" /></SelectTrigger>
+                  <SelectContent>
+                    {premisesList.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>கடை எண் (Shop Number)</Label>
