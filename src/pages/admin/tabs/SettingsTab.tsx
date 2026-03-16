@@ -1145,7 +1145,7 @@ const SettingsTab = () => {
               <span className="text-sm text-muted-foreground">No premises configured yet</span>
             ) : rentalPremises.map((p, i) => (
               <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
-                {p}
+                {p.name}{p.address ? ` — ${p.address}` : ""}
               </Badge>
             ))}
           </div>
