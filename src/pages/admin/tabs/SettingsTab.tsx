@@ -9,7 +9,7 @@ import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X } from "lucide-react";
+import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X, Pencil } from "lucide-react";
 import MahalPhotoManager from "@/components/admin/MahalPhotoManager";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
