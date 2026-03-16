@@ -260,11 +260,14 @@ const RentalAgreementsTab = () => {
               </div>
               <div className="space-y-2">
                 <Label>வளாகம் (Premises)</Label>
-                <Select value={form.shop_premises} onValueChange={(v) => setForm({ ...form, shop_premises: v })}>
+                <Select value={form.shop_premises} onValueChange={(v) => {
+                  const selected = premisesList.find((p) => p.name === v);
+                  setForm({ ...form, shop_premises: v, shop_address: selected?.address || form.shop_address });
+                }}>
                   <SelectTrigger><SelectValue placeholder="Select premises" /></SelectTrigger>
                   <SelectContent>
                     {premisesList.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

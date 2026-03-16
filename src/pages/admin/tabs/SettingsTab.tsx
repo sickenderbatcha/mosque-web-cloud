@@ -1925,30 +1925,48 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Rental Premises Dialog */}
-      <Dialog open={rentalPremisesDialogOpen} onOpenChange={setRentalPremisesDialogOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={rentalPremisesDialogOpen} onOpenChange={(open) => {
+        setRentalPremisesDialogOpen(open);
+        if (!open) { setEditingPremiseIndex(null); setNewPremisesInput(""); setNewPremisesAddress(""); }
+      }}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Manage Rental Premises (வாடகை வளாகங்கள்)</DialogTitle>
-            <DialogDescription>Add or remove premises shown in the Rental Agreement form.</DialogDescription>
+            <DialogDescription>Add premises with their addresses. The address will auto-fill in the Rental Agreement form.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="flex gap-2">
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <TamilInput
+                  value={newPremisesInput}
+                  onChange={(value) => setNewPremisesInput(value)}
+                  placeholder="Premise name (வளாகம் பெயர்)"
+                />
+                <Button size="sm" onClick={addRentalPremise}>
+                  {editingPremiseIndex !== null ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </Button>
+              </div>
               <TamilInput
-                value={newPremisesInput}
-                onChange={(value) => setNewPremisesInput(value)}
-                placeholder="Type in English, auto-converts to Tamil"
+                value={newPremisesAddress}
+                onChange={(value) => setNewPremisesAddress(value)}
+                placeholder="Premise address (வளாகம் முகவரி)"
               />
-              <Button size="sm" onClick={addRentalPremise}>
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {rentalPremises.map((p, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{p}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className={`flex items-center justify-between p-2 border rounded ${editingPremiseIndex === i ? 'border-primary bg-primary/5' : ''}`}>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-medium">{p.name}</span>
+                    {p.address && <p className="text-xs text-muted-foreground truncate">{p.address}</p>}
+                  </div>
+                  <div className="flex gap-0.5 flex-shrink-0">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => editRentalPremise(i)}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
