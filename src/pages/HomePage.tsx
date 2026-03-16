@@ -81,7 +81,7 @@ const HomePage = () => {
   const services = allServices.filter((s) => isVisible(s.key));
 
   const backOfficeItems = [
-    { icon: IndianRupee, titleTamil: "வரவு மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income", visKey: "card_backoffice_income" as const },
+    { icon: IndianRupee, titleTamil: "வருமானம் மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income", visKey: "card_backoffice_income" as const },
     { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses", visKey: "card_backoffice_expenses" as const },
     { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage", visKey: "card_backoffice_marriage" as const },
     { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage", visKey: "card_backoffice_outside_marriage" as const },
