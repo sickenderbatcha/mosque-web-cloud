@@ -281,11 +281,21 @@ const MembersDirectoryPage = () => {
                 placeholder="Search by name, ID, phone, occupation, or address..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value.toUpperCase())}
-                className="pl-10 uppercase"
+                className="pl-10 pr-10 uppercase"
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className={`absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 ${isListening ? "text-destructive animate-pulse" : "text-muted-foreground hover:text-foreground"}`}
+                onClick={startVoiceRecognition}
+                title={isListening ? "Stop listening" : "Search by voice"}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
             </div>
             <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
               <SelectTrigger className="w-full sm:w-40">
