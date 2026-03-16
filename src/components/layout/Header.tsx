@@ -300,7 +300,7 @@ const Header = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-52">
-                    {backOfficeItems.map((item) =>
+                    {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item) =>
                     <DropdownMenuItem key={item.path} asChild>
                         <Link to={item.path} className="cursor-pointer">
                           <div>
