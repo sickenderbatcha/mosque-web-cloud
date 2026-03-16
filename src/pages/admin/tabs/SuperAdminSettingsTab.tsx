@@ -1337,12 +1337,12 @@ const SuperAdminSettingsTab = () => {
           <div className="p-4 border rounded-lg space-y-3">
             <h4 className="font-medium text-sm mb-2">Back Office Dropdown Items (பின் அலுவலக மெனு)</h4>
             {[
-              { key: "nav_backoffice_income" as const, label: "வரவு மேலாண்மை / Income Management" },
+              { key: "nav_backoffice_income" as const, label: "வருமானம் மேலாண்மை / Income Management" },
               { key: "nav_backoffice_expenses" as const, label: "செலவு மேலாண்மை / Expenses Management" },
               { key: "nav_backoffice_marriage" as const, label: "திருமணப் பதிவு / Marriage Register" },
-              { key: "nav_backoffice_outside_marriage" as const, label: "வெளி திருமணம் / Outside Marriage" },
+              { key: "nav_backoffice_outside_marriage" as const, label: "வெளியூர் திருமணப் பதிவு / Outside Marriage" },
               { key: "nav_backoffice_death" as const, label: "இறப்புப் பதிவு / Death Register" },
-              { key: "nav_backoffice_rental" as const, label: "வாடகை / Rental" },
+              { key: "nav_backoffice_rental" as const, label: "வாடகை மேலாண்மை / Rental" },
               { key: "nav_backoffice_assets" as const, label: "சொத்துக்கள் / Assets" },
             ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between py-1">
