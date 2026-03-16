@@ -155,6 +155,45 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
+  const fetchBackofficeSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "show_backoffice_homepage")
+        .maybeSingle();
+
+      if (data && !error) {
+        setShowBackofficeHomepage(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching backoffice setting:", error);
+    }
+  };
+
+  const saveBackofficeSetting = async (value: boolean) => {
+    setSavingBackofficeSetting(true);
+    try {
+      await upsertAppSetting("show_backoffice_homepage", value ? "true" : "false", "Whether to show Back Office menu cards on the homepage");
+
+      setShowBackofficeHomepage(value);
+      toast({
+        title: "Setting Updated",
+        description: value
+          ? "Back Office cards are now visible on homepage"
+          : "Back Office cards are now hidden from homepage",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingBackofficeSetting(false);
+    }
+  };
+
   const fetchBookingAlertMessage = async () => {
     try {
       const { data, error } = await supabase

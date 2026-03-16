@@ -20,9 +20,11 @@ const HomePage = () => {
   const { heroUrl } = useHomepageHero();
   const { videoUrl } = useHomepageVideo();
   const { content, isLoading: contentLoading } = useLandingContent();
-  const { getSetting } = useAppSettings(["hero_brightness", "hero_overlay_color"]);
+  const { getSetting } = useAppSettings(["hero_brightness", "hero_overlay_color", "show_backoffice_homepage"]);
   const { getEnabledSections } = useHomepageSectionOrder();
   const { isVisible } = useMenuVisibility();
+  
+  const showBackoffice = getSetting("show_backoffice_homepage") !== "false";
   
   const heroBrightness = parseInt(getSetting("hero_brightness") || "100", 10);
   // Scale: 10% slider = 0.2 brightness, 100% slider = 2.0 brightness (200% = double brightness)
