@@ -23,6 +23,22 @@ export interface MenuVisibilityConfig {
   card_certificates: boolean;
   card_events: boolean;
   card_my_bookings: boolean;
+  // Back office nav dropdown items
+  nav_backoffice_income: boolean;
+  nav_backoffice_expenses: boolean;
+  nav_backoffice_marriage: boolean;
+  nav_backoffice_outside_marriage: boolean;
+  nav_backoffice_death: boolean;
+  nav_backoffice_rental: boolean;
+  nav_backoffice_assets: boolean;
+  // Back office homepage cards
+  card_backoffice_income: boolean;
+  card_backoffice_expenses: boolean;
+  card_backoffice_marriage: boolean;
+  card_backoffice_outside_marriage: boolean;
+  card_backoffice_death: boolean;
+  card_backoffice_rental: boolean;
+  card_backoffice_assets: boolean;
 }
 
 export const defaultMenuVisibility: MenuVisibilityConfig = {
