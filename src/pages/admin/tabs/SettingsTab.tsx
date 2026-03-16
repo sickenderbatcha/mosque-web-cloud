@@ -135,6 +135,7 @@ const SettingsTab = () => {
     fetchForcePendingSetting();
     fetchIncomeCategories();
     fetchExpenseCategories();
+    fetchRentalPremises();
   }, []);
 
   const fetchIncomeCategories = async () => {
