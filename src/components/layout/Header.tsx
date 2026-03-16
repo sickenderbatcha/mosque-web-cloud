@@ -281,6 +281,38 @@ const Header = () => {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Back Office Dropdown - Admin/SuperAdmin only */}
+              {isAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-1.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${
+                      backOfficeItems.some((item) => isActive(item.path)) ?
+                      "bg-primary text-primary-foreground" :
+                      "text-foreground hover:bg-muted hover:text-primary"}`
+                      }>
+                      <div>
+                        <span className="font-tamil block text-xs">பின் அலுவலகப் பணிகள்</span>
+                        <span className="text-[10px] opacity-80">Back Office</span>
+                      </div>
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    {backOfficeItems.map((item) =>
+                    <DropdownMenuItem key={item.path} asChild>
+                        <Link to={item.path} className="cursor-pointer">
+                          <div>
+                            <span className="font-tamil block">{item.labelTamil}</span>
+                            <span className="text-xs opacity-70">{item.labelEnglish}</span>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* Dark Mode Toggle & Admin dropdown & Login - Desktop */}
