@@ -35,6 +35,40 @@ const MembersDirectoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>("all");
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const startVoiceRecognition = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({ title: "Not supported", description: "Voice recognition is not supported in this browser.", variant: "destructive" });
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "ta-IN"; // Tamil default, also picks up English
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchQuery(transcript.toUpperCase());
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      toast({ title: "Voice error", description: "Could not recognize speech. Please try again.", variant: "destructive" });
+    };
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  }, [isListening]);
 
   useEffect(() => {
     fetchMembers();
