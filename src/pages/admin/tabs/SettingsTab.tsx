@@ -223,7 +223,11 @@ const SettingsTab = () => {
       if (data?.value) {
         const parsed = JSON.parse(data.value);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setRentalPremises(parsed);
+          // Migrate old string[] format to {name, address}[]
+          const migrated = parsed.map((p: any) =>
+            typeof p === "string" ? { name: p, address: "" } : p
+          );
+          setRentalPremises(migrated);
         }
       }
     } catch (err) {
@@ -234,35 +238,57 @@ const SettingsTab = () => {
   const addRentalPremise = () => {
     const trimmed = newPremisesInput.trim();
     if (!trimmed) return;
-    if (rentalPremises.some((p) => p.trim().toLowerCase() === trimmed.toLowerCase())) {
-      toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
-      return;
+    if (editingPremiseIndex !== null) {
+      // Update existing
+      setRentalPremises((prev) =>
+        prev.map((p, i) => i === editingPremiseIndex ? { name: trimmed, address: newPremisesAddress.trim() } : p)
+      );
+      setEditingPremiseIndex(null);
+    } else {
+      if (rentalPremises.some((p) => p.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+        toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
+        return;
+      }
+      setRentalPremises((prev) => [...prev, { name: trimmed, address: newPremisesAddress.trim() }]);
     }
-    setRentalPremises((prev) => [...prev, trimmed]);
     setNewPremisesInput("");
+    setNewPremisesAddress("");
+  };
+
+  const editRentalPremise = (index: number) => {
+    setEditingPremiseIndex(index);
+    setNewPremisesInput(rentalPremises[index].name);
+    setNewPremisesAddress(rentalPremises[index].address);
   };
 
   const removeRentalPremise = (index: number) => {
     setRentalPremises(rentalPremises.filter((_, i) => i !== index));
+    if (editingPremiseIndex === index) {
+      setEditingPremiseIndex(null);
+      setNewPremisesInput("");
+      setNewPremisesAddress("");
+    }
   };
 
   const saveRentalPremises = async () => {
     setSavingPremises(true);
     const pending = newPremisesInput.trim();
-    const hasPending = pending.length > 0;
-    const isDup = hasPending && rentalPremises.some((p) => p.trim().toLowerCase() === pending.toLowerCase());
-    const toSave = hasPending && !isDup ? [...rentalPremises, pending] : rentalPremises;
+    const hasPending = pending.length > 0 && editingPremiseIndex === null;
+    const isDup = hasPending && rentalPremises.some((p) => p.name.trim().toLowerCase() === pending.toLowerCase());
+    const toSave = hasPending && !isDup ? [...rentalPremises, { name: pending, address: newPremisesAddress.trim() }] : rentalPremises;
 
     try {
-      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list");
+      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list with addresses");
       setRentalPremises(toSave);
       setNewPremisesInput("");
+      setNewPremisesAddress("");
+      setEditingPremiseIndex(null);
       toast({ title: "Saved", description: "Rental premises updated successfully." });
       setRentalPremisesDialogOpen(false);
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to save.", variant: "destructive" });
     } finally {
-      setSavingCategories(false);
+      setSavingPremises(false);
     }
   };
 
