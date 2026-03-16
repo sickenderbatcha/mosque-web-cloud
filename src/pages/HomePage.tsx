@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, Heart, Building2, FileText, Users, ChevronRight } from "lucide-react";
+import { Calendar, Heart, Building2, FileText, Users, ChevronRight, IndianRupee, Receipt, Landmark, Globe, Skull, Home, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PrayerTimes from "@/components/PrayerTimes";
@@ -77,6 +77,16 @@ const HomePage = () => {
   ];
 
   const services = allServices.filter((s) => isVisible(s.key));
+
+  const backOfficeItems = [
+    { icon: IndianRupee, titleTamil: "வரவு மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income" },
+    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses" },
+    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage" },
+    { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage" },
+    { icon: Skull, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death" },
+    { icon: Home, titleTamil: "வாடகை", titleEnglish: "Rental", path: "/backoffice/rental" },
+    { icon: Package, titleTamil: "சொத்துக்கள்", titleEnglish: "Assets", path: "/backoffice/assets" },
+  ];
 
   // Section components mapping
   const renderSection = (sectionId: string) => {
@@ -239,6 +249,54 @@ const HomePage = () => {
                             {service.description}
                           </p>
                         </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+
+      case "backoffice":
+        return (
+          <section key="backoffice" className="py-20 bg-muted islamic-pattern">
+            <div className="container mx-auto px-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-12"
+              >
+                <h2 className="text-2xl md:text-3xl font-bold font-tamil text-foreground mb-4">
+                  பின் அலுவலகப் பணிகள்
+                </h2>
+                <p className="text-muted-foreground font-display text-lg">Back Office Work</p>
+                <div className="section-divider mt-6" />
+              </motion.div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {backOfficeItems.map((item, index) => (
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link to={item.path}>
+                      <Card className="h-full card-hover bg-gradient-card border-border/50 group cursor-pointer">
+                        <CardHeader className="text-center">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                            <item.icon className="h-8 w-8 text-accent" />
+                          </div>
+                          <CardTitle className="font-tamil text-xl text-foreground group-hover:text-accent transition-colors">
+                            {item.titleTamil}
+                          </CardTitle>
+                          <CardDescription className="font-display">
+                            {item.titleEnglish}
+                          </CardDescription>
+                        </CardHeader>
                       </Card>
                     </Link>
                   </motion.div>
