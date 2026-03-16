@@ -261,6 +261,7 @@ const HomePage = () => {
         );
 
       case "backoffice":
+        if (!showBackoffice) return null;
         return (
           <section key="backoffice" className="py-20 bg-muted islamic-pattern">
             <div className="container mx-auto px-4">
