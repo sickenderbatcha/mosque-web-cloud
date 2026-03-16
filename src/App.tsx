@@ -36,6 +36,13 @@ import NocCertificatePage from "./pages/NocCertificatePage";
 import HeirCertificatePage from "./pages/HeirCertificatePage";
 import InstallAppPage from "./pages/InstallAppPage";
 import NotFound from "./pages/NotFound";
+import BackOfficeIncomePage from "./pages/backoffice/BackOfficeIncomePage";
+import BackOfficeExpensesPage from "./pages/backoffice/BackOfficeExpensesPage";
+import BackOfficeMarriagePage from "./pages/backoffice/BackOfficeMarriagePage";
+import BackOfficeOutsideMarriagePage from "./pages/backoffice/BackOfficeOutsideMarriagePage";
+import BackOfficeDeathPage from "./pages/backoffice/BackOfficeDeathPage";
+import BackOfficeRentalPage from "./pages/backoffice/BackOfficeRentalPage";
+import BackOfficeAssetsPage from "./pages/backoffice/BackOfficeAssetsPage";
 
 const queryClient = new QueryClient();
 
