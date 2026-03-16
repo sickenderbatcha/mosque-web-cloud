@@ -95,8 +95,10 @@ const SettingsTab = () => {
 
   // Rental premises state
   const [rentalPremisesDialogOpen, setRentalPremisesDialogOpen] = useState(false);
-  const [rentalPremises, setRentalPremises] = useState<string[]>([]);
+  const [rentalPremises, setRentalPremises] = useState<{ name: string; address: string }[]>([]);
   const [newPremisesInput, setNewPremisesInput] = useState("");
+  const [newPremisesAddress, setNewPremisesAddress] = useState("");
+  const [editingPremiseIndex, setEditingPremiseIndex] = useState<number | null>(null);
   const [savingPremises, setSavingPremises] = useState(false);
 
   // Expense categories state
