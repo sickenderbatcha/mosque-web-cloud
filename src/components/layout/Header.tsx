@@ -37,6 +37,16 @@ const allOnlineServicesItems = [
 { path: "/services", labelTamil: "சான்றிதழ்கள்", labelEnglish: "Certificates", visKey: "nav_service_certificates" as const },
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
+const backOfficeItems = [
+{ path: "/backoffice/income", labelTamil: "வரவு", labelEnglish: "Income" },
+{ path: "/backoffice/expenses", labelTamil: "செலவு", labelEnglish: "Expenses" },
+{ path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register" },
+{ path: "/backoffice/outside-marriage", labelTamil: "வெளி திருமணப் பதிவு", labelEnglish: "Outside Marriage" },
+{ path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register" },
+{ path: "/backoffice/rental", labelTamil: "வாடகை ஒப்பந்தம்", labelEnglish: "Rental" },
+{ path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets" },
+];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -271,6 +281,38 @@ const Header = () => {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Back Office Dropdown - Admin/SuperAdmin only */}
+              {isAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-1.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${
+                      backOfficeItems.some((item) => isActive(item.path)) ?
+                      "bg-primary text-primary-foreground" :
+                      "text-foreground hover:bg-muted hover:text-primary"}`
+                      }>
+                      <div>
+                        <span className="font-tamil block text-xs">பின் அலுவலகப் பணிகள்</span>
+                        <span className="text-[10px] opacity-80">Back Office</span>
+                      </div>
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    {backOfficeItems.map((item) =>
+                    <DropdownMenuItem key={item.path} asChild>
+                        <Link to={item.path} className="cursor-pointer">
+                          <div>
+                            <span className="font-tamil block">{item.labelTamil}</span>
+                            <span className="text-xs opacity-70">{item.labelEnglish}</span>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* Dark Mode Toggle & Admin dropdown & Login - Desktop */}
@@ -421,6 +463,33 @@ const Header = () => {
                       </motion.div>
                   )}
                   </div>
+
+                  {/* Back Office Section - Mobile (Admin/SuperAdmin only) */}
+                  {isAdmin && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        பின் அலுவலகப் பணிகள் / Back Office
+                      </p>
+                      {backOfficeItems.map((item, index) =>
+                        <motion.div
+                          key={item.path}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (menuItems.length + onlineServicesItems.length + index) * 0.05 }}>
+                          <Link
+                            to={item.path}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`block px-4 py-3 rounded-lg transition-all ${
+                              isActive(item.path) ?
+                              "bg-primary text-primary-foreground" :
+                              "hover:bg-muted"}`}>
+                            <span className="font-tamil block">{item.labelTamil}</span>
+                            <span className="text-xs opacity-70">{item.labelEnglish}</span>
+                          </Link>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* User Dashboard in mobile */}
                   {user &&
