@@ -463,6 +463,33 @@ const Header = () => {
                       </motion.div>
                   )}
                   </div>
+
+                  {/* Back Office Section - Mobile (Admin/SuperAdmin only) */}
+                  {isAdmin && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        பின் அலுவலகப் பணிகள் / Back Office
+                      </p>
+                      {backOfficeItems.map((item, index) =>
+                        <motion.div
+                          key={item.path}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (menuItems.length + onlineServicesItems.length + index) * 0.05 }}>
+                          <Link
+                            to={item.path}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`block px-4 py-3 rounded-lg transition-all ${
+                              isActive(item.path) ?
+                              "bg-primary text-primary-foreground" :
+                              "hover:bg-muted"}`}>
+                            <span className="font-tamil block">{item.labelTamil}</span>
+                            <span className="text-xs opacity-70">{item.labelEnglish}</span>
+                          </Link>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* User Dashboard in mobile */}
                   {user &&
