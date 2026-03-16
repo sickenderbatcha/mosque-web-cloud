@@ -1114,6 +1114,40 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
+          {/* Back Office Homepage Visibility */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Home className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Back Office Cards on Homepage</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Show or hide Back Office menu cards on the homepage
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    முகப்புப் பக்கத்தில் பின் அலுவலக மெனு அட்டைகளை காட்டு / மறை
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    showBackofficeHomepage
+                      ? "text-sm font-medium text-primary"
+                      : "text-sm font-medium text-muted-foreground"
+                  }
+                >
+                  {showBackofficeHomepage ? "Visible" : "Hidden"}
+                </span>
+                <Switch
+                  checked={showBackofficeHomepage}
+                  onCheckedChange={(checked) => saveBackofficeSetting(checked)}
+                  disabled={savingBackofficeSetting}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Booking Alert Message */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-medium mb-3 flex items-center gap-2">
