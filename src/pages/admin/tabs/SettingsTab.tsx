@@ -210,6 +210,60 @@ const SettingsTab = () => {
     }
   };
 
+  // Rental premises functions
+  const fetchRentalPremises = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "rental_premises")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRentalPremises(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch rental premises:", err);
+    }
+  };
+
+  const addRentalPremise = () => {
+    const trimmed = newPremisesInput.trim();
+    if (!trimmed) return;
+    if (rentalPremises.some((p) => p.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
+      return;
+    }
+    setRentalPremises((prev) => [...prev, trimmed]);
+    setNewPremisesInput("");
+  };
+
+  const removeRentalPremise = (index: number) => {
+    setRentalPremises(rentalPremises.filter((_, i) => i !== index));
+  };
+
+  const saveRentalPremises = async () => {
+    setSavingPremises(true);
+    const pending = newPremisesInput.trim();
+    const hasPending = pending.length > 0;
+    const isDup = hasPending && rentalPremises.some((p) => p.trim().toLowerCase() === pending.toLowerCase());
+    const toSave = hasPending && !isDup ? [...rentalPremises, pending] : rentalPremises;
+
+    try {
+      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list");
+      setRentalPremises(toSave);
+      setNewPremisesInput("");
+      toast({ title: "Saved", description: "Rental premises updated successfully." });
+      setRentalPremisesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save.", variant: "destructive" });
+    } finally {
+      setSavingCategories(false);
+    }
+  };
+
   const fetchExpenseCategories = async () => {
     try {
       const { data } = await supabase
