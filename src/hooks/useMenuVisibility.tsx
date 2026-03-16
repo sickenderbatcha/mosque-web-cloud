@@ -23,6 +23,22 @@ export interface MenuVisibilityConfig {
   card_certificates: boolean;
   card_events: boolean;
   card_my_bookings: boolean;
+  // Back office nav dropdown items
+  nav_backoffice_income: boolean;
+  nav_backoffice_expenses: boolean;
+  nav_backoffice_marriage: boolean;
+  nav_backoffice_outside_marriage: boolean;
+  nav_backoffice_death: boolean;
+  nav_backoffice_rental: boolean;
+  nav_backoffice_assets: boolean;
+  // Back office homepage cards
+  card_backoffice_income: boolean;
+  card_backoffice_expenses: boolean;
+  card_backoffice_marriage: boolean;
+  card_backoffice_outside_marriage: boolean;
+  card_backoffice_death: boolean;
+  card_backoffice_rental: boolean;
+  card_backoffice_assets: boolean;
 }
 
 export const defaultMenuVisibility: MenuVisibilityConfig = {
@@ -44,6 +60,20 @@ export const defaultMenuVisibility: MenuVisibilityConfig = {
   card_certificates: true,
   card_events: true,
   card_my_bookings: true,
+  nav_backoffice_income: true,
+  nav_backoffice_expenses: true,
+  nav_backoffice_marriage: true,
+  nav_backoffice_outside_marriage: true,
+  nav_backoffice_death: true,
+  nav_backoffice_rental: true,
+  nav_backoffice_assets: true,
+  card_backoffice_income: true,
+  card_backoffice_expenses: true,
+  card_backoffice_marriage: true,
+  card_backoffice_outside_marriage: true,
+  card_backoffice_death: true,
+  card_backoffice_rental: true,
+  card_backoffice_assets: true,
 };
 
 const SETTINGS_KEY = "menu_visibility";

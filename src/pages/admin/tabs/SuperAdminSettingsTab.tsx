@@ -1333,6 +1333,50 @@ const SuperAdminSettingsTab = () => {
             ))}
           </div>
 
+          {/* Back Office Dropdown Items */}
+          <div className="p-4 border rounded-lg space-y-3">
+            <h4 className="font-medium text-sm mb-2">Back Office Dropdown Items (பின் அலுவலக மெனு)</h4>
+            {[
+              { key: "nav_backoffice_income" as const, label: "வரவு மேலாண்மை / Income Management" },
+              { key: "nav_backoffice_expenses" as const, label: "செலவு மேலாண்மை / Expenses Management" },
+              { key: "nav_backoffice_marriage" as const, label: "திருமணப் பதிவு / Marriage Register" },
+              { key: "nav_backoffice_outside_marriage" as const, label: "வெளி திருமணம் / Outside Marriage" },
+              { key: "nav_backoffice_death" as const, label: "இறப்புப் பதிவு / Death Register" },
+              { key: "nav_backoffice_rental" as const, label: "வாடகை / Rental" },
+              { key: "nav_backoffice_assets" as const, label: "சொத்துக்கள் / Assets" },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between py-1">
+                <span className="text-sm font-tamil">{label}</span>
+                <Switch
+                  checked={menuVisibility[key]}
+                  onCheckedChange={(val) => setMenuVisibility((prev) => ({ ...prev, [key]: val }))}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Back Office Homepage Cards */}
+          <div className="p-4 border rounded-lg space-y-3">
+            <h4 className="font-medium text-sm mb-2">Back Office Homepage Cards (பின் அலுவலக அட்டைகள்)</h4>
+            {[
+              { key: "card_backoffice_income" as const, label: "வரவு மேலாண்மை / Income Management Card" },
+              { key: "card_backoffice_expenses" as const, label: "செலவு மேலாண்மை / Expenses Management Card" },
+              { key: "card_backoffice_marriage" as const, label: "திருமணப் பதிவு / Marriage Register Card" },
+              { key: "card_backoffice_outside_marriage" as const, label: "வெளி திருமணம் / Outside Marriage Card" },
+              { key: "card_backoffice_death" as const, label: "இறப்புப் பதிவு / Death Register Card" },
+              { key: "card_backoffice_rental" as const, label: "வாடகை / Rental Card" },
+              { key: "card_backoffice_assets" as const, label: "சொத்துக்கள் / Assets Card" },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between py-1">
+                <span className="text-sm font-tamil">{label}</span>
+                <Switch
+                  checked={menuVisibility[key]}
+                  onCheckedChange={(val) => setMenuVisibility((prev) => ({ ...prev, [key]: val }))}
+                />
+              </div>
+            ))}
+          </div>
+
           <div className="flex justify-end">
             <Button
               onClick={async () => {

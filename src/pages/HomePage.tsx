@@ -81,13 +81,13 @@ const HomePage = () => {
   const services = allServices.filter((s) => isVisible(s.key));
 
   const backOfficeItems = [
-    { icon: IndianRupee, titleTamil: "வரவு மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income" },
-    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses" },
-    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage" },
-    { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage" },
-    { icon: Skull, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death" },
-    { icon: Home, titleTamil: "வாடகை", titleEnglish: "Rental", path: "/backoffice/rental" },
-    { icon: Package, titleTamil: "சொத்துக்கள்", titleEnglish: "Assets", path: "/backoffice/assets" },
+    { icon: IndianRupee, titleTamil: "வரவு மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income", visKey: "card_backoffice_income" as const },
+    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses", visKey: "card_backoffice_expenses" as const },
+    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage", visKey: "card_backoffice_marriage" as const },
+    { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage", visKey: "card_backoffice_outside_marriage" as const },
+    { icon: Skull, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const },
+    { icon: Home, titleTamil: "வாடகை", titleEnglish: "Rental", path: "/backoffice/rental", visKey: "card_backoffice_rental" as const },
+    { icon: Package, titleTamil: "சொத்துக்கள்", titleEnglish: "Assets", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const },
   ];
 
   // Section components mapping
@@ -279,7 +279,7 @@ const HomePage = () => {
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {backOfficeItems.map((item, index) => (
+                {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item, index) => (
                   <motion.div
                     key={item.path}
                     initial={{ opacity: 0, y: 30 }}

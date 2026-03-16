@@ -38,13 +38,13 @@ const allOnlineServicesItems = [
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
 const backOfficeItems = [
-  { path: "/backoffice/income", labelTamil: "வரவு மேலாண்மை", labelEnglish: "Income Management" },
-  { path: "/backoffice/expenses", labelTamil: "செலவு மேலாண்மை", labelEnglish: "Expenses Management" },
-{ path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register" },
-{ path: "/backoffice/outside-marriage", labelTamil: "வெளி திருமணப் பதிவு", labelEnglish: "Outside Marriage" },
-{ path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register" },
-{ path: "/backoffice/rental", labelTamil: "வாடகை ஒப்பந்தம்", labelEnglish: "Rental" },
-{ path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets" },
+  { path: "/backoffice/income", labelTamil: "வரவு மேலாண்மை", labelEnglish: "Income Management", visKey: "nav_backoffice_income" as const },
+  { path: "/backoffice/expenses", labelTamil: "செலவு மேலாண்மை", labelEnglish: "Expenses Management", visKey: "nav_backoffice_expenses" as const },
+  { path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register", visKey: "nav_backoffice_marriage" as const },
+  { path: "/backoffice/outside-marriage", labelTamil: "வெளி திருமணப் பதிவு", labelEnglish: "Outside Marriage", visKey: "nav_backoffice_outside_marriage" as const },
+  { path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register", visKey: "nav_backoffice_death" as const },
+  { path: "/backoffice/rental", labelTamil: "வாடகை ஒப்பந்தம்", labelEnglish: "Rental", visKey: "nav_backoffice_rental" as const },
+  { path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets", visKey: "nav_backoffice_assets" as const },
 ];
 
 const Header = () => {
@@ -300,7 +300,7 @@ const Header = () => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-52">
-                    {backOfficeItems.map((item) =>
+                    {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item) =>
                     <DropdownMenuItem key={item.path} asChild>
                         <Link to={item.path} className="cursor-pointer">
                           <div>
@@ -470,7 +470,7 @@ const Header = () => {
                       <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         பின் அலுவலகப் பணிகள் / Back Office
                       </p>
-                      {backOfficeItems.map((item, index) =>
+                      {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item, index) =>
                         <motion.div
                           key={item.path}
                           initial={{ opacity: 0, x: -20 }}
