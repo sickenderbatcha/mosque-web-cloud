@@ -273,9 +273,21 @@ const SettingsTab = () => {
   const saveRentalPremises = async () => {
     setSavingPremises(true);
     const pending = newPremisesInput.trim();
-    const hasPending = pending.length > 0 && editingPremiseIndex === null;
-    const isDup = hasPending && rentalPremises.some((p) => p.name.trim().toLowerCase() === pending.toLowerCase());
-    const toSave = hasPending && !isDup ? [...rentalPremises, { name: pending, address: newPremisesAddress.trim() }] : rentalPremises;
+    let toSave = [...rentalPremises];
+
+    if (pending.length > 0) {
+      if (editingPremiseIndex !== null) {
+        // Apply pending edit before saving
+        toSave = toSave.map((p, i) =>
+          i === editingPremiseIndex ? { name: pending, address: newPremisesAddress.trim() } : p
+        );
+      } else {
+        const isDup = toSave.some((p) => p.name.trim().toLowerCase() === pending.toLowerCase());
+        if (!isDup) {
+          toSave = [...toSave, { name: pending, address: newPremisesAddress.trim() }];
+        }
+      }
+    }
 
     try {
       await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list with addresses");
