@@ -72,9 +72,27 @@ const RentalAgreementsTab = () => {
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [collectRentAgreement, setCollectRentAgreement] = useState<any>(null);
   const [historyAgreement, setHistoryAgreement] = useState<any>(null);
+  const [premisesList, setPremisesList] = useState<string[]>([]);
+
+  const fetchPremises = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "rental_premises")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed)) setPremisesList(parsed);
+      }
+    } catch (err) {
+      console.error("Failed to fetch premises:", err);
+    }
+  }, []);
 
   useEffect(() => {
     fetchAgreements();
+    fetchPremises();
   }, []);
 
   const fetchAgreements = async () => {
