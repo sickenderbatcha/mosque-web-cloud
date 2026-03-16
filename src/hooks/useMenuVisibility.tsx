@@ -60,6 +60,20 @@ export const defaultMenuVisibility: MenuVisibilityConfig = {
   card_certificates: true,
   card_events: true,
   card_my_bookings: true,
+  nav_backoffice_income: true,
+  nav_backoffice_expenses: true,
+  nav_backoffice_marriage: true,
+  nav_backoffice_outside_marriage: true,
+  nav_backoffice_death: true,
+  nav_backoffice_rental: true,
+  nav_backoffice_assets: true,
+  card_backoffice_income: true,
+  card_backoffice_expenses: true,
+  card_backoffice_marriage: true,
+  card_backoffice_outside_marriage: true,
+  card_backoffice_death: true,
+  card_backoffice_rental: true,
+  card_backoffice_assets: true,
 };
 
 const SETTINGS_KEY = "menu_visibility";
