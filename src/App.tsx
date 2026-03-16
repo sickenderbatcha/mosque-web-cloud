@@ -80,6 +80,14 @@ const AppContent = () => {
       <Route path="/noc-certificate" element={<ProtectedRoute><NocCertificatePage /></ProtectedRoute>} />
       <Route path="/heir-certificate" element={<ProtectedRoute><HeirCertificatePage /></ProtectedRoute>} />
       <Route path="/install" element={<InstallAppPage />} />
+      {/* Back Office Routes - Admin/SuperAdmin only */}
+      <Route path="/backoffice/income" element={<Layout><AdminRoute><BackOfficeIncomePage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/expenses" element={<Layout><AdminRoute><BackOfficeExpensesPage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/marriage" element={<Layout><AdminRoute><BackOfficeMarriagePage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/outside-marriage" element={<Layout><AdminRoute><BackOfficeOutsideMarriagePage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/death" element={<Layout><AdminRoute><BackOfficeDeathPage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/rental" element={<Layout><AdminRoute><BackOfficeRentalPage /></AdminRoute></Layout>} />
+      <Route path="/backoffice/assets" element={<Layout><AdminRoute><BackOfficeAssetsPage /></AdminRoute></Layout>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
