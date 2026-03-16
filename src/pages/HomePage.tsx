@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, Heart, Building2, FileText, Users, ChevronRight, IndianRupee, Receipt, Landmark, Globe, Skull, Home, Package } from "lucide-react";
+import { Calendar, Heart, Building2, FileText, Users, ChevronRight, IndianRupee, Receipt, Landmark, Globe, Home, Package } from "lucide-react";
+import MuslimGraveIcon from "@/components/icons/MuslimGraveIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PrayerTimes from "@/components/PrayerTimes";
