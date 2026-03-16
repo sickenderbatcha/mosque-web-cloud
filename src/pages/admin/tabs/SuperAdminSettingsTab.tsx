@@ -75,6 +75,10 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
+  // Back office homepage visibility toggle
+  const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
+  const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
+
   // Booking alert message state
   const [bookingAlertMessage, setBookingAlertMessage] = useState("தேதி கிடைக்கிறதா என்பது நிர்வாகத்தால் சரிபார்க்கப்படும். உங்கள் முன்பதிவு நிலை குறித்து தொலைபேசி வழியாக அறிவிக்கப்படும்.");
   const [savingAlertMessage, setSavingAlertMessage] = useState(false);
@@ -101,6 +105,7 @@ const SuperAdminSettingsTab = () => {
     fetchHeroBrightness();
     fetchBookingTimeout();
     fetchOtpSetting();
+    fetchBackofficeSetting();
     fetchBookingAlertMessage();
     fetchFooterCreditText();
     fetchHeroOverlayColor();
@@ -147,6 +152,45 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingOtpSetting(false);
+    }
+  };
+
+  const fetchBackofficeSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "show_backoffice_homepage")
+        .maybeSingle();
+
+      if (data && !error) {
+        setShowBackofficeHomepage(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching backoffice setting:", error);
+    }
+  };
+
+  const saveBackofficeSetting = async (value: boolean) => {
+    setSavingBackofficeSetting(true);
+    try {
+      await upsertAppSetting("show_backoffice_homepage", value ? "true" : "false", "Whether to show Back Office menu cards on the homepage");
+
+      setShowBackofficeHomepage(value);
+      toast({
+        title: "Setting Updated",
+        description: value
+          ? "Back Office cards are now visible on homepage"
+          : "Back Office cards are now hidden from homepage",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingBackofficeSetting(false);
     }
   };
 
@@ -1104,6 +1148,40 @@ const SuperAdminSettingsTab = () => {
                   checked={otpRequired}
                   onCheckedChange={(checked) => saveOtpSetting(checked)}
                   disabled={savingOtpSetting}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Back Office Homepage Visibility */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Home className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Back Office Cards on Homepage</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Show or hide Back Office menu cards on the homepage
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    முகப்புப் பக்கத்தில் பின் அலுவலக மெனு அட்டைகளை காட்டு / மறை
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    showBackofficeHomepage
+                      ? "text-sm font-medium text-primary"
+                      : "text-sm font-medium text-muted-foreground"
+                  }
+                >
+                  {showBackofficeHomepage ? "Visible" : "Hidden"}
+                </span>
+                <Switch
+                  checked={showBackofficeHomepage}
+                  onCheckedChange={(checked) => saveBackofficeSetting(checked)}
+                  disabled={savingBackofficeSetting}
                 />
               </div>
             </div>
