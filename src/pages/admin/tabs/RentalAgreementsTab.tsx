@@ -72,7 +72,7 @@ const RentalAgreementsTab = () => {
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [collectRentAgreement, setCollectRentAgreement] = useState<any>(null);
   const [historyAgreement, setHistoryAgreement] = useState<any>(null);
-  const [premisesList, setPremisesList] = useState<string[]>([]);
+  const [premisesList, setPremisesList] = useState<{ name: string; address: string }[]>([]);
 
   const fetchPremises = useCallback(async () => {
     try {
@@ -83,7 +83,12 @@ const RentalAgreementsTab = () => {
         .maybeSingle();
       if (data?.value) {
         const parsed = JSON.parse(data.value);
-        if (Array.isArray(parsed)) setPremisesList(parsed);
+        if (Array.isArray(parsed)) {
+          const migrated = parsed.map((p: any) =>
+            typeof p === "string" ? { name: p, address: "" } : p
+          );
+          setPremisesList(migrated);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch premises:", err);
@@ -255,11 +260,14 @@ const RentalAgreementsTab = () => {
               </div>
               <div className="space-y-2">
                 <Label>வளாகம் (Premises)</Label>
-                <Select value={form.shop_premises} onValueChange={(v) => setForm({ ...form, shop_premises: v })}>
+                <Select value={form.shop_premises} onValueChange={(v) => {
+                  const selected = premisesList.find((p) => p.name === v);
+                  setForm({ ...form, shop_premises: v, shop_address: selected?.address || form.shop_address });
+                }}>
                   <SelectTrigger><SelectValue placeholder="Select premises" /></SelectTrigger>
                   <SelectContent>
                     {premisesList.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

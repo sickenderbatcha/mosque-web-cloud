@@ -9,7 +9,7 @@ import { TamilInput } from "@/components/ui/tamil-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X } from "lucide-react";
+import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X, Pencil } from "lucide-react";
 import MahalPhotoManager from "@/components/admin/MahalPhotoManager";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
@@ -95,8 +95,10 @@ const SettingsTab = () => {
 
   // Rental premises state
   const [rentalPremisesDialogOpen, setRentalPremisesDialogOpen] = useState(false);
-  const [rentalPremises, setRentalPremises] = useState<string[]>([]);
+  const [rentalPremises, setRentalPremises] = useState<{ name: string; address: string }[]>([]);
   const [newPremisesInput, setNewPremisesInput] = useState("");
+  const [newPremisesAddress, setNewPremisesAddress] = useState("");
+  const [editingPremiseIndex, setEditingPremiseIndex] = useState<number | null>(null);
   const [savingPremises, setSavingPremises] = useState(false);
 
   // Expense categories state
@@ -221,7 +223,11 @@ const SettingsTab = () => {
       if (data?.value) {
         const parsed = JSON.parse(data.value);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setRentalPremises(parsed);
+          // Migrate old string[] format to {name, address}[]
+          const migrated = parsed.map((p: any) =>
+            typeof p === "string" ? { name: p, address: "" } : p
+          );
+          setRentalPremises(migrated);
         }
       }
     } catch (err) {
@@ -232,35 +238,57 @@ const SettingsTab = () => {
   const addRentalPremise = () => {
     const trimmed = newPremisesInput.trim();
     if (!trimmed) return;
-    if (rentalPremises.some((p) => p.trim().toLowerCase() === trimmed.toLowerCase())) {
-      toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
-      return;
+    if (editingPremiseIndex !== null) {
+      // Update existing
+      setRentalPremises((prev) =>
+        prev.map((p, i) => i === editingPremiseIndex ? { name: trimmed, address: newPremisesAddress.trim() } : p)
+      );
+      setEditingPremiseIndex(null);
+    } else {
+      if (rentalPremises.some((p) => p.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+        toast({ title: "Duplicate", description: "This premise already exists.", variant: "destructive" });
+        return;
+      }
+      setRentalPremises((prev) => [...prev, { name: trimmed, address: newPremisesAddress.trim() }]);
     }
-    setRentalPremises((prev) => [...prev, trimmed]);
     setNewPremisesInput("");
+    setNewPremisesAddress("");
+  };
+
+  const editRentalPremise = (index: number) => {
+    setEditingPremiseIndex(index);
+    setNewPremisesInput(rentalPremises[index].name);
+    setNewPremisesAddress(rentalPremises[index].address);
   };
 
   const removeRentalPremise = (index: number) => {
     setRentalPremises(rentalPremises.filter((_, i) => i !== index));
+    if (editingPremiseIndex === index) {
+      setEditingPremiseIndex(null);
+      setNewPremisesInput("");
+      setNewPremisesAddress("");
+    }
   };
 
   const saveRentalPremises = async () => {
     setSavingPremises(true);
     const pending = newPremisesInput.trim();
-    const hasPending = pending.length > 0;
-    const isDup = hasPending && rentalPremises.some((p) => p.trim().toLowerCase() === pending.toLowerCase());
-    const toSave = hasPending && !isDup ? [...rentalPremises, pending] : rentalPremises;
+    const hasPending = pending.length > 0 && editingPremiseIndex === null;
+    const isDup = hasPending && rentalPremises.some((p) => p.name.trim().toLowerCase() === pending.toLowerCase());
+    const toSave = hasPending && !isDup ? [...rentalPremises, { name: pending, address: newPremisesAddress.trim() }] : rentalPremises;
 
     try {
-      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list");
+      await upsertAppSetting("rental_premises", JSON.stringify(toSave), "Configurable rental premises list with addresses");
       setRentalPremises(toSave);
       setNewPremisesInput("");
+      setNewPremisesAddress("");
+      setEditingPremiseIndex(null);
       toast({ title: "Saved", description: "Rental premises updated successfully." });
       setRentalPremisesDialogOpen(false);
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to save.", variant: "destructive" });
     } finally {
-      setSavingCategories(false);
+      setSavingPremises(false);
     }
   };
 
@@ -1117,7 +1145,7 @@ const SettingsTab = () => {
               <span className="text-sm text-muted-foreground">No premises configured yet</span>
             ) : rentalPremises.map((p, i) => (
               <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
-                {p}
+                {p.name}{p.address ? ` — ${p.address}` : ""}
               </Badge>
             ))}
           </div>
@@ -1897,30 +1925,48 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Rental Premises Dialog */}
-      <Dialog open={rentalPremisesDialogOpen} onOpenChange={setRentalPremisesDialogOpen}>
-        <DialogContent className="max-w-md">
+      <Dialog open={rentalPremisesDialogOpen} onOpenChange={(open) => {
+        setRentalPremisesDialogOpen(open);
+        if (!open) { setEditingPremiseIndex(null); setNewPremisesInput(""); setNewPremisesAddress(""); }
+      }}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Manage Rental Premises (வாடகை வளாகங்கள்)</DialogTitle>
-            <DialogDescription>Add or remove premises shown in the Rental Agreement form.</DialogDescription>
+            <DialogDescription>Add premises with their addresses. The address will auto-fill in the Rental Agreement form.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="flex gap-2">
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <TamilInput
+                  value={newPremisesInput}
+                  onChange={(value) => setNewPremisesInput(value)}
+                  placeholder="Premise name (வளாகம் பெயர்)"
+                />
+                <Button size="sm" onClick={addRentalPremise}>
+                  {editingPremiseIndex !== null ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </Button>
+              </div>
               <TamilInput
-                value={newPremisesInput}
-                onChange={(value) => setNewPremisesInput(value)}
-                placeholder="Type in English, auto-converts to Tamil"
+                value={newPremisesAddress}
+                onChange={(value) => setNewPremisesAddress(value)}
+                placeholder="Premise address (வளாகம் முகவரி)"
               />
-              <Button size="sm" onClick={addRentalPremise}>
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {rentalPremises.map((p, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{p}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className={`flex items-center justify-between p-2 border rounded ${editingPremiseIndex === i ? 'border-primary bg-primary/5' : ''}`}>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-medium">{p.name}</span>
+                    {p.address && <p className="text-xs text-muted-foreground truncate">{p.address}</p>}
+                  </div>
+                  <div className="flex gap-0.5 flex-shrink-0">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => editRentalPremise(i)}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
