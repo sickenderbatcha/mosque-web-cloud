@@ -17,9 +17,9 @@ const DEFAULT_SECTIONS: HomepageSection[] = [
   { id: "services", name: "services", label: "Online Services", labelTamil: "ஆன்லைன் சேவைகள்", enabled: true, order: 3 },
   { id: "backoffice", name: "backoffice", label: "Back Office", labelTamil: "பின் அலுவலகப் பணிகள்", enabled: true, order: 4 },
   { id: "prayer", name: "prayer", label: "Prayer Times", labelTamil: "தொழுகை நேரங்கள்", enabled: true, order: 5 },
-  { id: "calendar", name: "calendar", label: "Islamic Calendar", labelTamil: "இஸ்லாமிய நாட்காட்டி", enabled: true, order: 5 },
-  { id: "about", name: "about", label: "About Preview", labelTamil: "எங்களை பற்றி", enabled: true, order: 6 },
-  { id: "cta", name: "cta", label: "Call to Action", labelTamil: "அழைப்பு", enabled: true, order: 7 },
+  { id: "calendar", name: "calendar", label: "Islamic Calendar", labelTamil: "இஸ்லாமிய நாட்காட்டி", enabled: true, order: 6 },
+  { id: "about", name: "about", label: "About Preview", labelTamil: "எங்களை பற்றி", enabled: true, order: 7 },
+  { id: "cta", name: "cta", label: "Call to Action", labelTamil: "அழைப்பு", enabled: true, order: 8 },
 ];
 
 // Simple session cache (expires on page reload)
