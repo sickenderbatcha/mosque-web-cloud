@@ -279,7 +279,7 @@ const HomePage = () => {
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {backOfficeItems.map((item, index) => (
+                {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item, index) => (
                   <motion.div
                     key={item.path}
                     initial={{ opacity: 0, y: 30 }}
