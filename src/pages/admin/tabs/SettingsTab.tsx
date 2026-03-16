@@ -1895,6 +1895,46 @@ const SettingsTab = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Rental Premises Dialog */}
+      <Dialog open={rentalPremisesDialogOpen} onOpenChange={setRentalPremisesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Rental Premises (வாடகை வளாகங்கள்)</DialogTitle>
+            <DialogDescription>Add or remove premises shown in the Rental Agreement form.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <TamilInput
+                value={newPremisesInput}
+                onChange={(value) => setNewPremisesInput(value)}
+                placeholder="Type in English, auto-converts to Tamil"
+              />
+              <Button size="sm" onClick={addRentalPremise}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {rentalPremises.map((p, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{p}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRentalPremise(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRentalPremisesDialogOpen(false); fetchRentalPremises(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveRentalPremises} disabled={savingPremises}>
+              {savingPremises ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
