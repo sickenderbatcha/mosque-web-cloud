@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, Phone, Mail, MapPin, Briefcase, Droplet, Loader2, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Users, Search, Phone, Mail, MapPin, Briefcase, Droplet, Loader2, Download, FileSpreadsheet, FileText, Mic, MicOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
