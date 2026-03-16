@@ -282,8 +282,8 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Back Office Dropdown - Admin/SuperAdmin only */}
-              {isAdmin && (
+              {/* Back Office Dropdown - visible to all, pages restricted to admin */}
+              {(
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
