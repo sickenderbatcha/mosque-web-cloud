@@ -1100,6 +1100,34 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Rental Premises Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Rental Premises (வாடகை வளாகங்கள்)
+          </CardTitle>
+          <CardDescription>
+            Configure premises options shown in the Rental Agreement form dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {rentalPremises.length === 0 ? (
+              <span className="text-sm text-muted-foreground">No premises configured yet</span>
+            ) : rentalPremises.map((p, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {p}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setRentalPremisesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Premises
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Nonbu Kanji Donation Settings */}
       <Card>
         <CardHeader>
