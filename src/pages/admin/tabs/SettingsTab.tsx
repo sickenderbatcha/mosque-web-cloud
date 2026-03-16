@@ -93,6 +93,12 @@ const SettingsTab = () => {
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [savingCategories, setSavingCategories] = useState(false);
 
+  // Rental premises state
+  const [rentalPremisesDialogOpen, setRentalPremisesDialogOpen] = useState(false);
+  const [rentalPremises, setRentalPremises] = useState<string[]>([]);
+  const [newPremisesInput, setNewPremisesInput] = useState("");
+  const [savingPremises, setSavingPremises] = useState(false);
+
   // Expense categories state
   const [expenseCategoriesDialogOpen, setExpenseCategoriesDialogOpen] = useState(false);
   const [expenseCategories, setExpenseCategories] = useState<string[]>([
