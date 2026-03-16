@@ -470,7 +470,7 @@ const Header = () => {
                       <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         பின் அலுவலகப் பணிகள் / Back Office
                       </p>
-                      {backOfficeItems.map((item, index) =>
+                      {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item, index) =>
                         <motion.div
                           key={item.path}
                           initial={{ opacity: 0, x: -20 }}
