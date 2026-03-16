@@ -78,6 +78,16 @@ const HomePage = () => {
 
   const services = allServices.filter((s) => isVisible(s.key));
 
+  const backOfficeItems = [
+    { icon: IndianRupee, titleTamil: "வரவு மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income" },
+    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses" },
+    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage" },
+    { icon: Globe, titleTamil: "வெளி திருமணம்", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage" },
+    { icon: Skull, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death" },
+    { icon: Home, titleTamil: "வாடகை", titleEnglish: "Rental", path: "/backoffice/rental" },
+    { icon: Package, titleTamil: "சொத்துக்கள்", titleEnglish: "Assets", path: "/backoffice/assets" },
+  ];
+
   // Section components mapping
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
