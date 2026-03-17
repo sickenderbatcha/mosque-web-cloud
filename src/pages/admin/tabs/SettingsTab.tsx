@@ -2015,7 +2015,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Expense Categories Dialog */}
-      <Dialog open={expenseCategoriesDialogOpen} onOpenChange={setExpenseCategoriesDialogOpen}>
+      <Dialog open={expenseCategoriesDialogOpen} onOpenChange={(open) => { setExpenseCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Expense Categories (செலவு வகைகள்)</DialogTitle>
