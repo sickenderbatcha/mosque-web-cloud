@@ -412,6 +412,7 @@ const SettingsTab = () => {
     }
   };
 
+   const fetchBookingTimeout = async () => {
      try {
        const { data, error } = await supabase
          .from("app_settings")
