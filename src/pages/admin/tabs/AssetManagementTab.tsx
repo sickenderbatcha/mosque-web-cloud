@@ -14,6 +14,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Search, X, Download, Package, IndianRupee, MapPin, Wrench, Trash2, Edit, History } from "lucide-react";
 import TableFilter from "@/components/admin/TableFilter";
+import { useAppSettings } from "@/hooks/useAppSettings";
+
+const DEFAULT_CATEGORIES = [
+  "Electronics", "Furniture", "Maintenance", "Kitchen Equipment",
+  "Sound System", "Carpets", "AC Units", "PA System",
+  "Library Books", "Stationery", "Filing Cabinets", "Other"
+];
 
 interface AssetLocation {
   id: string;
@@ -47,12 +54,6 @@ interface MaintenanceLog {
   created_at: string;
 }
 
-const CATEGORIES = [
-  "Electronics", "Furniture", "Maintenance", "Kitchen Equipment",
-  "Sound System", "Carpets", "AC Units", "PA System",
-  "Library Books", "Stationery", "Filing Cabinets", "Other"
-];
-
 const STATUSES = [
   { value: "active", label: "Active / செயலில்", color: "bg-green-100 text-green-800" },
   { value: "under_repair", label: "Under Repair / பழுதுபார்ப்பில்", color: "bg-yellow-100 text-yellow-800" },
@@ -62,6 +63,19 @@ const STATUSES = [
 const MAINTENANCE_TYPES = ["Repair", "Cleaning", "Replacement", "Inspection", "Other"];
 
 const AssetManagementTab = () => {
+  const { getSetting } = useAppSettings(["asset_categories"]);
+  
+  const categories = (() => {
+    const raw = getSetting("asset_categories");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed as string[];
+      } catch {}
+    }
+    return DEFAULT_CATEGORIES;
+  })();
+
   const [locations, setLocations] = useState<AssetLocation[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,10 +88,9 @@ const AssetManagementTab = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [form, setForm] = useState({
-    name: "", category: "Electronics", serial_number: "", location_id: "",
+    name: "", category: "", serial_number: "", location_id: "",
     purchase_date: "", value: "", status: "active", warranty_expiry_date: "", notes: ""
   });
-
   // Maintenance dialog
   const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -278,7 +291,7 @@ const AssetManagementTab = () => {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -365,7 +378,7 @@ const AssetManagementTab = () => {
             <div><Label>Category / வகை *</Label>
               <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Location / இடம் *</Label>

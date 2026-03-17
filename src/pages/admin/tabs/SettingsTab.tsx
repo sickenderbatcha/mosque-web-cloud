@@ -118,6 +118,15 @@ const SettingsTab = () => {
   const [newExpenseCategoryInput, setNewExpenseCategoryInput] = useState("");
   const [savingExpenseCategories, setSavingExpenseCategories] = useState(false);
 
+  // Asset categories state
+  const [assetCategoriesDialogOpen, setAssetCategoriesDialogOpen] = useState(false);
+  const [assetCategories, setAssetCategories] = useState<string[]>([
+    "Electronics", "Furniture", "Maintenance", "Kitchen Equipment",
+    "Sound System", "Carpets", "AC Units", "PA System",
+    "Library Books", "Stationery", "Filing Cabinets", "Other"
+  ]);
+  const [newAssetCategoryInput, setNewAssetCategoryInput] = useState("");
+  const [savingAssetCategories, setSavingAssetCategories] = useState(false);
 
   // Certificate image upload states
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -137,6 +146,7 @@ const SettingsTab = () => {
     fetchForcePendingSetting();
     fetchIncomeCategories();
     fetchExpenseCategories();
+    fetchAssetCategories();
     fetchRentalPremises();
   }, []);
 
@@ -347,6 +357,58 @@ const SettingsTab = () => {
       toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
     } finally {
       setSavingExpenseCategories(false);
+    }
+  };
+
+  const fetchAssetCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "asset_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setAssetCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch asset categories:", err);
+    }
+  };
+
+  const addAssetCategory = () => {
+    const trimmed = newAssetCategoryInput.trim();
+    if (!trimmed) return;
+    if (assetCategories.some(c => c.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast({ title: "Duplicate", description: "This category already exists.", variant: "destructive" });
+      return;
+    }
+    setAssetCategories([...assetCategories, trimmed]);
+    setNewAssetCategoryInput("");
+  };
+
+  const removeAssetCategory = (index: number) => {
+    setAssetCategories(assetCategories.filter((_, i) => i !== index));
+  };
+
+  const saveAssetCategories = async () => {
+    setSavingAssetCategories(true);
+    const pendingCategory = newAssetCategoryInput.trim();
+    const hasPendingCategory = pendingCategory.length > 0;
+    const isPendingDuplicate = hasPendingCategory && assetCategories.some(c => c.trim().toLowerCase() === pendingCategory.toLowerCase());
+    const categoriesToSave = hasPendingCategory && !isPendingDuplicate ? [...assetCategories, pendingCategory] : assetCategories;
+    try {
+      await upsertAppSetting("asset_categories", JSON.stringify(categoriesToSave), "Configurable asset categories for asset management");
+      setAssetCategories(categoriesToSave);
+      setNewAssetCategoryInput("");
+      toast({ title: "Categories Saved", description: "Asset categories updated successfully." });
+      setAssetCategoriesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
+    } finally {
+      setSavingAssetCategories(false);
     }
   };
 
@@ -1140,7 +1202,32 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Rental Premises Settings */}
+      {/* Asset Categories Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Asset Categories (சொத்து வகைகள்)
+          </CardTitle>
+          <CardDescription>
+            Configure asset categories shown in the Asset Management dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {assetCategories.map((cat, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {cat}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setAssetCategoriesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Categories
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1936,7 +2023,47 @@ const SettingsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Rental Premises Dialog */}
+      {/* Asset Categories Dialog */}
+      <Dialog open={assetCategoriesDialogOpen} onOpenChange={setAssetCategoriesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Asset Categories (சொத்து வகைகள்)</DialogTitle>
+            <DialogDescription>Add or remove asset categories used in the Asset Management tab.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={newAssetCategoryInput}
+                onChange={(e) => setNewAssetCategoryInput(e.target.value)}
+                placeholder="Enter category name"
+                onKeyDown={(e) => e.key === "Enter" && addAssetCategory()}
+              />
+              <Button size="sm" onClick={addAssetCategory}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {assetCategories.map((cat, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{cat}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAssetCategory(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAssetCategoriesDialogOpen(false); fetchAssetCategories(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveAssetCategories} disabled={savingAssetCategories}>
+              {savingAssetCategories ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={rentalPremisesDialogOpen} onOpenChange={(open) => {
         setRentalPremisesDialogOpen(open);
         if (!open) { setEditingPremiseIndex(null); setNewPremisesInput(""); setNewPremisesAddress(""); }
