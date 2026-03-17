@@ -378,7 +378,7 @@ const AssetManagementTab = () => {
             <div><Label>Category / வகை *</Label>
               <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label>Location / இடம் *</Label>
