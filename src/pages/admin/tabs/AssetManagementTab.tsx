@@ -22,6 +22,38 @@ const DEFAULT_CATEGORIES = [
   "Library Books", "Stationery", "Filing Cabinets", "Other"
 ];
 
+interface AssetLocation {
+  id: string;
+  name: string;
+  name_tamil: string | null;
+}
+
+interface Asset {
+  id: string;
+  name: string;
+  category: string;
+  serial_number: string | null;
+  location_id: string;
+  purchase_date: string | null;
+  value: number;
+  status: string;
+  warranty_expiry_date: string | null;
+  notes: string | null;
+  created_at: string;
+  asset_locations?: AssetLocation;
+}
+
+interface MaintenanceLog {
+  id: string;
+  asset_id: string;
+  maintenance_type: string;
+  description: string | null;
+  cost: number;
+  performed_by: string | null;
+  maintenance_date: string;
+  created_at: string;
+}
+
 const STATUSES = [
   { value: "active", label: "Active / செயலில்", color: "bg-green-100 text-green-800" },
   { value: "under_repair", label: "Under Repair / பழுதுபார்ப்பில்", color: "bg-yellow-100 text-yellow-800" },
@@ -31,6 +63,19 @@ const STATUSES = [
 const MAINTENANCE_TYPES = ["Repair", "Cleaning", "Replacement", "Inspection", "Other"];
 
 const AssetManagementTab = () => {
+  const { getSetting } = useAppSettings(["asset_categories"]);
+  
+  const categories = (() => {
+    const raw = getSetting("asset_categories");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed as string[];
+      } catch {}
+    }
+    return DEFAULT_CATEGORIES;
+  })();
+
   const [locations, setLocations] = useState<AssetLocation[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,10 +88,9 @@ const AssetManagementTab = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [form, setForm] = useState({
-    name: "", category: "Electronics", serial_number: "", location_id: "",
+    name: "", category: "", serial_number: "", location_id: "",
     purchase_date: "", value: "", status: "active", warranty_expiry_date: "", notes: ""
   });
-
   // Maintenance dialog
   const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
