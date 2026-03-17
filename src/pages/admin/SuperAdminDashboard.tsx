@@ -41,6 +41,10 @@ const SuperAdminDashboard = () => {
               <TableProperties className="h-4 w-4" />
               <span>Database</span>
             </TabsTrigger>
+            <TabsTrigger value="visitor-analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Visitors</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
@@ -57,6 +61,10 @@ const SuperAdminDashboard = () => {
 
           <TabsContent value="database-manager">
             <DatabaseManagerTab />
+          </TabsContent>
+
+          <TabsContent value="visitor-analytics">
+            <VisitorAnalyticsTab />
           </TabsContent>
         </Tabs>
       </div>
