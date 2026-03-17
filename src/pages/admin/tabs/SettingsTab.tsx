@@ -360,7 +360,58 @@ const SettingsTab = () => {
     }
   };
 
-   const fetchBookingTimeout = async () => {
+  const fetchAssetCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "asset_categories")
+        .maybeSingle();
+      if (data?.value) {
+        const parsed = JSON.parse(data.value);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setAssetCategories(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch asset categories:", err);
+    }
+  };
+
+  const addAssetCategory = () => {
+    const trimmed = newAssetCategoryInput.trim();
+    if (!trimmed) return;
+    if (assetCategories.some(c => c.trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast({ title: "Duplicate", description: "This category already exists.", variant: "destructive" });
+      return;
+    }
+    setAssetCategories([...assetCategories, trimmed]);
+    setNewAssetCategoryInput("");
+  };
+
+  const removeAssetCategory = (index: number) => {
+    setAssetCategories(assetCategories.filter((_, i) => i !== index));
+  };
+
+  const saveAssetCategories = async () => {
+    setSavingAssetCategories(true);
+    const pendingCategory = newAssetCategoryInput.trim();
+    const hasPendingCategory = pendingCategory.length > 0;
+    const isPendingDuplicate = hasPendingCategory && assetCategories.some(c => c.trim().toLowerCase() === pendingCategory.toLowerCase());
+    const categoriesToSave = hasPendingCategory && !isPendingDuplicate ? [...assetCategories, pendingCategory] : assetCategories;
+    try {
+      await upsertAppSetting("asset_categories", JSON.stringify(categoriesToSave), "Configurable asset categories for asset management");
+      setAssetCategories(categoriesToSave);
+      setNewAssetCategoryInput("");
+      toast({ title: "Categories Saved", description: "Asset categories updated successfully." });
+      setAssetCategoriesDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to save categories.", variant: "destructive" });
+    } finally {
+      setSavingAssetCategories(false);
+    }
+  };
+
      try {
        const { data, error } = await supabase
          .from("app_settings")
