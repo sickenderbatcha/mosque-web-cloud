@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TamilInput } from "@/components/ui/tamil-input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Search, X, Download, Package, IndianRupee, MapPin, Wrench, Trash2, Edit, History } from "lucide-react";
@@ -63,6 +64,7 @@ const STATUSES = [
 const MAINTENANCE_TYPES = ["Repair", "Cleaning", "Replacement", "Inspection", "Other"];
 
 const AssetManagementTab = () => {
+  const isMobile = useIsMobile();
   const { getSetting } = useAppSettings(["asset_categories"]);
   
   const categories = (() => {
@@ -367,41 +369,78 @@ const AssetManagementTab = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Add / Edit Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>{editingAsset ? "Edit Asset / சொத்தை திருத்து" : "Add New Asset / புதிய சொத்து சேர்"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-6">
-            <div><Label>Name / பெயர் *</Label><TamilInput value={form.name} onChange={value => setForm(f => ({ ...f, name: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
-            <div><Label>Category / வகை *</Label>
-              <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
+      {/* Quick Add / Edit - Sheet on mobile, Dialog on desktop */}
+      {isMobile ? (
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent className="overflow-y-auto sm:max-w-lg">
+            <SheetHeader>
+              <SheetTitle>{editingAsset ? "Edit Asset / சொத்தை திருத்து" : "Add New Asset / புதிய சொத்து சேர்"}</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4 mt-6">
+              <div><Label>Name / பெயர் *</Label><TamilInput value={form.name} onChange={value => setForm(f => ({ ...f, name: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
+              <div><Label>Category / வகை *</Label>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Location / இடம் *</Label>
+                <Select value={form.location_id} onValueChange={v => setForm(f => ({ ...f, location_id: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{locations.map(l => <SelectItem key={l.id} value={l.id}>{l.name} {l.name_tamil ? `(${l.name_tamil})` : ""}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Serial Number / வரிசை எண்</Label><Input value={form.serial_number} onChange={e => setForm(f => ({ ...f, serial_number: e.target.value }))} /></div>
+              <div><Label>Purchase Date / வாங்கிய தேதி</Label><Input type="date" value={form.purchase_date} onChange={e => setForm(f => ({ ...f, purchase_date: e.target.value }))} /></div>
+              <div><Label>Value (₹) / மதிப்பு</Label><Input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} /></div>
+              <div><Label>Status / நிலை</Label>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Warranty Expiry / உத்தரவாத காலாவதி</Label><Input type="date" value={form.warranty_expiry_date} onChange={e => setForm(f => ({ ...f, warranty_expiry_date: e.target.value }))} /></div>
+              <div><Label>Notes / குறிப்புகள்</Label><TamilInput value={form.notes || ""} onChange={value => setForm(f => ({ ...f, notes: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
+              <Button className="w-full" onClick={handleSave}>{editingAsset ? "Update Asset / புதுப்பி" : "Add Asset / சேர்"}</Button>
             </div>
-            <div><Label>Location / இடம் *</Label>
-              <Select value={form.location_id} onValueChange={v => setForm(f => ({ ...f, location_id: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{locations.map(l => <SelectItem key={l.id} value={l.id}>{l.name} {l.name_tamil ? `(${l.name_tamil})` : ""}</SelectItem>)}</SelectContent>
-              </Select>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingAsset ? "Edit Asset / சொத்தை திருத்து" : "Add New Asset / புதிய சொத்து சேர்"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-2">
+              <div><Label>Name / பெயர் *</Label><TamilInput value={form.name} onChange={value => setForm(f => ({ ...f, name: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
+              <div><Label>Category / வகை *</Label>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Location / இடம் *</Label>
+                <Select value={form.location_id} onValueChange={v => setForm(f => ({ ...f, location_id: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{locations.map(l => <SelectItem key={l.id} value={l.id}>{l.name} {l.name_tamil ? `(${l.name_tamil})` : ""}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Serial Number / வரிசை எண்</Label><Input value={form.serial_number} onChange={e => setForm(f => ({ ...f, serial_number: e.target.value }))} /></div>
+              <div><Label>Purchase Date / வாங்கிய தேதி</Label><Input type="date" value={form.purchase_date} onChange={e => setForm(f => ({ ...f, purchase_date: e.target.value }))} /></div>
+              <div><Label>Value (₹) / மதிப்பு</Label><Input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} /></div>
+              <div><Label>Status / நிலை</Label>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Warranty Expiry / உத்தரவாத காலாவதி</Label><Input type="date" value={form.warranty_expiry_date} onChange={e => setForm(f => ({ ...f, warranty_expiry_date: e.target.value }))} /></div>
+              <div><Label>Notes / குறிப்புகள்</Label><TamilInput value={form.notes || ""} onChange={value => setForm(f => ({ ...f, notes: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
+              <Button className="w-full" onClick={handleSave}>{editingAsset ? "Update Asset / புதுப்பி" : "Add Asset / சேர்"}</Button>
             </div>
-            <div><Label>Serial Number / வரிசை எண்</Label><Input value={form.serial_number} onChange={e => setForm(f => ({ ...f, serial_number: e.target.value }))} /></div>
-            <div><Label>Purchase Date / வாங்கிய தேதி</Label><Input type="date" value={form.purchase_date} onChange={e => setForm(f => ({ ...f, purchase_date: e.target.value }))} /></div>
-            <div><Label>Value (₹) / மதிப்பு</Label><Input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))} /></div>
-            <div><Label>Status / நிலை</Label>
-              <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div><Label>Warranty Expiry / உத்தரவாத காலாவதி</Label><Input type="date" value={form.warranty_expiry_date} onChange={e => setForm(f => ({ ...f, warranty_expiry_date: e.target.value }))} /></div>
-            <div><Label>Notes / குறிப்புகள்</Label><TamilInput value={form.notes || ""} onChange={value => setForm(f => ({ ...f, notes: value }))} placeholder="Type in English, auto-converts to Tamil" /></div>
-            <Button className="w-full" onClick={handleSave}>{editingAsset ? "Update Asset / புதுப்பி" : "Add Asset / சேர்"}</Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Maintenance Log Dialog */}
       <Dialog open={maintenanceDialogOpen} onOpenChange={setMaintenanceDialogOpen}>
