@@ -128,7 +128,10 @@ const SettingsTab = () => {
   const [newAssetCategoryInput, setNewAssetCategoryInput] = useState("");
   const [savingAssetCategories, setSavingAssetCategories] = useState(false);
 
-  // Certificate image upload states
+  // Shared editing state for category dialogs
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
+  const [editingCategoryValue, setEditingCategoryValue] = useState("");
+
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [sealUrl, setSealUrl] = useState<string | null>(null);
   const [uploadingSignature, setUploadingSignature] = useState(false);
