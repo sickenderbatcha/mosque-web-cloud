@@ -291,7 +291,7 @@ const AssetManagementTab = () => {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
