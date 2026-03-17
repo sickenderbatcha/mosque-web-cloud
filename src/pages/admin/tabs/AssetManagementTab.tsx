@@ -64,6 +64,7 @@ const STATUSES = [
 const MAINTENANCE_TYPES = ["Repair", "Cleaning", "Replacement", "Inspection", "Other"];
 
 const AssetManagementTab = () => {
+  const isMobile = useIsMobile();
   const { getSetting } = useAppSettings(["asset_categories"]);
   
   const categories = (() => {
