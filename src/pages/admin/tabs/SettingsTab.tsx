@@ -118,6 +118,15 @@ const SettingsTab = () => {
   const [newExpenseCategoryInput, setNewExpenseCategoryInput] = useState("");
   const [savingExpenseCategories, setSavingExpenseCategories] = useState(false);
 
+  // Asset categories state
+  const [assetCategoriesDialogOpen, setAssetCategoriesDialogOpen] = useState(false);
+  const [assetCategories, setAssetCategories] = useState<string[]>([
+    "Electronics", "Furniture", "Maintenance", "Kitchen Equipment",
+    "Sound System", "Carpets", "AC Units", "PA System",
+    "Library Books", "Stationery", "Filing Cabinets", "Other"
+  ]);
+  const [newAssetCategoryInput, setNewAssetCategoryInput] = useState("");
+  const [savingAssetCategories, setSavingAssetCategories] = useState(false);
 
   // Certificate image upload states
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -137,6 +146,7 @@ const SettingsTab = () => {
     fetchForcePendingSetting();
     fetchIncomeCategories();
     fetchExpenseCategories();
+    fetchAssetCategories();
     fetchRentalPremises();
   }, []);
 
