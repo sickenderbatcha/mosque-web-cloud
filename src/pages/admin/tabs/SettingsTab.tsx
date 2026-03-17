@@ -2034,11 +2034,39 @@ const SettingsTab = () => {
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {expenseCategories.map((cat, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{cat}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeExpenseCategory(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className="flex items-center justify-between p-2 border rounded gap-2">
+                  {editingCategoryIndex === i ? (
+                    <>
+                      <TamilInput
+                        value={editingCategoryValue}
+                        onChange={(value) => setEditingCategoryValue(value)}
+                        placeholder="Edit category"
+                        className="flex-1"
+                      />
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                        const trimmed = editingCategoryValue.trim();
+                        if (trimmed && !expenseCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
+                          setExpenseCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
+                        }
+                        setEditingCategoryIndex(null);
+                      }}>
+                        <ShieldCheck className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCategoryIndex(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm flex-1">{cat}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditingCategoryIndex(i); setEditingCategoryValue(cat); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeExpenseCategory(i)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
