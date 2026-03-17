@@ -2023,7 +2023,47 @@ const SettingsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Rental Premises Dialog */}
+      {/* Asset Categories Dialog */}
+      <Dialog open={assetCategoriesDialogOpen} onOpenChange={setAssetCategoriesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Asset Categories (சொத்து வகைகள்)</DialogTitle>
+            <DialogDescription>Add or remove asset categories used in the Asset Management tab.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={newAssetCategoryInput}
+                onChange={(e) => setNewAssetCategoryInput(e.target.value)}
+                placeholder="Enter category name"
+                onKeyDown={(e) => e.key === "Enter" && addAssetCategory()}
+              />
+              <Button size="sm" onClick={addAssetCategory}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {assetCategories.map((cat, i) => (
+                <div key={i} className="flex items-center justify-between p-2 border rounded">
+                  <span className="text-sm">{cat}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAssetCategory(i)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAssetCategoriesDialogOpen(false); fetchAssetCategories(); }}>
+              Cancel
+            </Button>
+            <Button onClick={saveAssetCategories} disabled={savingAssetCategories}>
+              {savingAssetCategories ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={rentalPremisesDialogOpen} onOpenChange={(open) => {
         setRentalPremisesDialogOpen(open);
         if (!open) { setEditingPremiseIndex(null); setNewPremisesInput(""); setNewPremisesAddress(""); }
