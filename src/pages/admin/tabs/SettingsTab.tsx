@@ -1947,7 +1947,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Income Categories Dialog */}
-      <Dialog open={incomeCategoriesDialogOpen} onOpenChange={setIncomeCategoriesDialogOpen}>
+      <Dialog open={incomeCategoriesDialogOpen} onOpenChange={(open) => { setIncomeCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Income Categories (வருமான வகைகள்)</DialogTitle>
