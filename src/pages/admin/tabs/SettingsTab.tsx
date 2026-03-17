@@ -2083,7 +2083,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Asset Categories Dialog */}
-      <Dialog open={assetCategoriesDialogOpen} onOpenChange={setAssetCategoriesDialogOpen}>
+      <Dialog open={assetCategoriesDialogOpen} onOpenChange={(open) => { setAssetCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Asset Categories (சொத்து வகைகள்)</DialogTitle>
