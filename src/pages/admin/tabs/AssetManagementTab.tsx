@@ -369,7 +369,7 @@ const AssetManagementTab = () => {
 
       {/* Quick Add / Edit Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-full sm:w-full">
+        <SheetContent className="overflow-y-auto sm:max-w-lg">
           <SheetHeader>
             <SheetTitle>{editingAsset ? "Edit Asset / சொத்தை திருத்து" : "Add New Asset / புதிய சொத்து சேர்"}</SheetTitle>
           </SheetHeader>
