@@ -2091,11 +2091,10 @@ const SettingsTab = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Input
+              <TamilInput
                 value={newAssetCategoryInput}
-                onChange={(e) => setNewAssetCategoryInput(e.target.value)}
+                onChange={(val) => setNewAssetCategoryInput(val)}
                 placeholder="Enter category name"
-                onKeyDown={(e) => e.key === "Enter" && addAssetCategory()}
               />
               <Button size="sm" onClick={addAssetCategory}>
                 <Plus className="h-4 w-4" />
@@ -2106,20 +2105,11 @@ const SettingsTab = () => {
                 <div key={i} className="flex items-center justify-between p-2 border rounded gap-2">
                   {editingCategoryIndex === i ? (
                     <>
-                      <Input
+                      <TamilInput
                         value={editingCategoryValue}
-                        onChange={(e) => setEditingCategoryValue(e.target.value)}
+                        onChange={(val) => setEditingCategoryValue(val)}
                         placeholder="Edit category"
                         className="flex-1"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            const trimmed = editingCategoryValue.trim();
-                            if (trimmed && !assetCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
-                              setAssetCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
-                            }
-                            setEditingCategoryIndex(null);
-                          }
-                        }}
                       />
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
                         const trimmed = editingCategoryValue.trim();
