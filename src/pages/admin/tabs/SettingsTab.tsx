@@ -128,7 +128,10 @@ const SettingsTab = () => {
   const [newAssetCategoryInput, setNewAssetCategoryInput] = useState("");
   const [savingAssetCategories, setSavingAssetCategories] = useState(false);
 
-  // Certificate image upload states
+  // Shared editing state for category dialogs
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
+  const [editingCategoryValue, setEditingCategoryValue] = useState("");
+
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [sealUrl, setSealUrl] = useState<string | null>(null);
   const [uploadingSignature, setUploadingSignature] = useState(false);
@@ -1944,7 +1947,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Income Categories Dialog */}
-      <Dialog open={incomeCategoriesDialogOpen} onOpenChange={setIncomeCategoriesDialogOpen}>
+      <Dialog open={incomeCategoriesDialogOpen} onOpenChange={(open) => { setIncomeCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Income Categories (வருமான வகைகள்)</DialogTitle>
@@ -1963,11 +1966,39 @@ const SettingsTab = () => {
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {incomeCategories.map((cat, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{cat}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeIncomeCategory(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className="flex items-center justify-between p-2 border rounded gap-2">
+                  {editingCategoryIndex === i ? (
+                    <>
+                      <TamilInput
+                        value={editingCategoryValue}
+                        onChange={(value) => setEditingCategoryValue(value)}
+                        placeholder="Edit category"
+                        className="flex-1"
+                      />
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                        const trimmed = editingCategoryValue.trim();
+                        if (trimmed && !incomeCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
+                          setIncomeCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
+                        }
+                        setEditingCategoryIndex(null);
+                      }}>
+                        <ShieldCheck className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCategoryIndex(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm flex-1">{cat}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditingCategoryIndex(i); setEditingCategoryValue(cat); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeIncomeCategory(i)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -1984,7 +2015,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Expense Categories Dialog */}
-      <Dialog open={expenseCategoriesDialogOpen} onOpenChange={setExpenseCategoriesDialogOpen}>
+      <Dialog open={expenseCategoriesDialogOpen} onOpenChange={(open) => { setExpenseCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Expense Categories (செலவு வகைகள்)</DialogTitle>
@@ -2003,11 +2034,39 @@ const SettingsTab = () => {
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {expenseCategories.map((cat, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{cat}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeExpenseCategory(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className="flex items-center justify-between p-2 border rounded gap-2">
+                  {editingCategoryIndex === i ? (
+                    <>
+                      <TamilInput
+                        value={editingCategoryValue}
+                        onChange={(value) => setEditingCategoryValue(value)}
+                        placeholder="Edit category"
+                        className="flex-1"
+                      />
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                        const trimmed = editingCategoryValue.trim();
+                        if (trimmed && !expenseCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
+                          setExpenseCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
+                        }
+                        setEditingCategoryIndex(null);
+                      }}>
+                        <ShieldCheck className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCategoryIndex(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm flex-1">{cat}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditingCategoryIndex(i); setEditingCategoryValue(cat); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeExpenseCategory(i)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -2024,7 +2083,7 @@ const SettingsTab = () => {
       </Dialog>
 
       {/* Asset Categories Dialog */}
-      <Dialog open={assetCategoriesDialogOpen} onOpenChange={setAssetCategoriesDialogOpen}>
+      <Dialog open={assetCategoriesDialogOpen} onOpenChange={(open) => { setAssetCategoriesDialogOpen(open); if (!open) setEditingCategoryIndex(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Asset Categories (சொத்து வகைகள்)</DialogTitle>
@@ -2044,11 +2103,48 @@ const SettingsTab = () => {
             </div>
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {assetCategories.map((cat, i) => (
-                <div key={i} className="flex items-center justify-between p-2 border rounded">
-                  <span className="text-sm">{cat}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAssetCategory(i)}>
-                    <X className="h-3 w-3" />
-                  </Button>
+                <div key={i} className="flex items-center justify-between p-2 border rounded gap-2">
+                  {editingCategoryIndex === i ? (
+                    <>
+                      <Input
+                        value={editingCategoryValue}
+                        onChange={(e) => setEditingCategoryValue(e.target.value)}
+                        placeholder="Edit category"
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const trimmed = editingCategoryValue.trim();
+                            if (trimmed && !assetCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
+                              setAssetCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
+                            }
+                            setEditingCategoryIndex(null);
+                          }
+                        }}
+                      />
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                        const trimmed = editingCategoryValue.trim();
+                        if (trimmed && !assetCategories.some((c, idx) => idx !== i && c.trim().toLowerCase() === trimmed.toLowerCase())) {
+                          setAssetCategories(prev => prev.map((c, idx) => idx === i ? trimmed : c));
+                        }
+                        setEditingCategoryIndex(null);
+                      }}>
+                        <ShieldCheck className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCategoryIndex(null)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm flex-1">{cat}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditingCategoryIndex(i); setEditingCategoryValue(cat); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAssetCategory(i)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
