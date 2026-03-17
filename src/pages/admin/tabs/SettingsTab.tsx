@@ -2091,11 +2091,10 @@ const SettingsTab = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Input
+              <TamilInput
                 value={newAssetCategoryInput}
-                onChange={(e) => setNewAssetCategoryInput(e.target.value)}
+                onChange={(val) => setNewAssetCategoryInput(val)}
                 placeholder="Enter category name"
-                onKeyDown={(e) => e.key === "Enter" && addAssetCategory()}
               />
               <Button size="sm" onClick={addAssetCategory}>
                 <Plus className="h-4 w-4" />
