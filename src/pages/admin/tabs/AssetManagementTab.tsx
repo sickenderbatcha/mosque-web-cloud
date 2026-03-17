@@ -14,40 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Search, X, Download, Package, IndianRupee, MapPin, Wrench, Trash2, Edit, History } from "lucide-react";
 import TableFilter from "@/components/admin/TableFilter";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
-interface AssetLocation {
-  id: string;
-  name: string;
-  name_tamil: string | null;
-}
-
-interface Asset {
-  id: string;
-  name: string;
-  category: string;
-  serial_number: string | null;
-  location_id: string;
-  purchase_date: string | null;
-  value: number;
-  status: string;
-  warranty_expiry_date: string | null;
-  notes: string | null;
-  created_at: string;
-  asset_locations?: AssetLocation;
-}
-
-interface MaintenanceLog {
-  id: string;
-  asset_id: string;
-  maintenance_type: string;
-  description: string | null;
-  cost: number;
-  performed_by: string | null;
-  maintenance_date: string;
-  created_at: string;
-}
-
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   "Electronics", "Furniture", "Maintenance", "Kitchen Equipment",
   "Sound System", "Carpets", "AC Units", "PA System",
   "Library Books", "Stationery", "Filing Cabinets", "Other"
