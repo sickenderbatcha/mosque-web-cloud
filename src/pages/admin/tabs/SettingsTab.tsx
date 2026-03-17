@@ -1202,7 +1202,32 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Rental Premises Settings */}
+      {/* Asset Categories Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Asset Categories (சொத்து வகைகள்)
+          </CardTitle>
+          <CardDescription>
+            Configure asset categories shown in the Asset Management dropdown
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {assetCategories.map((cat, i) => (
+              <Badge key={i} variant="secondary" className="text-sm py-1 px-3">
+                {cat}
+              </Badge>
+            ))}
+          </div>
+          <Button variant="outline" onClick={() => setAssetCategoriesDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Manage Categories
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
