@@ -276,12 +276,11 @@ const BelongToUsTab = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={isUploading} className="hidden" id="belong-image-upload" />
-                  <Label htmlFor="belong-image-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer" onClick={triggerFileUpload}>
+                  <div className="flex flex-col items-center gap-2">
                     {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <Upload className="h-8 w-8 text-muted-foreground" />}
                     <span className="text-sm text-muted-foreground">{isUploading ? "Uploading..." : "Click to upload"}</span>
-                  </Label>
+                  </div>
                 </div>
               )}
             </div>
