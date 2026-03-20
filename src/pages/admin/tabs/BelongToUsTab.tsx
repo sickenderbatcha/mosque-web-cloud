@@ -248,8 +248,8 @@ const BelongToUsTab = () => {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onFocusOutside={(e) => e.preventDefault()}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open && isUploading) return; setDialogOpen(open); if (!open) resetForm(); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onFocusOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => { if (isUploading) e.preventDefault(); }}>
           <DialogHeader>
             <DialogTitle>
               {editingItem ? "Edit Item" : "Add New Item"}
