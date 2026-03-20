@@ -84,6 +84,8 @@ const BelongToUsTab = () => {
     setDialogOpen(true);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -110,6 +112,14 @@ const BelongToUsTab = () => {
       toast({ title: "Upload failed", description: error?.message || "Could not upload image", variant: "destructive" });
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
     }
   };
 
