@@ -115,6 +115,8 @@ const BelongToUsTab = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
     if (!formData.title.trim()) {
       toast({ title: "Title is required", variant: "destructive" });
       return;
@@ -193,7 +195,7 @@ const BelongToUsTab = () => {
           <h2 className="text-xl font-bold text-foreground">எங்களுக்கு பாத்தியப்பட்டவைகள்</h2>
           <p className="text-sm text-muted-foreground">Belong To Us - Manage items shown on the About page</p>
         </div>
-        <Button onClick={openAdd} className="w-full sm:w-auto">
+        <Button type="button" onClick={openAdd} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Add Item
         </Button>
