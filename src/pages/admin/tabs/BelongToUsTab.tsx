@@ -256,17 +256,30 @@ const BelongToUsTab = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 border-t pt-2">
-                  <Switch
-                    checked={item.is_active ?? true}
-                    onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
-                  />
-                  <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(item)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                <div className="flex items-center justify-between gap-2 border-t pt-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={item.is_active ?? true}
+                      onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
+                    />
+                    <span className="text-xs text-muted-foreground">Active</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => openEdit(item)}>
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
