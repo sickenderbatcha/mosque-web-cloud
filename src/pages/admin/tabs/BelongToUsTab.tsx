@@ -141,6 +141,11 @@ const BelongToUsTab = () => {
       return;
     }
 
+    if (!formData.image_url?.trim()) {
+      toast({ title: "Please upload an image", variant: "destructive" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -148,7 +153,7 @@ const BelongToUsTab = () => {
         title_tamil: formData.title_tamil.trim() || null,
         description: formData.description.trim() || null,
         description_tamil: formData.description_tamil.trim() || null,
-        image_url: formData.image_url || null,
+        image_url: formData.image_url,
         is_active: formData.is_active,
       };
 
@@ -171,9 +176,10 @@ const BelongToUsTab = () => {
       setDialogOpen(false);
       resetForm();
       fetchItems();
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast({ title: "Failed to save", variant: "destructive" });
+    } catch (error: any) {
+      const message = error?.message || error?.error_description || "Failed to save";
+      console.error("Submit error:", message, error);
+      toast({ title: "Failed to save", description: message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -273,18 +279,17 @@ const BelongToUsTab = () => {
       <Dialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          if (!open && isUploading) return;
+          if (!open && (isUploading || isSubmitting)) return;
           setDialogOpen(open);
-          if (!open) resetForm();
         }}
       >
         <DialogContent
           className="max-w-lg max-h-[90vh] overflow-y-auto"
           onInteractOutside={(e) => {
-            if (isUploading) e.preventDefault();
+            e.preventDefault();
           }}
           onEscapeKeyDown={(e) => {
-            if (isUploading) e.preventDefault();
+            if (isUploading || isSubmitting) e.preventDefault();
           }}
         >
           <DialogHeader>
