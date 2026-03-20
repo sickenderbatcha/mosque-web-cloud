@@ -105,9 +105,9 @@ const BelongToUsTab = () => {
       const { data: { publicUrl } } = supabase.storage.from("gallery").getPublicUrl(fileName);
       setFormData((prev) => ({ ...prev, image_url: publicUrl }));
       toast({ title: "Image uploaded" });
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({ title: "Upload failed", variant: "destructive" });
+    } catch (error: any) {
+      console.error("Belong to us upload error:", error?.message || error?.statusCode || JSON.stringify(error));
+      toast({ title: "Upload failed", description: error?.message || "Could not upload image", variant: "destructive" });
     } finally {
       setIsUploading(false);
     }
