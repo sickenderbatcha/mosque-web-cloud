@@ -23,7 +23,7 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} activationMode="manual" className="space-y-6">
           <TabsList className="flex flex-wrap w-full gap-1 h-auto lg:w-auto lg:inline-flex">
             <TabsTrigger value="landing-content" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />

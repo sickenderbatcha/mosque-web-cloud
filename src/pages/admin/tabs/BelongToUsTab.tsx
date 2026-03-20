@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,8 @@ const BelongToUsTab = () => {
     setDialogOpen(true);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -110,6 +112,14 @@ const BelongToUsTab = () => {
       toast({ title: "Upload failed", description: error?.message || "Could not upload image", variant: "destructive" });
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
     }
   };
 
@@ -187,6 +197,15 @@ const BelongToUsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Hidden file input outside Dialog to prevent mobile focus issues */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+        tabIndex={-1}
+      />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-foreground">எங்களுக்கு பாத்தியப்பட்டவைகள்</h2>
@@ -248,8 +267,8 @@ const BelongToUsTab = () => {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onFocusOutside={(e) => e.preventDefault()}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open && isUploading) return; setDialogOpen(open); if (!open) resetForm(); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onFocusOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => { if (isUploading) e.preventDefault(); }}>
           <DialogHeader>
             <DialogTitle>
               {editingItem ? "Edit Item" : "Add New Item"}
@@ -266,12 +285,11 @@ const BelongToUsTab = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={isUploading} className="hidden" id="belong-image-upload" />
-                  <Label htmlFor="belong-image-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer" onClick={triggerFileUpload}>
+                  <div className="flex flex-col items-center gap-2">
                     {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <Upload className="h-8 w-8 text-muted-foreground" />}
                     <span className="text-sm text-muted-foreground">{isUploading ? "Uploading..." : "Click to upload"}</span>
-                  </Label>
+                  </div>
                 </div>
               )}
             </div>
