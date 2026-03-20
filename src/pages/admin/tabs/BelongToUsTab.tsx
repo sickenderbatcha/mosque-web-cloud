@@ -236,39 +236,37 @@ const BelongToUsTab = () => {
         <div className="grid gap-4">
           {items.map((item) => (
             <Card key={item.id} className={`${!item.is_active ? "opacity-60" : ""}`}>
-              <CardContent className="p-4 flex gap-4 items-start">
-                {item.image_url && (
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                    loading="lazy"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="font-semibold text-foreground">{item.title}</h3>
-                      {item.title_tamil && (
-                        <p className="text-sm text-muted-foreground font-tamil">{item.title_tamil}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Switch
-                        checked={item.is_active ?? true}
-                        onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
-                      />
-                      <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(item)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex gap-3 items-start">
+                  {item.image_url && (
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                      loading="lazy"
+                    />
                   )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">{item.title}</h3>
+                    {item.title_tamil && (
+                      <p className="text-sm text-muted-foreground font-tamil truncate">{item.title_tamil}</p>
+                    )}
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 border-t pt-2">
+                  <Switch
+                    checked={item.is_active ?? true}
+                    onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(item)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
