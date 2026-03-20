@@ -197,6 +197,15 @@ const BelongToUsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Hidden file input outside Dialog to prevent mobile focus issues */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+        tabIndex={-1}
+      />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-foreground">எங்களுக்கு பாத்தியப்பட்டவைகள்</h2>
