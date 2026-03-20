@@ -296,7 +296,7 @@ const LandingContentTab = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeSection} onValueChange={setActiveSection}>
+        <Tabs value={activeSection} onValueChange={setActiveSection} activationMode="manual">
           <TabsList className="flex flex-wrap gap-1 h-auto p-1 mb-6">
             <TabsTrigger value="hero" className="text-xs">Hero</TabsTrigger>
             <TabsTrigger value="about" className="text-xs">About</TabsTrigger>
