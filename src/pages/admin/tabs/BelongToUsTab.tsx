@@ -113,10 +113,7 @@ const BelongToUsTab = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleSubmit = async () => {
     if (!formData.title.trim()) {
       toast({ title: "Title is required", variant: "destructive" });
       return;
@@ -233,10 +230,10 @@ const BelongToUsTab = () => {
                         checked={item.is_active ?? true}
                         onCheckedChange={() => toggleActive(item.id, item.is_active ?? true)}
                       />
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(item)}>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -258,7 +255,7 @@ const BelongToUsTab = () => {
               {editingItem ? "Edit Item" : "Add New Item"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label>Image</Label>
               {formData.image_url ? (
@@ -306,12 +303,12 @@ const BelongToUsTab = () => {
 
             <div className="flex gap-2 justify-end">
               <Button type="button" variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting || isUploading}>
+              <Button type="button" onClick={handleSubmit} disabled={isSubmitting || isUploading}>
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingItem ? "Update" : "Add"}
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
