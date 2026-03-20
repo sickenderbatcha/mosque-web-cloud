@@ -279,18 +279,17 @@ const BelongToUsTab = () => {
       <Dialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          if (!open && isUploading) return;
+          if (!open && (isUploading || isSubmitting)) return;
           setDialogOpen(open);
-          if (!open) resetForm();
         }}
       >
         <DialogContent
           className="max-w-lg max-h-[90vh] overflow-y-auto"
           onInteractOutside={(e) => {
-            if (isUploading) e.preventDefault();
+            e.preventDefault();
           }}
           onEscapeKeyDown={(e) => {
-            if (isUploading) e.preventDefault();
+            if (isUploading || isSubmitting) e.preventDefault();
           }}
         >
           <DialogHeader>
