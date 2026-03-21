@@ -384,16 +384,16 @@ const AboutPage = () => {
                         />
                       </div>
                     )}
-                    <CardContent className="p-5">
-                      <h3 className="font-bold text-foreground text-lg mb-1">{item.title}</h3>
+                    <CardContent className="p-5 overflow-hidden">
+                      <h3 className="font-bold text-foreground text-lg mb-1 break-words">{item.title}</h3>
                       {item.title_tamil && (
-                        <p className="text-sm font-tamil text-primary mb-2">{item.title_tamil}</p>
+                        <p className="text-sm font-tamil text-primary mb-2 break-words">{item.title_tamil}</p>
                       )}
                       {item.description && (
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-2">{item.description}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-2 break-words">{item.description}</p>
                       )}
                       {item.description_tamil && (
-                        <p className="text-sm text-muted-foreground font-tamil leading-relaxed">{item.description_tamil}</p>
+                        <p className="text-sm text-muted-foreground font-tamil leading-relaxed break-words">{item.description_tamil}</p>
                       )}
                     </CardContent>
                   </Card>
