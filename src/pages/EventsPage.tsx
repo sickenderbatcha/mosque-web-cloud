@@ -74,11 +74,15 @@ const EventsPage = () => {
     setLoading(false);
   };
 
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(23, 59, 59, 999);
+
   const upcomingEvents = events.filter(
-    (e) => e.status === "upcoming" || e.status === "ongoing"
+    (e) => new Date(e.event_date) > yesterday && e.status !== "cancelled"
   );
   const pastEvents = events.filter(
-    (e) => e.status === "completed" || e.status === "cancelled"
+    (e) => new Date(e.event_date) <= yesterday || e.status === "cancelled"
   );
 
   const formatDate = (dateStr: string) => {
