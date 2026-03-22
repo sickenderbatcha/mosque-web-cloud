@@ -308,12 +308,17 @@ const EventsPage = () => {
                 >
                   <Card className="mb-4 bg-card/50 hover:bg-card transition-colors">
                     <CardContent className="py-4">
-                      <div className="flex items-center justify-between">
-                        <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-tamil font-semibold">
                             {event.title_tamil || event.title}
                           </h3>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          {(event.description_tamil || event.description) && (
+                            <p className="text-sm text-muted-foreground font-tamil mt-1 break-words">
+                              {event.description_tamil || event.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {formatDate(event.event_date)}
@@ -328,7 +333,7 @@ const EventsPage = () => {
                         </div>
                         <Badge
                           variant={event.status === "cancelled" ? "destructive" : "secondary"}
-                          className="font-tamil"
+                          className="font-tamil shrink-0"
                         >
                           {event.status === "cancelled" ? "ரத்து" : "முடிவடைந்தது"}
                         </Badge>
