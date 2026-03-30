@@ -402,7 +402,7 @@ const MembersTab = () => {
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       // Hide SUPUSR member for non-superadmin users
-      if (!isSuperAdmin && member.member_id === "SUPUSR") return false;
+      if (!isSuperAdmin && member.member_id?.toUpperCase().trim() === "SUPUSR") return false;
       
       const matchesSearch = member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.member_id.toLowerCase().includes(searchQuery.toLowerCase()) ||

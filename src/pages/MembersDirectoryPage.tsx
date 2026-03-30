@@ -116,7 +116,7 @@ const MembersDirectoryPage = () => {
 
     return members.filter((member) => {
       // Hide SUPUSR member for non-superadmin users
-      if (!isSuperAdmin && member.member_id === "SUPUSR") return false;
+      if (!isSuperAdmin && member.member_id?.toUpperCase().trim() === "SUPUSR") return false;
 
       const matchesSearch =
         query === "" ||
