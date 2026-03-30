@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ type BloodGroup = Database["public"]["Enums"]["blood_group"];
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const MembersTab = () => {
+  const { isSuperAdmin } = useUserRole();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -399,6 +401,9 @@ const MembersTab = () => {
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
+      // Hide SUPUSR member for non-superadmin users
+      if (!isSuperAdmin && member.member_id === "SUPUSR") return false;
+      
       const matchesSearch = member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.member_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (member.phone && member.phone.includes(searchQuery));
@@ -408,7 +413,7 @@ const MembersTab = () => {
         (statusFilter === "inactive" && !member.is_active);
       return matchesSearch && matchesBloodGroup && matchesStatus;
     });
-  }, [members, searchQuery, bloodGroupFilter, statusFilter]);
+  }, [members, searchQuery, bloodGroupFilter, statusFilter, isSuperAdmin]);
 
   // Reset to page 1 when filters change
   useEffect(() => {

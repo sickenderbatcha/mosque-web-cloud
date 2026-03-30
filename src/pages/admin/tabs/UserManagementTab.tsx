@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,7 @@ interface UserWithMember {
 }
 
 const UserManagementTab = () => {
+  const { isSuperAdmin } = useUserRole();
   const [users, setUsers] = useState<UserWithMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -285,6 +287,9 @@ const UserManagementTab = () => {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
+      // Hide SUPUSR member for non-superadmin users
+      if (!isSuperAdmin && user.member_id === "SUPUSR") return false;
+
       const matchesSearch =
         user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.member_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -298,7 +303,7 @@ const UserManagementTab = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [users, searchQuery, statusFilter]);
+  }, [users, searchQuery, statusFilter, isSuperAdmin]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
