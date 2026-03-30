@@ -401,6 +401,9 @@ const MembersTab = () => {
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
+      // Hide SUPUSR member for non-superadmin users
+      if (!isSuperAdmin && member.member_id === "SUPUSR") return false;
+      
       const matchesSearch = member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         member.member_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (member.phone && member.phone.includes(searchQuery));
@@ -410,7 +413,7 @@ const MembersTab = () => {
         (statusFilter === "inactive" && !member.is_active);
       return matchesSearch && matchesBloodGroup && matchesStatus;
     });
-  }, [members, searchQuery, bloodGroupFilter, statusFilter]);
+  }, [members, searchQuery, bloodGroupFilter, statusFilter, isSuperAdmin]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
