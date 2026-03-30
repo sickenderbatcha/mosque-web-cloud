@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: false,
+      },
       includeAssets: ["favicon.ico", "fonts/*.ttf", "images/*.jpg"],
       manifest: {
         name: "I.N.P.T. Jamaat Masjid Portal",
