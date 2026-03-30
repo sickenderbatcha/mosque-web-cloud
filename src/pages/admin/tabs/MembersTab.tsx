@@ -29,6 +29,7 @@ type BloodGroup = Database["public"]["Enums"]["blood_group"];
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const MembersTab = () => {
+  const { isSuperAdmin } = useUserRole();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
