@@ -288,7 +288,7 @@ const UserManagementTab = () => {
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       // Hide SUPUSR member for non-superadmin users
-      if (!isSuperAdmin && user.member_id === "SUPUSR") return false;
+      if (!isSuperAdmin && user.member_id?.toUpperCase().trim() === "SUPUSR") return false;
 
       const matchesSearch =
         user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
