@@ -30,7 +30,7 @@ interface GBMember {
 }
 
 const MembersDirectoryPage = () => {
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isSuperAdmin } = useUserRole();
   const [members, setMembers] = useState<GBMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
