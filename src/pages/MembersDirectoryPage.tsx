@@ -115,6 +115,9 @@ const MembersDirectoryPage = () => {
     const query = rawQuery.toLowerCase();
 
     return members.filter((member) => {
+      // Hide SUPUSR member for non-superadmin users
+      if (!isSuperAdmin && member.member_id === "SUPUSR") return false;
+
       const matchesSearch =
         query === "" ||
         member.full_name.toLowerCase().includes(query) ||
@@ -127,7 +130,7 @@ const MembersDirectoryPage = () => {
 
       return matchesSearch && matchesBloodGroup;
     });
-  }, [members, searchQuery, bloodGroupFilter]);
+  }, [members, searchQuery, bloodGroupFilter, isSuperAdmin]);
 
   const getInitials = (name: string) => {
     return name
