@@ -78,6 +78,7 @@ interface UserWithMember {
 }
 
 const UserManagementTab = () => {
+  const { isSuperAdmin } = useUserRole();
   const [users, setUsers] = useState<UserWithMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
