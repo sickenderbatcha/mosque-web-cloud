@@ -211,7 +211,7 @@ const Header = () => {
       {/* Bismillah */}
       <div className="w-full bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 py-1.5 text-center">
           <span
-            className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-lg"
+            className="font-semibold bg-gradient-to-r from-amber-600 via-emerald-600 to-amber-600 bg-clip-text text-transparent drop-shadow-sm text-2xl"
             dir="rtl"
             style={{ fontSize: getBismillahSize() }}>
 
