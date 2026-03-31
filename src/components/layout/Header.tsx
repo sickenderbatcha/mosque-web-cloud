@@ -351,7 +351,7 @@ const Header = () => {
                 </Button>
               }
 
-              {isAdmin &&
+              {(isAdmin || hasTabAccess) &&
               <Button asChild variant="outline" size="sm" className="gap-2">
                   <Link to="/admin">
                     <Shield className="h-4 w-4" />
