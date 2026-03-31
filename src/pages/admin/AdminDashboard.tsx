@@ -37,7 +37,7 @@ import CommitteeTab from "./tabs/CommitteeTab";
 import RentalAgreementsTab from "./tabs/RentalAgreementsTab";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("donations");
+  const [activeTab, setActiveTab] = useState("");
   const [pendingCount, setPendingCount] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -46,6 +46,16 @@ const AdminDashboard = () => {
   const pdfFileInputRef = useRef<HTMLInputElement>(null);
   const backupFileInputRef = useRef<HTMLInputElement>(null);
   const { stats: visitorStats } = useVisitorTracking();
+  const { hasFullAccess, canAccessTab } = useUserTabPermissions();
+
+  // Set default active tab to the first accessible tab
+  useEffect(() => {
+    if (!activeTab) {
+      const allTabs = ["donations","income","expenses","bookings","refunds","grievances","events","members","gallery","about-gallery","announcements","user-approval","user-management","notifications","marriage-register","outside-marriage-register","death-register","certificate-payments","noc-certificates","heir-certificates","subscription-slots","cash-requests","online-payments","issued-documents","pdf-documents","committee","rental-agreements","asset-management","backup-restore","settings"];
+      const firstAccessible = allTabs.find((t) => canAccessTab(t)) || "donations";
+      setActiveTab(firstAccessible);
+    }
+  }, [hasFullAccess, activeTab, canAccessTab]);
 
   const handleTabChange = (value: string) => {
     if (isUploadDialogOpen) {
