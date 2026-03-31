@@ -123,9 +123,9 @@ const DirectUserCreationTab = () => {
       </Card>
 
       {result && (
-        <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-700 dark:text-green-400">User Created Successfully</AlertTitle>
+        <Alert className="border-primary/50 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertTitle className="text-primary">User Created Successfully</AlertTitle>
           <AlertDescription className="space-y-3 mt-2">
             <div className="grid gap-2 text-sm">
               <div className="flex items-center justify-between bg-background rounded p-2 border">
