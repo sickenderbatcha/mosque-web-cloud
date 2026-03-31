@@ -71,6 +71,10 @@ const SuperAdminDashboard = () => {
           <TabsContent value="visitor-analytics">
             <VisitorAnalyticsTab />
           </TabsContent>
+
+          <TabsContent value="tab-permissions">
+            <TabPermissionsTab />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
