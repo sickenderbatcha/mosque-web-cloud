@@ -75,12 +75,13 @@ const TabPermissionsTab = () => {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      // Get all profiles with their roles
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, full_name");
+      // Get members with linked auth accounts and their roles
+      const { data: members, error: membersError } = await supabase
+        .from("gb_members")
+        .select("auth_user_id, member_id, full_name")
+        .not("auth_user_id", "is", null);
 
-      if (profilesError) throw profilesError;
+      if (membersError) throw membersError;
 
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
@@ -88,26 +89,19 @@ const TabPermissionsTab = () => {
 
       if (rolesError) throw rolesError;
 
-      const { data: members, error: membersError } = await supabase
-        .from("gb_members")
-        .select("auth_user_id, member_id");
-
-      if (membersError) throw membersError;
-
       const roleMap = new Map(roles?.map((r) => [r.user_id, r.role]) || []);
-      const memberMap = new Map(members?.filter(m => m.auth_user_id).map((m) => [m.auth_user_id, m.member_id]) || []);
 
-      const userList: UserOption[] = (profiles || [])
-        .filter((p) => {
-          const role = roleMap.get(p.id) || "user";
+      const userList: UserOption[] = (members || [])
+        .filter((m) => {
+          const role = roleMap.get(m.auth_user_id!) || "user";
           // Don't show admins/superadmins (they already have full access)
           return role !== "admin" && role !== "superadmin";
         })
-        .map((p) => ({
-          id: p.id,
-          full_name: p.full_name || "Unknown",
-          member_id: memberMap.get(p.id) || "-",
-          role: (roleMap.get(p.id) as string) || "user",
+        .map((m) => ({
+          id: m.auth_user_id!,
+          full_name: m.full_name || "Unknown",
+          member_id: m.member_id || "-",
+          role: (roleMap.get(m.auth_user_id!) as string) || "user",
         }));
 
       setUsers(userList);
