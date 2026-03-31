@@ -12,6 +12,7 @@ import {
 "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { useTheme, DarkMode } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { useMenuVisibility } from "@/hooks/useMenuVisibility";
