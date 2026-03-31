@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Database, Settings, TableProperties, BarChart3, KeyRound } from "lucide-react";
+import { Shield, Globe, Database, Settings, TableProperties, BarChart3, KeyRound, UserPlus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataManagementTab from "./tabs/DataManagementTab";
 import LandingContentTab from "./tabs/LandingContentTab";
@@ -7,6 +7,7 @@ import SuperAdminSettingsTab from "./tabs/SuperAdminSettingsTab";
 import DatabaseManagerTab from "./tabs/DatabaseManagerTab";
 import VisitorAnalyticsTab from "./tabs/VisitorAnalyticsTab";
 import TabPermissionsTab from "./tabs/TabPermissionsTab";
+import DirectUserCreationTab from "./tabs/DirectUserCreationTab";
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("landing-content");
@@ -50,6 +51,10 @@ const SuperAdminDashboard = () => {
               <KeyRound className="h-4 w-4" />
               <span>Permissions</span>
             </TabsTrigger>
+            <TabsTrigger value="create-user" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Create User</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
@@ -74,6 +79,10 @@ const SuperAdminDashboard = () => {
 
           <TabsContent value="tab-permissions">
             <TabPermissionsTab />
+          </TabsContent>
+
+          <TabsContent value="create-user">
+            <DirectUserCreationTab />
           </TabsContent>
         </Tabs>
       </div>
