@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Shield, Globe, Database, Settings, TableProperties, BarChart3 } from "lucide-react";
+import { Shield, Globe, Database, Settings, TableProperties, BarChart3, KeyRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataManagementTab from "./tabs/DataManagementTab";
 import LandingContentTab from "./tabs/LandingContentTab";
 import SuperAdminSettingsTab from "./tabs/SuperAdminSettingsTab";
 import DatabaseManagerTab from "./tabs/DatabaseManagerTab";
 import VisitorAnalyticsTab from "./tabs/VisitorAnalyticsTab";
+import TabPermissionsTab from "./tabs/TabPermissionsTab";
 
 const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("landing-content");
