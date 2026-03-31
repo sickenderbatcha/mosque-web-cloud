@@ -2342,6 +2342,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_tab_permissions: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          tab_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          tab_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          tab_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       visitor_stats: {

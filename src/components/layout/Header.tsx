@@ -12,6 +12,7 @@ import {
 "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { useTheme, DarkMode } from "@/hooks/useTheme";
 import { toast } from "@/hooks/use-toast";
 import { useMenuVisibility } from "@/hooks/useMenuVisibility";
@@ -52,6 +53,7 @@ const Header = () => {
   const location = useLocation();
   const { user, loading, signOut } = useAuth();
   const { isAdmin, isSuperAdmin } = useUserRole();
+  const { hasAnyAccess: hasTabAccess } = useUserTabPermissions();
   const { darkMode, setDarkMode, isDark } = useTheme();
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
@@ -349,7 +351,7 @@ const Header = () => {
                 </Button>
               }
 
-              {isAdmin &&
+              {(isAdmin || hasTabAccess) &&
               <Button asChild variant="outline" size="sm" className="gap-2">
                   <Link to="/admin">
                     <Shield className="h-4 w-4" />
@@ -520,7 +522,7 @@ const Header = () => {
                 }
 
                   {/* Admin section in mobile */}
-                  {isAdmin &&
+                  {(isAdmin || hasTabAccess) &&
                 <div className="pt-2">
                       <Link
                     to="/admin"
