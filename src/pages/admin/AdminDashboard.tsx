@@ -193,51 +193,51 @@ const AdminDashboard = () => {
 
         <Tabs value={activeTab} onValueChange={handleTabChange} activationMode="manual" className="space-y-6">
           <TabsList className={`flex flex-wrap w-full gap-1 h-auto lg:w-auto lg:inline-flex ${isUploadDialogOpen ? 'pointer-events-none opacity-50' : ''}`}>
-            <TabsTrigger value="donations" className="flex items-center gap-2">
+            {canAccessTab("donations") && <TabsTrigger value="donations" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               <span className="hidden sm:inline">Donations</span>
-            </TabsTrigger>
-            <TabsTrigger value="income" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("income") && <TabsTrigger value="income" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Income</span>
-            </TabsTrigger>
-            <TabsTrigger value="expenses" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("expenses") && <TabsTrigger value="expenses" className="flex items-center gap-2">
               <TrendingDown className="h-4 w-4" />
               <span className="hidden sm:inline">Expenses</span>
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("bookings") && <TabsTrigger value="bookings" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Bookings</span>
-            </TabsTrigger>
-            <TabsTrigger value="refunds" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("refunds") && <TabsTrigger value="refunds" className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
               <span className="hidden sm:inline">Refunds</span>
-            </TabsTrigger>
-            <TabsTrigger value="grievances" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("grievances") && <TabsTrigger value="grievances" className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />
               <span className="hidden sm:inline">Grievances</span>
-            </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("events") && <TabsTrigger value="events" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Events</span>
-            </TabsTrigger>
-            <TabsTrigger value="members" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("members") && <TabsTrigger value="members" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
               <span className="hidden sm:inline">Members</span>
-            </TabsTrigger>
-            <TabsTrigger value="gallery" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("gallery") && <TabsTrigger value="gallery" className="flex items-center gap-2">
               <Image className="h-4 w-4" />
               <span className="hidden sm:inline">Gallery</span>
-            </TabsTrigger>
-            <TabsTrigger value="about-gallery" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("about-gallery") && <TabsTrigger value="about-gallery" className="flex items-center gap-2">
               <Info className="h-4 w-4" />
               <span className="hidden sm:inline">About</span>
-            </TabsTrigger>
-            <TabsTrigger value="announcements" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("announcements") && <TabsTrigger value="announcements" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Announce</span>
-            </TabsTrigger>
-            <TabsTrigger value="user-approval" className="flex items-center gap-2 relative">
+            </TabsTrigger>}
+            {canAccessTab("user-approval") && <TabsTrigger value="user-approval" className="flex items-center gap-2 relative">
               <UserCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Approve</span>
               {pendingCount > 0 && (
@@ -245,12 +245,12 @@ const AdminDashboard = () => {
                   {pendingCount}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="user-management" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("user-management") && <TabsTrigger value="user-management" className="flex items-center gap-2">
               <UserCog className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2 relative">
+            </TabsTrigger>}
+            {canAccessTab("notifications") && <TabsTrigger value="notifications" className="flex items-center gap-2 relative">
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Notify</span>
               {unreadNotifications > 0 && (
@@ -258,201 +258,201 @@ const AdminDashboard = () => {
                   {unreadNotifications}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="marriage-register" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("marriage-register") && <TabsTrigger value="marriage-register" className="flex items-center gap-2">
               <Heart className="h-4 w-4" />
               <span className="hidden sm:inline">Marriage</span>
-            </TabsTrigger>
-            <TabsTrigger value="outside-marriage-register" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("outside-marriage-register") && <TabsTrigger value="outside-marriage-register" className="flex items-center gap-2">
               <Heart className="h-4 w-4" />
               <span className="hidden sm:inline">Outside Marriage</span>
-            </TabsTrigger>
-            <TabsTrigger value="death-register" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("death-register") && <TabsTrigger value="death-register" className="flex items-center gap-2">
               <Skull className="h-4 w-4" />
               <span className="hidden sm:inline">Death</span>
-            </TabsTrigger>
-            <TabsTrigger value="certificate-payments" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("certificate-payments") && <TabsTrigger value="certificate-payments" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Certificates</span>
-            </TabsTrigger>
-            <TabsTrigger value="noc-certificates" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("noc-certificates") && <TabsTrigger value="noc-certificates" className="flex items-center gap-2">
               <FileCheck className="h-4 w-4" />
               <span className="hidden sm:inline">NOC</span>
-            </TabsTrigger>
-            <TabsTrigger value="heir-certificates" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("heir-certificates") && <TabsTrigger value="heir-certificates" className="flex items-center gap-2">
               <ScrollText className="h-4 w-4" />
               <span className="hidden sm:inline">Heir</span>
-            </TabsTrigger>
-            <TabsTrigger value="subscription-slots" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("subscription-slots") && <TabsTrigger value="subscription-slots" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
               <span className="hidden sm:inline">Subscriptions</span>
-            </TabsTrigger>
-            <TabsTrigger value="cash-requests" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("cash-requests") && <TabsTrigger value="cash-requests" className="flex items-center gap-2">
               <Banknote className="h-4 w-4" />
               <span className="hidden sm:inline">Cash Requests</span>
-            </TabsTrigger>
-            <TabsTrigger value="online-payments" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("online-payments") && <TabsTrigger value="online-payments" className="flex items-center gap-2">
               <Wallet className="h-4 w-4" />
               <span className="hidden sm:inline">Online Payments</span>
-            </TabsTrigger>
-            <TabsTrigger value="issued-documents" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("issued-documents") && <TabsTrigger value="issued-documents" className="flex items-center gap-2">
               <Archive className="h-4 w-4" />
               <span className="hidden sm:inline">Issued Docs</span>
-            </TabsTrigger>
-            <TabsTrigger value="pdf-documents" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("pdf-documents") && <TabsTrigger value="pdf-documents" className="flex items-center gap-2">
               <FilePlus2 className="h-4 w-4" />
               <span className="hidden sm:inline">PDF Docs</span>
-            </TabsTrigger>
-            <TabsTrigger value="committee" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("committee") && <TabsTrigger value="committee" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Committee</span>
-            </TabsTrigger>
-            <TabsTrigger value="rental-agreements" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("rental-agreements") && <TabsTrigger value="rental-agreements" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Rental</span>
-            </TabsTrigger>
-            <TabsTrigger value="asset-management" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("asset-management") && <TabsTrigger value="asset-management" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Assets</span>
-            </TabsTrigger>
-            <TabsTrigger value="backup-restore" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("backup-restore") && <TabsTrigger value="backup-restore" className="flex items-center gap-2">
               <DatabaseBackup className="h-4 w-4" />
               <span className="hidden sm:inline">Backup</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            </TabsTrigger>}
+            {canAccessTab("settings") && <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
-            </TabsTrigger>
+            </TabsTrigger>}
           </TabsList>
 
-          <TabsContent value="donations">
+          {canAccessTab("donations") && <TabsContent value="donations">
             <DonationsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="income">
+          {canAccessTab("income") && <TabsContent value="income">
             <IncomeTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="expenses">
+          {canAccessTab("expenses") && <TabsContent value="expenses">
             <ExpensesTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="bookings">
+          {canAccessTab("bookings") && <TabsContent value="bookings">
             <BookingsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="refunds">
+          {canAccessTab("refunds") && <TabsContent value="refunds">
             <RefundsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="grievances">
+          {canAccessTab("grievances") && <TabsContent value="grievances">
             <GrievancesTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="events">
+          {canAccessTab("events") && <TabsContent value="events">
             <EventsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="members">
+          {canAccessTab("members") && <TabsContent value="members">
             <MembersTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="gallery">
+          {canAccessTab("gallery") && <TabsContent value="gallery">
             <GalleryTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="about-gallery">
+          {canAccessTab("about-gallery") && <TabsContent value="about-gallery">
             <AboutGalleryTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="announcements">
+          {canAccessTab("announcements") && <TabsContent value="announcements">
             <AnnouncementsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="user-approval">
+          {canAccessTab("user-approval") && <TabsContent value="user-approval">
             <UserApprovalTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="user-management">
+          {canAccessTab("user-management") && <TabsContent value="user-management">
             <UserManagementTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="notifications">
+          {canAccessTab("notifications") && <TabsContent value="notifications">
             <NotificationsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="marriage-register">
+          {canAccessTab("marriage-register") && <TabsContent value="marriage-register">
             <MarriageRegisterTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="outside-marriage-register">
+          {canAccessTab("outside-marriage-register") && <TabsContent value="outside-marriage-register">
             <OutsideMarriageRegisterTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="death-register">
+          {canAccessTab("death-register") && <TabsContent value="death-register">
             <DeathRegisterTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="certificate-payments">
+          {canAccessTab("certificate-payments") && <TabsContent value="certificate-payments">
             <CertificatePaymentsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="noc-certificates">
+          {canAccessTab("noc-certificates") && <TabsContent value="noc-certificates">
             <NocCertificatesTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="heir-certificates">
+          {canAccessTab("heir-certificates") && <TabsContent value="heir-certificates">
             <HeirCertificatesTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="subscription-slots">
+          {canAccessTab("subscription-slots") && <TabsContent value="subscription-slots">
             <SubscriptionSlotsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="cash-requests">
+          {canAccessTab("cash-requests") && <TabsContent value="cash-requests">
             <CashPaymentRequestsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="online-payments">
+          {canAccessTab("online-payments") && <TabsContent value="online-payments">
             <OnlinePaymentsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="issued-documents">
+          {canAccessTab("issued-documents") && <TabsContent value="issued-documents">
             <IssuedDocumentsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="pdf-documents" forceMount className="data-[state=inactive]:hidden">
+          {canAccessTab("pdf-documents") && <TabsContent value="pdf-documents" forceMount className="data-[state=inactive]:hidden">
             <PdfDocumentsTab 
               onUploadDialogChange={setIsUploadDialogOpen}
               onRequestFileUpload={handlePdfUploadRequest}
               pendingFile={pendingPdfFile}
               onPendingFileConsumed={() => setPendingPdfFile(null)}
             />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="committee">
+          {canAccessTab("committee") && <TabsContent value="committee">
             <CommitteeTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="rental-agreements">
+          {canAccessTab("rental-agreements") && <TabsContent value="rental-agreements">
             <RentalAgreementsTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="asset-management">
+          {canAccessTab("asset-management") && <TabsContent value="asset-management">
             <AssetManagementTab />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="backup-restore" forceMount className="data-[state=inactive]:hidden">
+          {canAccessTab("backup-restore") && <TabsContent value="backup-restore" forceMount className="data-[state=inactive]:hidden">
             <BackupRestoreTab 
               onRequestFileUpload={handleBackupFileRequest}
               pendingFile={pendingBackupFile}
               onPendingFileConsumed={() => setPendingBackupFile(null)}
             />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="settings">
+          {canAccessTab("settings") && <TabsContent value="settings">
             <SettingsTab />
-          </TabsContent>
+          </TabsContent>}
         </Tabs>
       </div>
     </div>
