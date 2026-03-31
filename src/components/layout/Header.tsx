@@ -53,6 +53,7 @@ const Header = () => {
   const location = useLocation();
   const { user, loading, signOut } = useAuth();
   const { isAdmin, isSuperAdmin } = useUserRole();
+  const { hasAnyAccess: hasTabAccess } = useUserTabPermissions();
   const { darkMode, setDarkMode, isDark } = useTheme();
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
