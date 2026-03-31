@@ -522,7 +522,7 @@ const Header = () => {
                 }
 
                   {/* Admin section in mobile */}
-                  {isAdmin &&
+                  {(isAdmin || hasTabAccess) &&
                 <div className="pt-2">
                       <Link
                     to="/admin"
