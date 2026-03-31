@@ -51,6 +51,10 @@ const SuperAdminDashboard = () => {
               <KeyRound className="h-4 w-4" />
               <span>Permissions</span>
             </TabsTrigger>
+            <TabsTrigger value="create-user" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Create User</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
