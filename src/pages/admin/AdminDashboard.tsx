@@ -4,6 +4,7 @@ import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, Rotate
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import DonationsTab from "./tabs/DonationsTab";
 import BookingsTab from "./tabs/BookingsTab";
 import GrievancesTab from "./tabs/GrievancesTab";
