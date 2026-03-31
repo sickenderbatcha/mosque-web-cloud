@@ -80,6 +80,10 @@ const SuperAdminDashboard = () => {
           <TabsContent value="tab-permissions">
             <TabPermissionsTab />
           </TabsContent>
+
+          <TabsContent value="create-user">
+            <DirectUserCreationTab />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
