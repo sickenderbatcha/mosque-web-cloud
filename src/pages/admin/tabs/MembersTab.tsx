@@ -260,6 +260,7 @@ const MembersTab = () => {
       if (error) {
         toast({ title: "Error updating member", description: error.message, variant: "destructive" });
       } else {
+        logAdminAction({ action_type: "update_member", action_description: `Updated member: ${formData.full_name} (${formData.member_id})`, target_table: "gb_members", target_id: editingMember.id });
         toast({ title: "Member updated successfully" });
         fetchMembers();
         setDialogOpen(false);
