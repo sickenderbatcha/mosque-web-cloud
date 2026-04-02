@@ -157,9 +157,17 @@ const TabPermissionsTab = () => {
         if (insertError) throw insertError;
       }
 
+      const selectedUserObj = users.find((u) => u.id === selectedUserId);
       toast({
         title: "Permissions saved",
         description: `${selectedTabs.length} tab(s) assigned successfully.`,
+      });
+      logAdminAction({
+        action_type: selectedTabs.length > 0 ? "grant_permission" : "revoke_permission",
+        action_description: `Updated tab permissions for ${selectedUserObj?.full_name || "user"}: ${selectedTabs.length > 0 ? selectedTabs.join(", ") : "all removed"}`,
+        target_table: "user_tab_permissions",
+        target_id: selectedUserId,
+        target_details: { tabs: selectedTabs, user_name: selectedUserObj?.full_name },
       });
     } catch (err: any) {
       console.error("Error saving permissions:", err);
