@@ -341,6 +341,7 @@ const MembersTab = () => {
     if (error) {
       toast({ title: "Error updating status", description: error.message, variant: "destructive" });
     } else {
+      logAdminAction({ action_type: member.is_active ? "deactivate_member" : "activate_member", action_description: `${member.is_active ? "Deactivated" : "Activated"} member ${member.full_name} (${member.member_id})`, target_table: "gb_members", target_id: member.id });
       toast({ title: `Member ${member.is_active ? "deactivated" : "activated"}` });
       fetchMembers();
     }
