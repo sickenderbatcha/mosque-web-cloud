@@ -189,6 +189,13 @@ const UserManagementTab = () => {
           description: `New password has been sent to ${user.full_name}'s registered contact.`,
         });
       }
+      logAdminAction({
+        action_type: "reset_password",
+        action_description: `Reset password for ${user.full_name} (${user.member_id})`,
+        target_table: "gb_members",
+        target_id: user.member_id,
+        target_details: { full_name: user.full_name, member_id: user.member_id },
+      });
     } catch (error: any) {
       toast({
         title: "Error resetting password",
