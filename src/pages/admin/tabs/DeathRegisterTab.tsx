@@ -420,6 +420,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "delete_death_register", action_description: `Deleted death register entry`, target_table: "death_registers" });
       toast.success("பதிவு நீக்கப்பட்டது");
     },
     onError: (error) => {

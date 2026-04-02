@@ -730,6 +730,7 @@ export default function MarriageRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["marriage-registers"] });
+      logAdminAction({ action_type: "update_marriage_register", action_description: `Updated marriage register entry`, target_table: "marriage_registers" });
       toast.success("திருமண பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது");
       setIsDialogOpen(false);
       setEditRecord(null);
