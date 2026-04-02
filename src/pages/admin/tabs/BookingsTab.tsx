@@ -176,6 +176,7 @@ const BookingsTab = () => {
         if (refundError) console.error("Error creating refund request:", refundError);
       }
 
+      logAdminAction({ action_type: "cancel_booking", action_description: `Cancelled booking for ${cancelBooking.applicant_name} on ${cancelBooking.event_date}`, target_table: "mahal_bookings", target_id: cancelBooking.id, target_details: { applicant: cancelBooking.applicant_name, reason: cancelReason } });
       toast.success("முன்பதிவு ரத்து செய்யப்பட்டது (Booking cancelled)");
       setCancelBooking(null);
       setCancelReason("");
