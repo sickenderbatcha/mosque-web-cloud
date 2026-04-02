@@ -661,6 +661,7 @@ export default function MarriageRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["marriage-registers"] });
+      logAdminAction({ action_type: "delete_marriage_register", action_description: `Deleted marriage register entry`, target_table: "marriage_registers" });
       toast.success("பதிவு நீக்கப்பட்டது");
     },
     onError: (error) => {
