@@ -190,6 +190,7 @@ const ExpensesTab = () => {
     if (error) {
       toast.error("Failed to delete expense");
     } else {
+      logAdminAction({ action_type: "delete_expense", action_description: `Deleted expense record`, target_table: "expenses", target_id: id });
       toast.success("Expense deleted successfully");
       fetchExpenses();
     }

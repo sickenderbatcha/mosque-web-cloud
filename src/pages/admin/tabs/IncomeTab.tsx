@@ -200,6 +200,7 @@ const IncomeTab = () => {
     if (error) {
       toast.error("Failed to delete income");
     } else {
+      logAdminAction({ action_type: "delete_income", action_description: `Deleted income record`, target_table: "income", target_id: id });
       toast.success("Income deleted successfully");
       fetchIncomes();
     }
