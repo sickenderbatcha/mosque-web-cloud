@@ -9,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Search, X, Eye, Printer, Download, Loader2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
+import { generateDeathCertificatePdf, printDeathCertificate } from "@/utils/deathCertificatePdf";
+import { generateMarriageCertificatePdf, printMarriageCertificate } from "@/utils/marriageCertificatePdf";
+import { generateOutsideMarriageCertificatePdf, printOutsideMarriageCertificate } from "@/utils/outsideMarriageCertificatePdf";
+import { generateHeirCertificatePdf, printHeirCertificate } from "@/utils/heirCertificatePdf";
+import { generateNocCertificatePdf, printNocCertificate } from "@/utils/nocCertificatePdf";
 
 interface IssuedDocument {
   id: string;
