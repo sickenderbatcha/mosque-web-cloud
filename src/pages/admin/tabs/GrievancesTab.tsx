@@ -103,6 +103,7 @@ const GrievancesTab = () => {
         }).catch(console.error);
       }
       
+      logAdminAction({ action_type: "update_grievance", action_description: `Updated grievance #${selectedGrievance.ticket_number} status to ${newStatus || "updated"}`, target_table: "grievances", target_id: selectedGrievance.id, target_details: { ticket: selectedGrievance.ticket_number, status: newStatus, complainant: selectedGrievance.complainant_name } });
       toast.success("Grievance updated");
       setSelectedGrievance(null);
       setResponse("");
