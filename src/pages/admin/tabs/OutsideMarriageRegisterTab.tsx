@@ -388,6 +388,7 @@ export default function OutsideMarriageRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] });
+      logAdminAction({ action_type: "update_outside_marriage_register", action_description: `Updated outside marriage register entry`, target_table: "outside_marriage_registers" });
       toast.success("வெளியூர் திருமண பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது");
       setIsDialogOpen(false); setEditRecord(null); clearMemberLookup(); resetToInitial();
     },
