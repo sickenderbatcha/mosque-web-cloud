@@ -347,6 +347,7 @@ const CashPaymentRequestsTab = () => {
       }
     },
     onSuccess: (_, variables) => {
+      logAdminAction({ action_type: `cash_payment_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} cash payment request`, target_table: "cash_payment_requests", target_id: variables.id });
       toast.success(
         variables.status === "approved"
           ? "கோரிக்கை அங்கீகரிக்கப்பட்டது (Request approved)"
