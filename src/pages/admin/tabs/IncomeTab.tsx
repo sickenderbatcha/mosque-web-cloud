@@ -164,6 +164,7 @@ const IncomeTab = () => {
       if (error) {
         toast.error("Failed to add income");
       } else {
+        logAdminAction({ action_type: "create_income", action_description: `Added income: ₹${formData.amount} - ${formData.category} from ${formData.source}`, target_table: "income" });
         toast.success("Income added successfully");
         fetchIncomes();
       }
