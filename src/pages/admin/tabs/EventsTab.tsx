@@ -128,6 +128,7 @@ const EventsTab = () => {
     if (error) {
       toast.error("Failed to delete event");
     } else {
+      logAdminAction({ action_type: "delete_event", action_description: `Deleted event`, target_table: "events", target_id: id });
       toast.success("Event deleted");
       fetchEvents();
     }
