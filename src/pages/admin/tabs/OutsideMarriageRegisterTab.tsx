@@ -377,7 +377,7 @@ export default function OutsideMarriageRegisterTab() {
       const { error } = await supabase.from("outside_marriage_registers").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] }); toast.success("பதிவு நீக்கப்பட்டது"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] }); logAdminAction({ action_type: "delete_outside_marriage_register", action_description: `Deleted outside marriage register entry`, target_table: "outside_marriage_registers" }); toast.success("பதிவு நீக்கப்பட்டது"); },
     onError: (error) => toast.error("பிழை: " + error.message),
   });
 
