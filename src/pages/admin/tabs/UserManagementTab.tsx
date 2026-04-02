@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -188,6 +189,13 @@ const UserManagementTab = () => {
           description: `New password has been sent to ${user.full_name}'s registered contact.`,
         });
       }
+      logAdminAction({
+        action_type: "reset_password",
+        action_description: `Reset password for ${user.full_name} (${user.member_id})`,
+        target_table: "gb_members",
+        target_id: user.member_id,
+        target_details: { full_name: user.full_name, member_id: user.member_id },
+      });
     } catch (error: any) {
       toast({
         title: "Error resetting password",
@@ -214,6 +222,13 @@ const UserManagementTab = () => {
       toast({
         title: "User account deleted",
         description: `Account for ${selectedUser.full_name} has been deleted. The member record is preserved.`,
+      });
+      logAdminAction({
+        action_type: "delete_user",
+        action_description: `Deleted user account for ${selectedUser.full_name} (${selectedUser.member_id})`,
+        target_table: "gb_members",
+        target_id: selectedUser.member_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
       });
       fetchUsers();
     } catch (error: any) {
@@ -246,6 +261,13 @@ const UserManagementTab = () => {
         title: "Account unlinked",
         description: `Account has been unlinked from ${selectedUser.full_name}'s member record.`,
       });
+      logAdminAction({
+        action_type: "unlink_account",
+        action_description: `Unlinked user account from ${selectedUser.full_name} (${selectedUser.member_id})`,
+        target_table: "gb_members",
+        target_id: selectedUser.member_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
+      });
       fetchUsers();
     } catch (error: any) {
       toast({
@@ -272,6 +294,13 @@ const UserManagementTab = () => {
 
       toast({
         title: `Member ${user.is_active ? "deactivated" : "activated"}`,
+      });
+      logAdminAction({
+        action_type: user.is_active ? "deactivate_member" : "activate_member",
+        action_description: `${user.is_active ? "Deactivated" : "Activated"} member ${user.full_name} (${user.member_id})`,
+        target_table: "gb_members",
+        target_id: user.member_id,
+        target_details: { full_name: user.full_name, member_id: user.member_id },
       });
       fetchUsers();
     } catch (error: any) {
