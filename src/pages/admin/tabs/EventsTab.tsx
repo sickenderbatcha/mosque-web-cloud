@@ -116,6 +116,7 @@ const EventsTab = () => {
     if (error) {
       toast.error("Failed to save event");
     } else {
+      logAdminAction({ action_type: editingEvent ? "update_event" : "create_event", action_description: `${editingEvent ? "Updated" : "Created"} event: ${formData.title}`, target_table: "events", target_id: editingEvent?.id });
       toast.success(editingEvent ? "Event updated" : "Event created");
       resetForm();
       fetchEvents();
