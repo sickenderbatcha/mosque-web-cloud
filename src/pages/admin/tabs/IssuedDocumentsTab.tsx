@@ -129,23 +129,18 @@ const IssuedDocumentsTab = () => {
       const { document_type, reference_id } = doc;
 
       if (document_type === "death") {
-        const { generateDeathCertificatePdf, printDeathCertificate } = await import("@/utils/deathCertificatePdf");
         const { data } = await supabase.from("death_registers").select("*").eq("id", reference_id).single();
         if (data) await printDeathCertificate(data as any);
       } else if (document_type === "marriage") {
-        const { printMarriageCertificate } = await import("@/utils/marriageCertificatePdf");
         const { data } = await supabase.from("marriage_registers").select("*").eq("id", reference_id).single();
         if (data) await printMarriageCertificate(data as any);
       } else if (document_type === "outside_marriage") {
-        const { printOutsideMarriageCertificate } = await import("@/utils/outsideMarriageCertificatePdf");
         const { data } = await supabase.from("outside_marriage_registers").select("*").eq("id", reference_id).single();
         if (data) await printOutsideMarriageCertificate(data as any);
       } else if (document_type === "heir") {
-        const { printHeirCertificate } = await import("@/utils/heirCertificatePdf");
         const { data } = await supabase.from("heir_certificates").select("*").eq("id", reference_id).single();
         if (data) await printHeirCertificate(data as any);
       } else if (document_type === "noc") {
-        const { printNocCertificate } = await import("@/utils/nocCertificatePdf");
         const { data } = await supabase.from("noc_certificates").select("*").eq("id", reference_id).single();
         if (data) await printNocCertificate(data as any);
       } else {
