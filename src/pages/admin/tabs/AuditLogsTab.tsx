@@ -194,7 +194,11 @@ const AuditLogsTab = () => {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
               totalItems={filtered.length}
+              startIndex={(currentPage - 1) * pageSize}
+              endIndex={Math.min(currentPage * pageSize, filtered.length)}
               itemsPerPage={pageSize}
+              onItemsPerPageChange={() => {}}
+              itemLabel="logs"
             />
           </>
         )}
