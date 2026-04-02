@@ -107,6 +107,13 @@ const UserApprovalTab = () => {
           title: "Request Deleted",
           description: `Registration request for ${selectedUser.full_name} has been deleted.`,
         });
+        logAdminAction({
+          action_type: "delete_pending_user",
+          action_description: `Deleted pending registration for ${selectedUser.full_name} (${selectedUser.member_id})`,
+          target_table: "pending_users",
+          target_id: selectedUser.id,
+          target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
+        });
       } else {
         // Approve or reject via edge function
         const response = await supabase.functions.invoke("approve-user", {
@@ -122,6 +129,13 @@ const UserApprovalTab = () => {
         toast({
           title: actionType === "approve" ? "User Approved" : "User Rejected",
           description: `${selectedUser.full_name} has been ${actionType === "approve" ? "approved" : "rejected"}.`,
+        });
+        logAdminAction({
+          action_type: actionType === "approve" ? "approve_user" : "reject_user",
+          action_description: `${actionType === "approve" ? "Approved" : "Rejected"} user registration for ${selectedUser.full_name} (${selectedUser.member_id})`,
+          target_table: "pending_users",
+          target_id: selectedUser.id,
+          target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id, admin_notes: adminNotes },
         });
       }
 
