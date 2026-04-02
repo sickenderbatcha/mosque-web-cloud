@@ -89,6 +89,10 @@ const SuperAdminDashboard = () => {
           <TabsContent value="create-user">
             <DirectUserCreationTab />
           </TabsContent>
+
+          <TabsContent value="audit-logs">
+            <AuditLogsTab />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
