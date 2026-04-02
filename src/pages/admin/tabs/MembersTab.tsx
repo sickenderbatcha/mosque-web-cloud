@@ -304,6 +304,7 @@ const MembersTab = () => {
           }
         }
         
+        logAdminAction({ action_type: "create_member", action_description: `Added new member: ${formData.full_name} (${formData.member_id})`, target_table: "gb_members" });
         toast({ title: "Member added successfully. You can now add family members below." });
         fetchMembers();
         // Set the newly created member as editing member to show family section
