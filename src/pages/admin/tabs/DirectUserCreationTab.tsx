@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { UserPlus, Copy, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "sonner";
 
 interface FormValues {
