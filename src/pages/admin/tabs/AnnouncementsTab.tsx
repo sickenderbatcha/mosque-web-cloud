@@ -147,6 +147,7 @@ const AnnouncementsTab = () => {
 
         if (error) throw error;
         announcementId = editingAnnouncement.id;
+        logAdminAction({ action_type: "update_announcement", action_description: `Updated announcement: ${formData.title}`, target_table: "announcements", target_id: editingAnnouncement.id });
         toast({ title: "Success", description: "Announcement updated successfully" });
       } else {
         const { data, error } = await supabase
