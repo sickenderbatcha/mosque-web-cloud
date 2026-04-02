@@ -13,14 +13,14 @@ export const logAdminAction = async (entry: AuditLogEntry) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    await supabase.from("admin_audit_logs").insert({
+    await supabase.from("admin_audit_logs").insert([{
       performed_by: user.id,
       action_type: entry.action_type,
       action_description: entry.action_description,
       target_table: entry.target_table || null,
       target_id: entry.target_id || null,
-      target_details: entry.target_details || {},
-    });
+      target_details: (entry.target_details || {}) as any,
+    }]);
   } catch (err) {
     console.error("Failed to write audit log:", err);
   }
