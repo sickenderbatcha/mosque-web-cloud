@@ -295,6 +295,13 @@ const UserManagementTab = () => {
       toast({
         title: `Member ${user.is_active ? "deactivated" : "activated"}`,
       });
+      logAdminAction({
+        action_type: user.is_active ? "deactivate_member" : "activate_member",
+        action_description: `${user.is_active ? "Deactivated" : "Activated"} member ${user.full_name} (${user.member_id})`,
+        target_table: "gb_members",
+        target_id: user.member_id,
+        target_details: { full_name: user.full_name, member_id: user.member_id },
+      });
       fetchUsers();
     } catch (error: any) {
       toast({

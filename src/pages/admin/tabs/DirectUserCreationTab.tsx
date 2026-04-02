@@ -44,6 +44,13 @@ const DirectUserCreationTab = () => {
         fullName: response.data.fullName,
       });
       toast.success("User created successfully");
+      logAdminAction({
+        action_type: "create_user",
+        action_description: `Created direct user account for ${response.data.fullName} (${response.data.memberId})`,
+        target_table: "auth.users",
+        target_id: response.data.memberId,
+        target_details: { full_name: response.data.fullName, member_id: response.data.memberId },
+      });
       form.reset();
     } catch (error: any) {
       toast.error(error.message || "Failed to create user");
