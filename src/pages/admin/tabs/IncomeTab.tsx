@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, TrendingUp, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

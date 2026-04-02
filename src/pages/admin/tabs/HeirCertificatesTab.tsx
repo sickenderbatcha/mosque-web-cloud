@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "sonner";
 import { incrementHeirCertificateSequence } from "@/components/admin/HeirCertificateNumberSettings";
 import { useAuth } from "@/hooks/useAuth";

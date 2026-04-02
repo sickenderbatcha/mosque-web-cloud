@@ -41,6 +41,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
