@@ -223,6 +223,13 @@ const UserManagementTab = () => {
         title: "User account deleted",
         description: `Account for ${selectedUser.full_name} has been deleted. The member record is preserved.`,
       });
+      logAdminAction({
+        action_type: "delete_user",
+        action_description: `Deleted user account for ${selectedUser.full_name} (${selectedUser.member_id})`,
+        target_table: "gb_members",
+        target_id: selectedUser.member_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
+      });
       fetchUsers();
     } catch (error: any) {
       toast({
