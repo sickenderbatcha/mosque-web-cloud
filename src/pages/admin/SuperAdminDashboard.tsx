@@ -56,6 +56,10 @@ const SuperAdminDashboard = () => {
               <UserPlus className="h-4 w-4" />
               <span>Create User</span>
             </TabsTrigger>
+            <TabsTrigger value="audit-logs" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              <span>Audit Logs</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="landing-content">
