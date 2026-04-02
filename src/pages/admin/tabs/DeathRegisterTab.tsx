@@ -330,6 +330,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "create_death_register", action_description: `Added death register entry`, target_table: "death_registers" });
       toast.success("இறப்பு பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false);
       form.reset();
