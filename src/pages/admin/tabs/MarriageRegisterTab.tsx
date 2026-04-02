@@ -636,6 +636,7 @@ export default function MarriageRegisterTab() {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["marriage-registers"] });
+      logAdminAction({ action_type: "create_marriage_register", action_description: `Added marriage register entry`, target_table: "marriage_registers" });
       toast.success("திருமண பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false);
       clearMemberLookup();
