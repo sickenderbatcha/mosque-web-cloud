@@ -157,6 +157,7 @@ const ExpensesTab = () => {
       if (error) {
         toast.error("Failed to add expense");
       } else {
+        logAdminAction({ action_type: "create_expense", action_description: `Added expense: ₹${formData.amount} - ${formData.category}`, target_table: "expenses" });
         toast.success("Expense added successfully");
         fetchExpenses();
       }
