@@ -399,6 +399,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "update_death_register", action_description: `Updated death register entry`, target_table: "death_registers" });
       toast.success("பதிவு புதுப்பிக்கப்பட்டது");
       setEditRecord(null);
       setIsDialogOpen(false);
