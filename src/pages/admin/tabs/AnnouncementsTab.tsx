@@ -248,6 +248,7 @@ const AnnouncementsTab = () => {
         .eq("id", deleteId);
 
       if (error) throw error;
+      logAdminAction({ action_type: "delete_announcement", action_description: `Deleted announcement`, target_table: "announcements", target_id: deleteId });
       toast({ title: "Success", description: "Announcement deleted successfully" });
       fetchAnnouncements();
     } catch (error) {
