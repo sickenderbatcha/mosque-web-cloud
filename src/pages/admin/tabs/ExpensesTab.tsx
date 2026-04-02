@@ -147,6 +147,7 @@ const ExpensesTab = () => {
       if (error) {
         toast.error("Failed to update expense");
       } else {
+        logAdminAction({ action_type: "update_expense", action_description: `Updated expense: ₹${formData.amount} - ${formData.category}`, target_table: "expenses", target_id: editingExpense.id });
         toast.success("Expense updated successfully");
         fetchExpenses();
       }
