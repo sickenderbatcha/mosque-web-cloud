@@ -158,6 +158,7 @@ const AnnouncementsTab = () => {
 
         if (error) throw error;
         announcementId = data?.id;
+        logAdminAction({ action_type: "create_announcement", action_description: `Created announcement: ${formData.title}`, target_table: "announcements", target_id: data?.id });
         toast({ title: "Success", description: "Announcement created successfully" });
       }
 
