@@ -118,6 +118,7 @@ const BookingsTab = () => {
         }).catch(console.error);
       }
       
+      logAdminAction({ action_type: `booking_${status}`, action_description: `${status === "approved" ? "Approved" : "Rejected"} booking for ${booking?.applicant_name} on ${booking?.event_date}`, target_table: "mahal_bookings", target_id: id, target_details: { applicant: booking?.applicant_name, event_type: booking?.event_type, event_date: booking?.event_date } });
       toast.success(`Booking ${status}`);
       fetchBookings();
     }
