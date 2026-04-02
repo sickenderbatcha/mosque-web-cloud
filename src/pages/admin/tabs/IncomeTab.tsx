@@ -154,6 +154,7 @@ const IncomeTab = () => {
       if (error) {
         toast.error("Failed to update income");
       } else {
+        logAdminAction({ action_type: "update_income", action_description: `Updated income: ₹${formData.amount} - ${formData.category}`, target_table: "income", target_id: editingIncome.id });
         toast.success("Income updated successfully");
         fetchIncomes();
       }
