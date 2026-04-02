@@ -380,6 +380,7 @@ const MembersTab = () => {
 
       const newPassword = response.data?.newPassword;
       if (newPassword) {
+        logAdminAction({ action_type: "reset_password", action_description: `Reset password for member ${member.full_name} (${member.member_id})`, target_table: "gb_members", target_id: member.id });
         setResetPasswordResult({
           name: member.full_name,
           password: newPassword,
