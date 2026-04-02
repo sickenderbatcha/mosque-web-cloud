@@ -271,6 +271,7 @@ const CashPaymentRequestsTab = () => {
       }
     },
     onSuccess: () => {
+      logAdminAction({ action_type: "cash_payment_paid", action_description: `Marked cash payment as paid`, target_table: "cash_payment_requests" });
       toast.success("ரசீது அச்சிடப்பட்டது, நிலை புதுப்பிக்கப்பட்டது (Receipt printed, status updated to paid)");
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
