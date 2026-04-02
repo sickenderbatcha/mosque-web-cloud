@@ -261,6 +261,13 @@ const UserManagementTab = () => {
         title: "Account unlinked",
         description: `Account has been unlinked from ${selectedUser.full_name}'s member record.`,
       });
+      logAdminAction({
+        action_type: "unlink_account",
+        action_description: `Unlinked user account from ${selectedUser.full_name} (${selectedUser.member_id})`,
+        target_table: "gb_members",
+        target_id: selectedUser.member_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
+      });
       fetchUsers();
     } catch (error: any) {
       toast({
