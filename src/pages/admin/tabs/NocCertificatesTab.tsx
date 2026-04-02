@@ -148,6 +148,7 @@ export default function NocCertificatesTab() {
     },
     onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["noc-certificates"] });
+      logAdminAction({ action_type: `noc_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} NOC certificate for ${variables.record.applicant_name}`, target_table: "noc_certificates", target_id: variables.id, target_details: { applicant: variables.record.applicant_name } });
       toast.success("நிலை புதுப்பிக்கப்பட்டது");
       setViewRecord(null);
       if (variables.status === "approved") {

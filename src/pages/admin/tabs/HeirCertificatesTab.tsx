@@ -107,6 +107,7 @@ export default function HeirCertificatesTab() {
     },
     onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["heir-certificates"] });
+      logAdminAction({ action_type: `heir_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} heir certificate for ${variables.record.applicant_name} (deceased: ${variables.record.deceased_name})`, target_table: "heir_certificates", target_id: variables.id, target_details: { applicant: variables.record.applicant_name, deceased: variables.record.deceased_name } });
       toast.success("நிலை புதுப்பிக்கப்பட்டது");
       setViewRecord(null);
       if (variables.status === "approved") {

@@ -547,6 +547,7 @@ const CashPaymentRequestsTab = () => {
         }
       }
 
+      logAdminAction({ action_type: "cancel_cash_payment", action_description: `Cancelled cash payment for ${cancelRequest.applicant_name}`, target_table: "cash_payment_requests", target_id: cancelRequest.id, target_details: { reason: cancelReason } });
       toast.success("ரொக்க ரசீது ரத்து செய்யப்பட்டது (Cash receipt cancelled)");
       setCancelRequest(null);
       setCancelReason("");
