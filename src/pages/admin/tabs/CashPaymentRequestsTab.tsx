@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -270,6 +271,7 @@ const CashPaymentRequestsTab = () => {
       }
     },
     onSuccess: () => {
+      logAdminAction({ action_type: "cash_payment_paid", action_description: `Marked cash payment as paid`, target_table: "cash_payment_requests" });
       toast.success("ரசீது அச்சிடப்பட்டது, நிலை புதுப்பிக்கப்பட்டது (Receipt printed, status updated to paid)");
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
@@ -345,6 +347,7 @@ const CashPaymentRequestsTab = () => {
       }
     },
     onSuccess: (_, variables) => {
+      logAdminAction({ action_type: `cash_payment_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} cash payment request`, target_table: "cash_payment_requests", target_id: variables.id });
       toast.success(
         variables.status === "approved"
           ? "கோரிக்கை அங்கீகரிக்கப்பட்டது (Request approved)"
@@ -544,6 +547,7 @@ const CashPaymentRequestsTab = () => {
         }
       }
 
+      logAdminAction({ action_type: "cancel_cash_payment", action_description: `Cancelled cash payment for ${cancelRequest.applicant_name}`, target_table: "cash_payment_requests", target_id: cancelRequest.id, target_details: { reason: cancelReason } });
       toast.success("ரொக்க ரசீது ரத்து செய்யப்பட்டது (Cash receipt cancelled)");
       setCancelRequest(null);
       setCancelReason("");

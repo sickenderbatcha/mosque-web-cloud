@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +118,7 @@ const BookingsTab = () => {
         }).catch(console.error);
       }
       
+      logAdminAction({ action_type: `booking_${status}`, action_description: `${status === "approved" ? "Approved" : "Rejected"} booking for ${booking?.applicant_name} on ${booking?.event_date}`, target_table: "mahal_bookings", target_id: id, target_details: { applicant: booking?.applicant_name, event_type: booking?.event_type, event_date: booking?.event_date } });
       toast.success(`Booking ${status}`);
       fetchBookings();
     }
@@ -174,6 +176,7 @@ const BookingsTab = () => {
         if (refundError) console.error("Error creating refund request:", refundError);
       }
 
+      logAdminAction({ action_type: "cancel_booking", action_description: `Cancelled booking for ${cancelBooking.applicant_name} on ${cancelBooking.event_date}`, target_table: "mahal_bookings", target_id: cancelBooking.id, target_details: { applicant: cancelBooking.applicant_name, reason: cancelReason } });
       toast.success("முன்பதிவு ரத்து செய்யப்பட்டது (Booking cancelled)");
       setCancelBooking(null);
       setCancelReason("");

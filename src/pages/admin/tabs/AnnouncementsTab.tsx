@@ -41,6 +41,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -146,6 +147,7 @@ const AnnouncementsTab = () => {
 
         if (error) throw error;
         announcementId = editingAnnouncement.id;
+        logAdminAction({ action_type: "update_announcement", action_description: `Updated announcement: ${formData.title}`, target_table: "announcements", target_id: editingAnnouncement.id });
         toast({ title: "Success", description: "Announcement updated successfully" });
       } else {
         const { data, error } = await supabase
@@ -156,6 +158,7 @@ const AnnouncementsTab = () => {
 
         if (error) throw error;
         announcementId = data?.id;
+        logAdminAction({ action_type: "create_announcement", action_description: `Created announcement: ${formData.title}`, target_table: "announcements", target_id: data?.id });
         toast({ title: "Success", description: "Announcement created successfully" });
       }
 
@@ -245,6 +248,7 @@ const AnnouncementsTab = () => {
         .eq("id", deleteId);
 
       if (error) throw error;
+      logAdminAction({ action_type: "delete_announcement", action_description: `Deleted announcement`, target_table: "announcements", target_id: deleteId });
       toast({ title: "Success", description: "Announcement deleted successfully" });
       fetchAnnouncements();
     } catch (error) {

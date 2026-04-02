@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { incrementDeathCertificateSequence } from "@/components/admin/DeathCertificateNumberSettings";
@@ -329,6 +330,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "create_death_register", action_description: `Added death register entry`, target_table: "death_registers" });
       toast.success("இறப்பு பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false);
       form.reset();
@@ -397,6 +399,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "update_death_register", action_description: `Updated death register entry`, target_table: "death_registers" });
       toast.success("பதிவு புதுப்பிக்கப்பட்டது");
       setEditRecord(null);
       setIsDialogOpen(false);
@@ -417,6 +420,7 @@ export default function DeathRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["death-registers"] });
+      logAdminAction({ action_type: "delete_death_register", action_description: `Deleted death register entry`, target_table: "death_registers" });
       toast.success("பதிவு நீக்கப்பட்டது");
     },
     onError: (error) => {

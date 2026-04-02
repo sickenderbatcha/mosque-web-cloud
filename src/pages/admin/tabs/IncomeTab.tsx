@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, TrendingUp, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -153,6 +154,7 @@ const IncomeTab = () => {
       if (error) {
         toast.error("Failed to update income");
       } else {
+        logAdminAction({ action_type: "update_income", action_description: `Updated income: ₹${formData.amount} - ${formData.category}`, target_table: "income", target_id: editingIncome.id });
         toast.success("Income updated successfully");
         fetchIncomes();
       }
@@ -162,6 +164,7 @@ const IncomeTab = () => {
       if (error) {
         toast.error("Failed to add income");
       } else {
+        logAdminAction({ action_type: "create_income", action_description: `Added income: ₹${formData.amount} - ${formData.category} from ${formData.source}`, target_table: "income" });
         toast.success("Income added successfully");
         fetchIncomes();
       }
@@ -197,6 +200,7 @@ const IncomeTab = () => {
     if (error) {
       toast.error("Failed to delete income");
     } else {
+      logAdminAction({ action_type: "delete_income", action_description: `Deleted income record`, target_table: "income", target_id: id });
       toast.success("Income deleted successfully");
       fetchIncomes();
     }

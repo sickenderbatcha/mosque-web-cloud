@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, TrendingDown } from "lucide-react";
 import { format } from "date-fns";
@@ -146,6 +147,7 @@ const ExpensesTab = () => {
       if (error) {
         toast.error("Failed to update expense");
       } else {
+        logAdminAction({ action_type: "update_expense", action_description: `Updated expense: ₹${formData.amount} - ${formData.category}`, target_table: "expenses", target_id: editingExpense.id });
         toast.success("Expense updated successfully");
         fetchExpenses();
       }
@@ -155,6 +157,7 @@ const ExpensesTab = () => {
       if (error) {
         toast.error("Failed to add expense");
       } else {
+        logAdminAction({ action_type: "create_expense", action_description: `Added expense: ₹${formData.amount} - ${formData.category}`, target_table: "expenses" });
         toast.success("Expense added successfully");
         fetchExpenses();
       }
@@ -187,6 +190,7 @@ const ExpensesTab = () => {
     if (error) {
       toast.error("Failed to delete expense");
     } else {
+      logAdminAction({ action_type: "delete_expense", action_description: `Deleted expense record`, target_table: "expenses", target_id: id });
       toast.success("Expense deleted successfully");
       fetchExpenses();
     }

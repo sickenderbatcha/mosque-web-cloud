@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -115,6 +116,7 @@ const EventsTab = () => {
     if (error) {
       toast.error("Failed to save event");
     } else {
+      logAdminAction({ action_type: editingEvent ? "update_event" : "create_event", action_description: `${editingEvent ? "Updated" : "Created"} event: ${formData.title}`, target_table: "events", target_id: editingEvent?.id });
       toast.success(editingEvent ? "Event updated" : "Event created");
       resetForm();
       fetchEvents();
@@ -126,6 +128,7 @@ const EventsTab = () => {
     if (error) {
       toast.error("Failed to delete event");
     } else {
+      logAdminAction({ action_type: "delete_event", action_description: `Deleted event`, target_table: "events", target_id: id });
       toast.success("Event deleted");
       fetchEvents();
     }

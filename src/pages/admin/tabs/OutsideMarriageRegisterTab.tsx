@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { incrementOutsideMarriageCertificateSequence } from "@/components/admin/OutsideMarriageCertificateNumberSettings";
@@ -363,6 +364,7 @@ export default function OutsideMarriageRegisterTab() {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] });
+      logAdminAction({ action_type: "create_outside_marriage_register", action_description: `Added outside marriage register entry`, target_table: "outside_marriage_registers" });
       toast.success("வெளியூர் திருமண பதிவு வெற்றிகரமாக சேர்க்கப்பட்டது");
       setIsDialogOpen(false); clearMemberLookup(); resetToInitial();
       await incrementOutsideMarriageCertificateSequence();
@@ -375,7 +377,7 @@ export default function OutsideMarriageRegisterTab() {
       const { error } = await supabase.from("outside_marriage_registers").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] }); toast.success("பதிவு நீக்கப்பட்டது"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] }); logAdminAction({ action_type: "delete_outside_marriage_register", action_description: `Deleted outside marriage register entry`, target_table: "outside_marriage_registers" }); toast.success("பதிவு நீக்கப்பட்டது"); },
     onError: (error) => toast.error("பிழை: " + error.message),
   });
 
@@ -386,6 +388,7 @@ export default function OutsideMarriageRegisterTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["outside-marriage-registers"] });
+      logAdminAction({ action_type: "update_outside_marriage_register", action_description: `Updated outside marriage register entry`, target_table: "outside_marriage_registers" });
       toast.success("வெளியூர் திருமண பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது");
       setIsDialogOpen(false); setEditRecord(null); clearMemberLookup(); resetToInitial();
     },

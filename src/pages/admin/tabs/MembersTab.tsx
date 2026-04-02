@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAdminAction } from "@/lib/auditLog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -259,6 +260,7 @@ const MembersTab = () => {
       if (error) {
         toast({ title: "Error updating member", description: error.message, variant: "destructive" });
       } else {
+        logAdminAction({ action_type: "update_member", action_description: `Updated member: ${formData.full_name} (${formData.member_id})`, target_table: "gb_members", target_id: editingMember.id });
         toast({ title: "Member updated successfully" });
         fetchMembers();
         setDialogOpen(false);
@@ -302,6 +304,7 @@ const MembersTab = () => {
           }
         }
         
+        logAdminAction({ action_type: "create_member", action_description: `Added new member: ${formData.full_name} (${formData.member_id})`, target_table: "gb_members" });
         toast({ title: "Member added successfully. You can now add family members below." });
         fetchMembers();
         // Set the newly created member as editing member to show family section
@@ -338,6 +341,7 @@ const MembersTab = () => {
     if (error) {
       toast({ title: "Error updating status", description: error.message, variant: "destructive" });
     } else {
+      logAdminAction({ action_type: member.is_active ? "deactivate_member" : "activate_member", action_description: `${member.is_active ? "Deactivated" : "Activated"} member ${member.full_name} (${member.member_id})`, target_table: "gb_members", target_id: member.id });
       toast({ title: `Member ${member.is_active ? "deactivated" : "activated"}` });
       fetchMembers();
     }
@@ -376,6 +380,7 @@ const MembersTab = () => {
 
       const newPassword = response.data?.newPassword;
       if (newPassword) {
+        logAdminAction({ action_type: "reset_password", action_description: `Reset password for member ${member.full_name} (${member.member_id})`, target_table: "gb_members", target_id: member.id });
         setResetPasswordResult({
           name: member.full_name,
           password: newPassword,
