@@ -584,13 +584,25 @@ const UserManagementTab = () => {
                               )}
                             </DropdownMenuItem>
 
-                            {user.auth_user_id && (
+                                {user.auth_user_id && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                   <KeyRound className="h-4 w-4 mr-2" />
                                   Reset Password
                                 </DropdownMenuItem>
+                                {isSuperAdmin && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setSelectedRole(user.role || "user");
+                                      setRoleChangeDialogOpen(true);
+                                    }}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Change Role
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setSelectedUser(user);
