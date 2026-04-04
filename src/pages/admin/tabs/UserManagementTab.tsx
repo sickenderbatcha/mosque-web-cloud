@@ -761,6 +761,45 @@ const UserManagementTab = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Role Change Dialog */}
+      <Dialog open={roleChangeDialogOpen} onOpenChange={(open) => { if (!open) { setRoleChangeDialogOpen(false); setSelectedUser(null); setSelectedRole(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Change User Role
+            </DialogTitle>
+            <DialogDescription>
+              Change the role for <strong>{selectedUser?.full_name}</strong> ({selectedUser?.member_id})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRoleChangeDialogOpen(false); setSelectedUser(null); setSelectedRole(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangeRole} disabled={!selectedRole || actionLoading === selectedUser?.id}>
+              {actionLoading === selectedUser?.id ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Shield className="h-4 w-4 mr-2" />
+              )}
+              Update Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
