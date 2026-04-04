@@ -94,6 +94,8 @@ const UserManagementTab = () => {
   const [selectedUser, setSelectedUser] = useState<UserWithMember | null>(null);
   const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string; notificationSent: boolean } | null>(null);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("");
 
   useEffect(() => {
     fetchUsers();
@@ -279,6 +281,52 @@ const UserManagementTab = () => {
       setActionLoading(null);
       setUnlinkDialogOpen(false);
       setSelectedUser(null);
+    }
+  };
+
+  const handleChangeRole = async () => {
+    if (!selectedUser?.auth_user_id || !selectedRole) return;
+
+    setActionLoading(selectedUser.id);
+    try {
+      // Delete existing role
+      const { error: deleteError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", selectedUser.auth_user_id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new role
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: selectedUser.auth_user_id, role: selectedRole as any });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Role updated",
+        description: `${selectedUser.full_name}'s role changed to ${selectedRole}.`,
+      });
+      logAdminAction({
+        action_type: "change_role",
+        action_description: `Changed role for ${selectedUser.full_name} (${selectedUser.member_id}) to ${selectedRole}`,
+        target_table: "user_roles",
+        target_id: selectedUser.auth_user_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id, new_role: selectedRole },
+      });
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error changing role",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+      setRoleChangeDialogOpen(false);
+      setSelectedUser(null);
+      setSelectedRole("");
     }
   };
 
@@ -536,13 +584,25 @@ const UserManagementTab = () => {
                               )}
                             </DropdownMenuItem>
 
-                            {user.auth_user_id && (
+                                {user.auth_user_id && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                   <KeyRound className="h-4 w-4 mr-2" />
                                   Reset Password
                                 </DropdownMenuItem>
+                                {isSuperAdmin && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setSelectedRole(user.role || "user");
+                                      setRoleChangeDialogOpen(true);
+                                    }}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Change Role
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setSelectedUser(user);
@@ -699,6 +759,45 @@ const UserManagementTab = () => {
                 : "⚠️ Notification could not be sent. Please share this password manually."}
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Role Change Dialog */}
+      <Dialog open={roleChangeDialogOpen} onOpenChange={(open) => { if (!open) { setRoleChangeDialogOpen(false); setSelectedUser(null); setSelectedRole(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Change User Role
+            </DialogTitle>
+            <DialogDescription>
+              Change the role for <strong>{selectedUser?.full_name}</strong> ({selectedUser?.member_id})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRoleChangeDialogOpen(false); setSelectedUser(null); setSelectedRole(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangeRole} disabled={!selectedRole || actionLoading === selectedUser?.id}>
+              {actionLoading === selectedUser?.id ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Shield className="h-4 w-4 mr-2" />
+              )}
+              Update Role
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
