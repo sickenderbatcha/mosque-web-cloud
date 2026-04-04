@@ -94,6 +94,8 @@ const UserManagementTab = () => {
   const [selectedUser, setSelectedUser] = useState<UserWithMember | null>(null);
   const [resetPasswordResult, setResetPasswordResult] = useState<{ name: string; password: string; notificationSent: boolean } | null>(null);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("");
 
   useEffect(() => {
     fetchUsers();
