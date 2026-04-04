@@ -284,6 +284,52 @@ const UserManagementTab = () => {
     }
   };
 
+  const handleChangeRole = async () => {
+    if (!selectedUser?.auth_user_id || !selectedRole) return;
+
+    setActionLoading(selectedUser.id);
+    try {
+      // Delete existing role
+      const { error: deleteError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", selectedUser.auth_user_id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new role
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: selectedUser.auth_user_id, role: selectedRole as any });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Role updated",
+        description: `${selectedUser.full_name}'s role changed to ${selectedRole}.`,
+      });
+      logAdminAction({
+        action_type: "change_role",
+        action_description: `Changed role for ${selectedUser.full_name} (${selectedUser.member_id}) to ${selectedRole}`,
+        target_table: "user_roles",
+        target_id: selectedUser.auth_user_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id, new_role: selectedRole },
+      });
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error changing role",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+      setRoleChangeDialogOpen(false);
+      setSelectedUser(null);
+      setSelectedRole("");
+    }
+  };
+
   const toggleMemberStatus = async (user: UserWithMember) => {
     setActionLoading(user.id);
     try {
