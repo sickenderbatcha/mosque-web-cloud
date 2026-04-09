@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet, Home } from "lucide-react";
+import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet, Home, Clock } from "lucide-react";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +35,7 @@ import AssetManagementTab from "./tabs/AssetManagementTab";
 import OnlinePaymentsTab from "./tabs/OnlinePaymentsTab";
 import CommitteeTab from "./tabs/CommitteeTab";
 import RentalAgreementsTab from "./tabs/RentalAgreementsTab";
+import PrayerTimesTab from "./tabs/PrayerTimesTab";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("");
@@ -51,7 +52,7 @@ const AdminDashboard = () => {
   // Set default active tab to the first accessible tab
   useEffect(() => {
     if (!activeTab) {
-      const allTabs = ["donations","income","expenses","bookings","refunds","grievances","events","members","gallery","about-gallery","announcements","user-approval","user-management","notifications","marriage-register","outside-marriage-register","death-register","certificate-payments","noc-certificates","heir-certificates","subscription-slots","cash-requests","online-payments","issued-documents","pdf-documents","committee","rental-agreements","asset-management","backup-restore","settings"];
+      const allTabs = ["donations","income","expenses","bookings","refunds","grievances","events","members","gallery","about-gallery","announcements","user-approval","user-management","notifications","marriage-register","outside-marriage-register","death-register","certificate-payments","noc-certificates","heir-certificates","subscription-slots","cash-requests","online-payments","issued-documents","pdf-documents","committee","rental-agreements","asset-management","prayer-times","backup-restore","settings"];
       const firstAccessible = allTabs.find((t) => canAccessTab(t)) || "donations";
       setActiveTab(firstAccessible);
     }
@@ -315,6 +316,10 @@ const AdminDashboard = () => {
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Assets</span>
             </TabsTrigger>}
+            {canAccessTab("prayer-times") && <TabsTrigger value="prayer-times" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">Prayer Times</span>
+            </TabsTrigger>}
             {canAccessTab("backup-restore") && <TabsTrigger value="backup-restore" className="flex items-center gap-2">
               <DatabaseBackup className="h-4 w-4" />
               <span className="hidden sm:inline">Backup</span>
@@ -440,6 +445,10 @@ const AdminDashboard = () => {
 
           {canAccessTab("asset-management") && <TabsContent value="asset-management">
             <AssetManagementTab />
+          </TabsContent>}
+
+          {canAccessTab("prayer-times") && <TabsContent value="prayer-times">
+            <PrayerTimesTab />
           </TabsContent>}
 
           {canAccessTab("backup-restore") && <TabsContent value="backup-restore" forceMount className="data-[state=inactive]:hidden">
