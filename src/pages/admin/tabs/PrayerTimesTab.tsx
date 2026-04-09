@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -116,10 +117,9 @@ const PrayerTimesTab = () => {
                   <span>{icon}</span>
                   {label}
                 </Label>
-                <Input
-                  id={key}
+                <TimePicker
                   value={form[key as keyof typeof form]}
-                  onChange={(e) => handleChange(key, e.target.value)}
+                  onChange={(v) => handleChange(key, v)}
                   placeholder="e.g. 5:30 AM"
                 />
               </div>
@@ -142,19 +142,17 @@ const PrayerTimesTab = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="jumuah_khutbah_time">Khutbah Time / குத்பா நேரம்</Label>
-              <Input
-                id="jumuah_khutbah_time"
+              <TimePicker
                 value={form.jumuah_khutbah_time}
-                onChange={(e) => handleChange("jumuah_khutbah_time", e.target.value)}
+                onChange={(v) => handleChange("jumuah_khutbah_time", v)}
                 placeholder="e.g. 12:30 PM"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="jumuah_time">Jumuah Prayer Time / ஜுமுஆ தொழுகை நேரம்</Label>
-              <Input
-                id="jumuah_time"
+              <TimePicker
                 value={form.jumuah_time}
-                onChange={(e) => handleChange("jumuah_time", e.target.value)}
+                onChange={(v) => handleChange("jumuah_time", v)}
                 placeholder="e.g. 1:00 PM"
               />
             </div>
