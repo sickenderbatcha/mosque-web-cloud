@@ -38,14 +38,14 @@ const allOnlineServicesItems = [
 { path: "/services", labelTamil: "சான்றிதழ்கள்", labelEnglish: "Certificates", visKey: "nav_service_certificates" as const },
 { path: "/dashboard", labelTamil: "என் முன்பதிவுகள் / பணத்தை திரும்பப்பெறு", labelEnglish: "My Bookings / Refunds", visKey: "nav_service_my_bookings" as const }];
 
-const backOfficeItems = [
-  { path: "/backoffice/income", labelTamil: "வருமானம் மேலாண்மை", labelEnglish: "Income Management", visKey: "nav_backoffice_income" as const },
-  { path: "/backoffice/expenses", labelTamil: "செலவு மேலாண்மை", labelEnglish: "Expenses Management", visKey: "nav_backoffice_expenses" as const },
-  { path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register", visKey: "nav_backoffice_marriage" as const },
-  { path: "/backoffice/outside-marriage", labelTamil: "வெளியூர் திருமணப் பதிவு", labelEnglish: "Outside Marriage", visKey: "nav_backoffice_outside_marriage" as const },
-  { path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register", visKey: "nav_backoffice_death" as const },
-  { path: "/backoffice/rental", labelTamil: "வாடகை மேலாண்மை", labelEnglish: "Rental", visKey: "nav_backoffice_rental" as const },
-  { path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets", visKey: "nav_backoffice_assets" as const },
+const allBackOfficeItems = [
+  { path: "/backoffice/income", labelTamil: "வருமானம் மேலாண்மை", labelEnglish: "Income Management", visKey: "nav_backoffice_income" as const, tabKey: "income" },
+  { path: "/backoffice/expenses", labelTamil: "செலவு மேலாண்மை", labelEnglish: "Expenses Management", visKey: "nav_backoffice_expenses" as const, tabKey: "expenses" },
+  { path: "/backoffice/marriage", labelTamil: "திருமணப் பதிவு", labelEnglish: "Marriage Register", visKey: "nav_backoffice_marriage" as const, tabKey: "marriage-register" },
+  { path: "/backoffice/outside-marriage", labelTamil: "வெளியூர் திருமணப் பதிவு", labelEnglish: "Outside Marriage", visKey: "nav_backoffice_outside_marriage" as const, tabKey: "outside-marriage-register" },
+  { path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register", visKey: "nav_backoffice_death" as const, tabKey: "death-register" },
+  { path: "/backoffice/rental", labelTamil: "வாடகை மேலாண்மை", labelEnglish: "Rental", visKey: "nav_backoffice_rental" as const, tabKey: "rental-agreements" },
+  { path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets", visKey: "nav_backoffice_assets" as const, tabKey: "asset-management" },
 ];
 
 const Header = () => {
