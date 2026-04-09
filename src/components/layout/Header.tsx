@@ -53,7 +53,7 @@ const Header = () => {
   const location = useLocation();
   const { user, loading, signOut } = useAuth();
   const { isAdmin, isSuperAdmin } = useUserRole();
-  const { hasAnyAccess: hasTabAccess } = useUserTabPermissions();
+  const { hasAnyAccess: hasTabAccess, canAccessTab } = useUserTabPermissions();
   const { darkMode, setDarkMode, isDark } = useTheme();
   const { isVisible } = useMenuVisibility();
   const isMobile = useIsMobile();
@@ -87,6 +87,7 @@ const Header = () => {
 
   const menuItems = allMenuItems.filter((item) => isVisible(item.visKey));
   const onlineServicesItems = allOnlineServicesItems.filter((item) => isVisible(item.visKey));
+  const backOfficeItems = allBackOfficeItems.filter((item) => isVisible(item.visKey) && (isAdmin || canAccessTab(item.tabKey)));
 
   const darkModeOptions: {mode: DarkMode;icon: typeof Sun;label: string;}[] = [
   { mode: "light", icon: Sun, label: "Light" },
