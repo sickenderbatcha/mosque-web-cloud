@@ -267,7 +267,7 @@ const HomePage = () => {
         );
 
       case "backoffice":
-        if (!showBackoffice) return null;
+        if (!showBackoffice || backOfficeItems.length === 0) return null;
         return (
           <section key="backoffice" className="py-20 bg-muted islamic-pattern">
             <div className="container mx-auto px-4">
@@ -285,7 +285,7 @@ const HomePage = () => {
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {backOfficeItems.filter((item) => isVisible(item.visKey)).map((item, index) => (
+                {backOfficeItems.map((item, index) => (
                   <motion.div
                     key={item.path}
                     initial={{ opacity: 0, y: 30 }}
