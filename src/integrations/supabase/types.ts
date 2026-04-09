@@ -2503,6 +2503,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_tab_permission: {
+        Args: { _tab_key: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "member" | "user" | "superadmin"
