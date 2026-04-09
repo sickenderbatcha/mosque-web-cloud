@@ -16,6 +16,8 @@ import { useLandingContent } from "@/hooks/useLandingContent";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useHomepageSectionOrder } from "@/hooks/useHomepageSectionOrder";
 import { useMenuVisibility } from "@/hooks/useMenuVisibility";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 
 const HomePage = () => {
   const { heroUrl } = useHomepageHero();
@@ -24,6 +26,8 @@ const HomePage = () => {
   const { getSetting } = useAppSettings(["hero_brightness", "hero_overlay_color", "show_backoffice_homepage"]);
   const { getEnabledSections } = useHomepageSectionOrder();
   const { isVisible } = useMenuVisibility();
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
   
   const showBackoffice = getSetting("show_backoffice_homepage") !== "false";
   
@@ -81,15 +85,16 @@ const HomePage = () => {
 
   const services = allServices.filter((s) => isVisible(s.key));
 
-  const backOfficeItems = [
-    { icon: IndianRupee, titleTamil: "வருமானம் மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income", visKey: "card_backoffice_income" as const },
-    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses", visKey: "card_backoffice_expenses" as const },
-    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage", visKey: "card_backoffice_marriage" as const },
-    { icon: Globe, titleTamil: "வெளியூர் திருமணப் பதிவு", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage", visKey: "card_backoffice_outside_marriage" as const },
-    { icon: MuslimGraveIcon, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const },
-    { icon: Home, titleTamil: "வாடகை மேலாண்மை", titleEnglish: "Rent Management", path: "/backoffice/rental", visKey: "card_backoffice_rental" as const },
-    { icon: Package, titleTamil: "சொத்து மேலாண்மை", titleEnglish: "Assets Management", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const },
+  const allBackOfficeItems = [
+    { icon: IndianRupee, titleTamil: "வருமானம் மேலாண்மை", titleEnglish: "Income Management", path: "/backoffice/income", visKey: "card_backoffice_income" as const, tabKey: "income" },
+    { icon: Receipt, titleTamil: "செலவு மேலாண்மை", titleEnglish: "Expenses Management", path: "/backoffice/expenses", visKey: "card_backoffice_expenses" as const, tabKey: "expenses" },
+    { icon: Landmark, titleTamil: "திருமணப் பதிவு", titleEnglish: "Marriage Register", path: "/backoffice/marriage", visKey: "card_backoffice_marriage" as const, tabKey: "marriage-register" },
+    { icon: Globe, titleTamil: "வெளியூர் திருமணப் பதிவு", titleEnglish: "Outside Marriage", path: "/backoffice/outside-marriage", visKey: "card_backoffice_outside_marriage" as const, tabKey: "outside-marriage-register" },
+    { icon: MuslimGraveIcon, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const, tabKey: "death-register" },
+    { icon: Home, titleTamil: "வாடகை மேலாண்மை", titleEnglish: "Rent Management", path: "/backoffice/rental", visKey: "card_backoffice_rental" as const, tabKey: "rental-agreements" },
+    { icon: Package, titleTamil: "சொத்து மேலாண்மை", titleEnglish: "Assets Management", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const, tabKey: "asset-management" },
   ];
+  const backOfficeItems = allBackOfficeItems.filter((item) => isVisible(item.visKey) && (isAdmin || canAccessTab(item.tabKey)));
 
   // Section components mapping
   const renderSection = (sectionId: string) => {
