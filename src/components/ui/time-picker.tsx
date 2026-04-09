@@ -42,7 +42,7 @@ export function TimePicker({ value, onChange, placeholder = "Select time", disab
   };
 
   const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
-  const minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+  const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
