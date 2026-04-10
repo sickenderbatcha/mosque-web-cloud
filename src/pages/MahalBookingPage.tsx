@@ -1176,37 +1176,34 @@ const MahalBookingPage = () => {
                             கட்டண முறை (Admin Only)
                           </Label>
                           <div className="flex gap-4">
+                            {isOnlinePaymentEnabled && (
                             <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="bookingPaymentMethod"
-                                value="online"
-                                checked={paymentMethod === "online"}
-                                onChange={() => setPaymentMethod("online")}
-                                className="w-4 h-4 text-primary"
-                              />
+                              <input type="radio" name="bookingPaymentMethod" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} className="w-4 h-4 text-primary" />
                               <span className="text-sm">Online Payment</span>
                             </label>
+                            )}
                             <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="bookingPaymentMethod"
-                                value="cash"
-                                checked={paymentMethod === "cash"}
-                                onChange={() => setPaymentMethod("cash")}
-                                className="w-4 h-4 text-primary"
-                              />
+                              <input type="radio" name="bookingPaymentMethod" value="cash" checked={paymentMethod === "cash" || !isOnlinePaymentEnabled} onChange={() => setPaymentMethod("cash")} className="w-4 h-4 text-primary" />
                               <span className="text-sm">Cash Payment</span>
                             </label>
                           </div>
-                          {paymentMethod === "cash" && (
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Cash payments will be recorded directly and booking will be auto-approved.
-                            </p>
+                          {(paymentMethod === "cash" || !isOnlinePaymentEnabled) && (
+                            <p className="text-xs text-muted-foreground mt-2">Cash payments will be recorded directly and booking will be auto-approved.</p>
+                          )}
+                          {!isOnlinePaymentEnabled && (
+                            <p className="text-xs text-destructive mt-1">⚠ Online payment is currently disabled by super admin.</p>
                           )}
                         </div>
                       </motion.div>
                     )}
+                    {!isAdmin && !isOnlinePaymentEnabled && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                          <p className="text-sm text-destructive font-tamil">⚠ ஆன்லைன் பணம் செலுத்துதல் தற்போது முடக்கப்பட்டுள்ளது.</p>
+                          <p className="text-xs text-destructive/80 mt-1">Online payment is currently disabled. Please contact admin.</p>
+                        </div>
+                      </motion.div>
+                    )
 
                     {/* Action Buttons */}
                     <motion.div
