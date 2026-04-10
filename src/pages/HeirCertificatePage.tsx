@@ -200,6 +200,11 @@ export default function HeirCertificatePage() {
       return;
     }
 
+    if (!isOnlinePaymentEnabled) {
+      toast.error("ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online payment is currently disabled");
+      return;
+    }
+
     if (!razorpayLoaded) {
       toast.error("பணம் செலுத்தும் சேவை ஏற்றப்படவில்லை");
       return;
