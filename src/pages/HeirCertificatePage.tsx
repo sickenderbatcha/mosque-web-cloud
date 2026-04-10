@@ -80,6 +80,7 @@ const RELATIONSHIP_OPTIONS = [
 export default function HeirCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const { getSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);

@@ -69,6 +69,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function NocCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const { getSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
