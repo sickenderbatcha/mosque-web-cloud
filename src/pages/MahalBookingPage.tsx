@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import BookingReceipt from "@/components/BookingReceipt";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { useOnlinePaymentEnabled } from "@/hooks/useOnlinePaymentEnabled";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import OTPVerificationDialog from "@/components/OTPVerificationDialog";
 import MahalPhotoGallery from "@/components/MahalPhotoGallery";
