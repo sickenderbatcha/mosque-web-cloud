@@ -1197,7 +1197,40 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
-          {/* Back Office Homepage Visibility */}
+          {/* Online Payment Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Key className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Online Payment (ஆன்லைன் பணம் செலுத்துதல்)</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Enable or disable online payment (Razorpay) across all payment screens
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    அனைத்து கட்டண திரைகளிலும் ஆன்லைன் பணம் செலுத்துதலை இயக்கு / முடக்கு
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    onlinePaymentEnabled
+                      ? "text-sm font-medium text-primary"
+                      : "text-sm font-medium text-destructive"
+                  }
+                >
+                  {onlinePaymentEnabled ? "Enabled" : "Disabled"}
+                </span>
+                <Switch
+                  checked={onlinePaymentEnabled}
+                  onCheckedChange={(checked) => saveOnlinePaymentSetting(checked)}
+                  disabled={savingOnlinePayment}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
