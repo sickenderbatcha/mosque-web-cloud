@@ -109,6 +109,7 @@ const SuperAdminSettingsTab = () => {
     fetchHeroBrightness();
     fetchBookingTimeout();
     fetchOtpSetting();
+    fetchOnlinePaymentSetting();
     fetchBackofficeSetting();
     fetchBookingAlertMessage();
     fetchFooterCreditText();
