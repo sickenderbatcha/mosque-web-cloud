@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOnlinePaymentEnabled } from "@/hooks/useOnlinePaymentEnabled";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -79,6 +80,7 @@ const RELATIONSHIP_OPTIONS = [
 export default function HeirCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const { getSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -195,6 +197,11 @@ export default function HeirCertificatePage() {
     const isValid = await form.trigger();
     if (!isValid) {
       toast.error("அனைத்து தேவையான புலங்களையும் நிரப்பவும்");
+      return;
+    }
+
+    if (!isOnlinePaymentEnabled) {
+      toast.error("ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online payment is currently disabled");
       return;
     }
 

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOnlinePaymentEnabled } from "@/hooks/useOnlinePaymentEnabled";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -68,6 +69,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function NocCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const { getSetting } = useAppSettings();
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -190,6 +192,11 @@ export default function NocCertificatePage() {
     const isValid = await form.trigger();
     if (!isValid) {
       toast.error("அனைத்து தேவையான புலங்களையும் நிரப்பவும்");
+      return;
+    }
+
+    if (!isOnlinePaymentEnabled) {
+      toast.error("ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online payment is currently disabled");
       return;
     }
 
@@ -883,6 +890,7 @@ export default function NocCertificatePage() {
                           )}
                           <span className="font-tamil block min-w-0 truncate">ரொக்கம் செலுத்து</span>
                         </Button>
+                        {isOnlinePaymentEnabled && (
                         <Button
                           type="button"
                           onClick={handlePayment}
@@ -897,9 +905,11 @@ export default function NocCertificatePage() {
                           )}
                           <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
+                        )}
                       </>
                     ) : (
                       <>
+                        {isOnlinePaymentEnabled && (
                         <Button
                           type="button"
                           onClick={handlePayment}
@@ -913,6 +923,7 @@ export default function NocCertificatePage() {
                           )}
                           <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
                         </Button>
+                        )}
                         <Button
                           type="button"
                           variant="secondary"
