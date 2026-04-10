@@ -138,6 +138,7 @@ const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
