@@ -75,6 +75,10 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
+  // Online payment toggle state
+  const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
+  const [savingOnlinePayment, setSavingOnlinePayment] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
