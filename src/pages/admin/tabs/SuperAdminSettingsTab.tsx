@@ -75,10 +75,6 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
-  // Online payment toggle state
-  const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
-  const [savingOnlinePayment, setSavingOnlinePayment] = useState(false);
-
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -109,7 +105,6 @@ const SuperAdminSettingsTab = () => {
     fetchHeroBrightness();
     fetchBookingTimeout();
     fetchOtpSetting();
-    fetchOnlinePaymentSetting();
     fetchBackofficeSetting();
     fetchBookingAlertMessage();
     fetchFooterCreditText();
@@ -157,45 +152,6 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingOtpSetting(false);
-    }
-  };
-
-  const fetchOnlinePaymentSetting = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("app_settings")
-        .select("value")
-        .eq("key", "online_payment_enabled")
-        .maybeSingle();
-
-      if (data && !error) {
-        setOnlinePaymentEnabled(data.value === "true" || data.value === "");
-      }
-    } catch (error) {
-      console.error("Error fetching online payment setting:", error);
-    }
-  };
-
-  const saveOnlinePaymentSetting = async (value: boolean) => {
-    setSavingOnlinePayment(true);
-    try {
-      await upsertAppSetting("online_payment_enabled", value ? "true" : "false", "Whether online payment (Razorpay) is enabled across all payment screens");
-
-      setOnlinePaymentEnabled(value);
-      toast({
-        title: "Online Payment Setting Updated",
-        description: value
-          ? "Online payment is now enabled across all screens"
-          : "Online payment is now disabled across all screens",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save online payment setting.",
-        variant: "destructive",
-      });
-    } finally {
-      setSavingOnlinePayment(false);
     }
   };
 
@@ -1197,40 +1153,7 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
-          {/* Online Payment Toggle */}
-          <div className="p-4 border rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Key className="h-5 w-5 text-primary" />
-                <div>
-                  <h4 className="font-medium">Online Payment (ஆன்லைன் பணம் செலுத்துதல்)</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Enable or disable online payment (Razorpay) across all payment screens
-                  </p>
-                  <p className="text-xs text-muted-foreground font-tamil mt-1">
-                    அனைத்து கட்டண திரைகளிலும் ஆன்லைன் பணம் செலுத்துதலை இயக்கு / முடக்கு
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={
-                    onlinePaymentEnabled
-                      ? "text-sm font-medium text-primary"
-                      : "text-sm font-medium text-destructive"
-                  }
-                >
-                  {onlinePaymentEnabled ? "Enabled" : "Disabled"}
-                </span>
-                <Switch
-                  checked={onlinePaymentEnabled}
-                  onCheckedChange={(checked) => saveOnlinePaymentSetting(checked)}
-                  disabled={savingOnlinePayment}
-                />
-              </div>
-            </div>
-          </div>
-
+          {/* Back Office Homepage Visibility */}
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

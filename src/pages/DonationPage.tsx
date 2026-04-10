@@ -14,7 +14,6 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useOnlinePaymentEnabled } from "@/hooks/useOnlinePaymentEnabled";
 import { z } from "zod";
 import SubscriptionReceipt from "@/components/SubscriptionReceipt";
 import DonationReceipt from "@/components/DonationReceipt";
@@ -138,7 +137,6 @@ const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
   const { isAdmin } = useUserRole();
-  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
@@ -449,15 +447,6 @@ const SubscriptionForm = () => {
 
     // For cash payments, skip Razorpay check
     if (!(isAdmin && paymentMethod === "cash")) {
-      // Block online payment if disabled
-      if (!isOnlinePaymentEnabled) {
-        toast({
-          title: "ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online Payment Disabled",
-          description: "Online payment is currently disabled. Please contact admin for cash payment.",
-          variant: "destructive",
-        });
-        return;
-      }
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -1127,53 +1116,34 @@ const SubscriptionForm = () => {
                   கட்டண முறை (Admin Only)
                 </Label>
                 <div className="flex gap-4">
-                  {isOnlinePaymentEnabled && (
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="subscriptionPaymentMethod"
-                        value="online"
-                        checked={paymentMethod === "online"}
-                        onChange={() => setPaymentMethod("online")}
-                        className="w-4 h-4 text-primary"
-                      />
-                      <span className="text-sm">Online Payment</span>
-                    </label>
-                  )}
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="subscriptionPaymentMethod"
+                      value="online"
+                      checked={paymentMethod === "online"}
+                      onChange={() => setPaymentMethod("online")}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm">Online Payment</span>
+                  </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="subscriptionPaymentMethod"
                       value="cash"
-                      checked={paymentMethod === "cash" || !isOnlinePaymentEnabled}
+                      checked={paymentMethod === "cash"}
                       onChange={() => setPaymentMethod("cash")}
                       className="w-4 h-4 text-primary"
                     />
                     <span className="text-sm">Cash Payment</span>
                   </label>
                 </div>
-                {(paymentMethod === "cash" || !isOnlinePaymentEnabled) && (
+                {paymentMethod === "cash" && (
                   <p className="text-xs text-muted-foreground mt-2">
                     Cash payments will be recorded directly without payment processing.
                   </p>
                 )}
-                {!isOnlinePaymentEnabled && (
-                  <p className="text-xs text-destructive mt-1">
-                    ⚠ Online payment is currently disabled by super admin.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Online payment disabled message for non-admin users */}
-            {!isAdmin && !isOnlinePaymentEnabled && (
-              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
-                <p className="text-sm text-destructive font-tamil">
-                  ⚠ ஆன்லைன் பணம் செலுத்துதல் தற்போது முடக்கப்பட்டுள்ளது. தயவுசெய்து நிர்வாகியை தொடர்பு கொள்ளவும்.
-                </p>
-                <p className="text-xs text-destructive/80 mt-1">
-                  Online payment is currently disabled. Please contact admin for cash payment.
-                </p>
               </div>
             )}
 
@@ -1246,7 +1216,6 @@ const SubscriptionForm = () => {
 const DonationPage = () => {
   const { isAdmin } = useUserRole();
   const { settings, isLoading: settingsLoading } = useAppSettings();
-  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -1407,15 +1376,6 @@ const DonationPage = () => {
 
     // For cash payments, skip Razorpay check
     if (!(isAdmin && paymentMethod === "cash")) {
-      // Block online payment if disabled
-      if (!isOnlinePaymentEnabled) {
-        toast({
-          title: "ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online Payment Disabled",
-          description: "Online payment is currently disabled. Please contact admin for cash payment.",
-          variant: "destructive",
-        });
-        return;
-      }
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -1946,53 +1906,34 @@ const DonationPage = () => {
                               கட்டண முறை (Admin Only)
                             </Label>
                             <div className="flex gap-4">
-                              {isOnlinePaymentEnabled && (
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="online"
-                                    checked={paymentMethod === "online"}
-                                    onChange={() => setPaymentMethod("online")}
-                                    className="w-4 h-4 text-primary"
-                                  />
-                                  <span className="text-sm">Online Payment</span>
-                                </label>
-                              )}
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="paymentMethod"
+                                  value="online"
+                                  checked={paymentMethod === "online"}
+                                  onChange={() => setPaymentMethod("online")}
+                                  className="w-4 h-4 text-primary"
+                                />
+                                <span className="text-sm">Online Payment</span>
+                              </label>
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                   type="radio"
                                   name="paymentMethod"
                                   value="cash"
-                                  checked={paymentMethod === "cash" || !isOnlinePaymentEnabled}
+                                  checked={paymentMethod === "cash"}
                                   onChange={() => setPaymentMethod("cash")}
                                   className="w-4 h-4 text-primary"
                                 />
                                 <span className="text-sm">Cash Payment</span>
                               </label>
                             </div>
-                            {(paymentMethod === "cash" || !isOnlinePaymentEnabled) && (
+                            {paymentMethod === "cash" && (
                               <p className="text-xs text-muted-foreground mt-2">
                                 Cash donations will be recorded directly without payment processing.
                               </p>
                             )}
-                            {!isOnlinePaymentEnabled && (
-                              <p className="text-xs text-destructive mt-1">
-                                ⚠ Online payment is currently disabled by super admin.
-                              </p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Online payment disabled message for non-admin users */}
-                        {!isAdmin && !isOnlinePaymentEnabled && (
-                          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
-                            <p className="text-sm text-destructive font-tamil">
-                              ⚠ ஆன்லைன் பணம் செலுத்துதல் தற்போது முடக்கப்பட்டுள்ளது. தயவுசெய்து நிர்வாகியை தொடர்பு கொள்ளவும்.
-                            </p>
-                            <p className="text-xs text-destructive/80 mt-1">
-                              Online payment is currently disabled. Please contact admin for cash payment.
-                            </p>
                           </div>
                         )}
 
