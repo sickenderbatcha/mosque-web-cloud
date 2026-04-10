@@ -160,7 +160,46 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
-  const fetchBackofficeSetting = async () => {
+  const fetchOnlinePaymentSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "online_payment_enabled")
+        .maybeSingle();
+
+      if (data && !error) {
+        setOnlinePaymentEnabled(data.value === "true" || data.value === "");
+      }
+    } catch (error) {
+      console.error("Error fetching online payment setting:", error);
+    }
+  };
+
+  const saveOnlinePaymentSetting = async (value: boolean) => {
+    setSavingOnlinePayment(true);
+    try {
+      await upsertAppSetting("online_payment_enabled", value ? "true" : "false", "Whether online payment (Razorpay) is enabled across all payment screens");
+
+      setOnlinePaymentEnabled(value);
+      toast({
+        title: "Online Payment Setting Updated",
+        description: value
+          ? "Online payment is now enabled across all screens"
+          : "Online payment is now disabled across all screens",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save online payment setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingOnlinePayment(false);
+    }
+  };
+
+
     try {
       const { data, error } = await supabase
         .from("app_settings")
