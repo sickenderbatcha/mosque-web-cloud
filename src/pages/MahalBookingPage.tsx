@@ -46,6 +46,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 const MahalBookingPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useUserRole();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const { settings: bookingSettings, isLoading: settingsLoading } = useAppSettings([
     "booking_rate_nikkah_book",
     "booking_rate_hall",
