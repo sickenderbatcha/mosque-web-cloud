@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOnlinePaymentEnabled } from "@/hooks/useOnlinePaymentEnabled";
 import { z } from "zod";
 import SubscriptionReceipt from "@/components/SubscriptionReceipt";
 import DonationReceipt from "@/components/DonationReceipt";
