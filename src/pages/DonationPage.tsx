@@ -1246,6 +1246,7 @@ const SubscriptionForm = () => {
 const DonationPage = () => {
   const { isAdmin } = useUserRole();
   const { settings, isLoading: settingsLoading } = useAppSettings();
+  const { isOnlinePaymentEnabled } = useOnlinePaymentEnabled();
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
