@@ -449,6 +449,15 @@ const SubscriptionForm = () => {
 
     // For cash payments, skip Razorpay check
     if (!(isAdmin && paymentMethod === "cash")) {
+      // Block online payment if disabled
+      if (!isOnlinePaymentEnabled) {
+        toast({
+          title: "ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online Payment Disabled",
+          description: "Online payment is currently disabled. Please contact admin for cash payment.",
+          variant: "destructive",
+        });
+        return;
+      }
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
