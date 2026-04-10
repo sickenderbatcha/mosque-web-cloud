@@ -1203,7 +1203,7 @@ const MahalBookingPage = () => {
                           <p className="text-xs text-destructive/80 mt-1">Online payment is currently disabled. Please contact admin.</p>
                         </div>
                       </motion.div>
-                    )
+                    )}
 
                     {/* Action Buttons */}
                     <motion.div
