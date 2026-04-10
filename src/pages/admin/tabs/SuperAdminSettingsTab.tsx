@@ -199,7 +199,7 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
-
+  const fetchBackofficeSetting = async () => {
     try {
       const { data, error } = await supabase
         .from("app_settings")
