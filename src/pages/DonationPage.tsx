@@ -1946,34 +1946,53 @@ const DonationPage = () => {
                               கட்டண முறை (Admin Only)
                             </Label>
                             <div className="flex gap-4">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name="paymentMethod"
-                                  value="online"
-                                  checked={paymentMethod === "online"}
-                                  onChange={() => setPaymentMethod("online")}
-                                  className="w-4 h-4 text-primary"
-                                />
-                                <span className="text-sm">Online Payment</span>
-                              </label>
+                              {isOnlinePaymentEnabled && (
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    value="online"
+                                    checked={paymentMethod === "online"}
+                                    onChange={() => setPaymentMethod("online")}
+                                    className="w-4 h-4 text-primary"
+                                  />
+                                  <span className="text-sm">Online Payment</span>
+                                </label>
+                              )}
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                   type="radio"
                                   name="paymentMethod"
                                   value="cash"
-                                  checked={paymentMethod === "cash"}
+                                  checked={paymentMethod === "cash" || !isOnlinePaymentEnabled}
                                   onChange={() => setPaymentMethod("cash")}
                                   className="w-4 h-4 text-primary"
                                 />
                                 <span className="text-sm">Cash Payment</span>
                               </label>
                             </div>
-                            {paymentMethod === "cash" && (
+                            {(paymentMethod === "cash" || !isOnlinePaymentEnabled) && (
                               <p className="text-xs text-muted-foreground mt-2">
                                 Cash donations will be recorded directly without payment processing.
                               </p>
                             )}
+                            {!isOnlinePaymentEnabled && (
+                              <p className="text-xs text-destructive mt-1">
+                                ⚠ Online payment is currently disabled by super admin.
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Online payment disabled message for non-admin users */}
+                        {!isAdmin && !isOnlinePaymentEnabled && (
+                          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                            <p className="text-sm text-destructive font-tamil">
+                              ⚠ ஆன்லைன் பணம் செலுத்துதல் தற்போது முடக்கப்பட்டுள்ளது. தயவுசெய்து நிர்வாகியை தொடர்பு கொள்ளவும்.
+                            </p>
+                            <p className="text-xs text-destructive/80 mt-1">
+                              Online payment is currently disabled. Please contact admin for cash payment.
+                            </p>
                           </div>
                         )}
 
