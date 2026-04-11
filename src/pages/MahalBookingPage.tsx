@@ -504,7 +504,7 @@ const MahalBookingPage = () => {
       }
 
       if (conflictData && conflictData.length > 0 && conflictData[0].has_conflict) {
-        if (isAdmin) {
+        if (canDoCashPayment) {
           // Admin gets a soft warning but can proceed
           adminOverrideNeeded = true;
           setIsAdminOverride(true);
