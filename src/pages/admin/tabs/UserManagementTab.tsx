@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/auditLog";
+import { fetchAdminUserDirectory, type AdminDirectoryUser } from "@/lib/adminUserDirectory";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,17 +67,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 
-interface UserWithMember {
-  id: string;
-  member_id: string;
-  full_name: string;
-  phone: string | null;
-  email: string | null;
-  auth_user_id: string | null;
-  is_active: boolean;
-  created_at: string;
-  role?: string;
-}
+type UserWithMember = AdminDirectoryUser;
 
 const UserManagementTab = () => {
   const { isSuperAdmin } = useUserRole();
@@ -104,76 +95,7 @@ const UserManagementTab = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch all members
-      const allUsers: UserWithMember[] = [];
-      const pageSize = 1000;
-      let from = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from("gb_members")
-          .select("id, member_id, full_name, phone, email, auth_user_id, is_active, created_at")
-          .order("created_at", { ascending: false })
-          .range(from, from + pageSize - 1);
-
-        if (error) throw error;
-
-        if (data) {
-          allUsers.push(...data);
-          hasMore = data.length === pageSize;
-          from += pageSize;
-        } else {
-          hasMore = false;
-        }
-      }
-
-      // Collect auth_user_ids from gb_members for dedup
-      const knownAuthIds = new Set(allUsers.filter(u => u.auth_user_id).map(u => u.auth_user_id));
-
-      // Fetch ALL user_roles to find users not in gb_members (e.g. direct-created users)
-      const { data: allRoles } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      const roleMap = new Map((allRoles || []).map(r => [r.user_id, r.role]));
-
-      // Find user_ids from roles that are NOT in gb_members
-      const orphanUserIds = (allRoles || [])
-        .map(r => r.user_id)
-        .filter(uid => !knownAuthIds.has(uid));
-
-      // Fetch profiles for orphan users to get their names
-      if (orphanUserIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("id, full_name, phone, created_at")
-          .in("id", orphanUserIds);
-
-        if (profilesData) {
-          for (const profile of profilesData) {
-            allUsers.push({
-              id: profile.id,
-              member_id: "—",
-              full_name: profile.full_name || "Unknown User",
-              phone: profile.phone || null,
-              email: null,
-              auth_user_id: profile.id,
-              is_active: true,
-              created_at: profile.created_at,
-              role: roleMap.get(profile.id),
-            });
-          }
-        }
-      }
-
-      // Apply roles to gb_members users
-      allUsers.forEach(user => {
-        if (user.auth_user_id && roleMap.has(user.auth_user_id) && !user.role) {
-          user.role = roleMap.get(user.auth_user_id);
-        }
-      });
-
+      const allUsers = await fetchAdminUserDirectory();
       setUsers(allUsers);
     } catch (error: any) {
       toast({
@@ -199,7 +121,10 @@ const UserManagementTab = () => {
     setActionLoading(user.id);
     try {
       const response = await supabase.functions.invoke("admin-reset-password", {
-        body: { memberId: user.member_id },
+        body: {
+          memberId: user.has_member_record ? user.member_id : null,
+          userId: user.auth_user_id,
+        },
       });
 
       if (response.error) throw response.error;
@@ -222,9 +147,9 @@ const UserManagementTab = () => {
       logAdminAction({
         action_type: "reset_password",
         action_description: `Reset password for ${user.full_name} (${user.member_id})`,
-        target_table: "gb_members",
-        target_id: user.member_id,
-        target_details: { full_name: user.full_name, member_id: user.member_id },
+        target_table: user.has_member_record ? "gb_members" : "auth.users",
+        target_id: user.has_member_record ? user.member_id : user.auth_user_id,
+        target_details: { full_name: user.full_name, member_id: user.member_id, user_id: user.auth_user_id },
       });
     } catch (error: any) {
       toast({
@@ -243,7 +168,10 @@ const UserManagementTab = () => {
     setActionLoading(selectedUser.id);
     try {
       const response = await supabase.functions.invoke("admin-delete-user", {
-        body: { memberId: selectedUser.member_id },
+        body: {
+          memberId: selectedUser.has_member_record ? selectedUser.member_id : null,
+          userId: selectedUser.auth_user_id,
+        },
       });
 
       if (response.error) throw response.error;
@@ -256,9 +184,9 @@ const UserManagementTab = () => {
       logAdminAction({
         action_type: "delete_user",
         action_description: `Deleted user account for ${selectedUser.full_name} (${selectedUser.member_id})`,
-        target_table: "gb_members",
-        target_id: selectedUser.member_id,
-        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id },
+        target_table: selectedUser.has_member_record ? "gb_members" : "auth.users",
+        target_id: selectedUser.has_member_record ? selectedUser.member_id : selectedUser.auth_user_id,
+        target_details: { full_name: selectedUser.full_name, member_id: selectedUser.member_id, user_id: selectedUser.auth_user_id },
       });
       fetchUsers();
     } catch (error: any) {
@@ -275,7 +203,7 @@ const UserManagementTab = () => {
   };
 
   const handleUnlinkAccount = async () => {
-    if (!selectedUser?.auth_user_id) return;
+    if (!selectedUser?.auth_user_id || !selectedUser.member_record_id) return;
 
     setActionLoading(selectedUser.id);
     try {
@@ -283,7 +211,7 @@ const UserManagementTab = () => {
       const { error } = await supabase
         .from("gb_members")
         .update({ auth_user_id: null })
-        .eq("id", selectedUser.id);
+        .eq("id", selectedUser.member_record_id);
 
       if (error) throw error;
 
@@ -359,12 +287,14 @@ const UserManagementTab = () => {
   };
 
   const toggleMemberStatus = async (user: UserWithMember) => {
+    if (!user.member_record_id) return;
+
     setActionLoading(user.id);
     try {
       const { error } = await supabase
         .from("gb_members")
         .update({ is_active: !user.is_active })
-        .eq("id", user.id);
+        .eq("id", user.member_record_id);
 
       if (error) throw error;
 
@@ -423,7 +353,7 @@ const UserManagementTab = () => {
 
   // Stats
   const totalWithAccounts = users.filter((u) => u.auth_user_id).length;
-  const totalAdmins = users.filter((u) => u.role === "admin").length;
+  const totalAdmins = users.filter((u) => u.role === "admin" || u.role === "superadmin").length;
   const totalActive = users.filter((u) => u.is_active).length;
 
   if (loading) {
@@ -444,7 +374,7 @@ const UserManagementTab = () => {
               <Users className="h-5 w-5 text-muted-foreground" />
               <div>
                 <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-sm text-muted-foreground">Total Members</p>
+                  <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
             </div>
           </CardContent>
@@ -511,7 +441,7 @@ const UserManagementTab = () => {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Members</SelectItem>
+                <SelectItem value="all">All Users</SelectItem>
                 <SelectItem value="with_account">With Account</SelectItem>
                 <SelectItem value="without_account">Without Account</SelectItem>
               </SelectContent>
@@ -564,11 +494,18 @@ const UserManagementTab = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.role === "admin" ? (
+                        {user.role === "superadmin" ? (
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                            <Shield className="h-3 w-3 mr-1" />
+                            Super Admin
+                          </Badge>
+                        ) : user.role === "admin" ? (
                           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                             <Shield className="h-3 w-3 mr-1" />
                             Admin
                           </Badge>
+                        ) : user.role === "member" ? (
+                          <Badge variant="secondary">Member</Badge>
                         ) : user.auth_user_id ? (
                           <Badge variant="secondary">User</Badge>
                         ) : (
@@ -598,19 +535,21 @@ const UserManagementTab = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => toggleMemberStatus(user)}>
-                              {user.is_active ? (
-                                <>
-                                  <ShieldOff className="h-4 w-4 mr-2" />
-                                  Deactivate Member
-                                </>
-                              ) : (
-                                <>
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  Activate Member
-                                </>
-                              )}
-                            </DropdownMenuItem>
+                            {user.has_member_record && (
+                              <DropdownMenuItem onClick={() => toggleMemberStatus(user)}>
+                                {user.is_active ? (
+                                  <>
+                                    <ShieldOff className="h-4 w-4 mr-2" />
+                                    Deactivate Member
+                                  </>
+                                ) : (
+                                  <>
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Activate Member
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            )}
 
                                 {user.auth_user_id && (
                               <>
@@ -631,15 +570,17 @@ const UserManagementTab = () => {
                                     Change Role
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedUser(user);
-                                    setUnlinkDialogOpen(true);
-                                  }}
-                                >
-                                  <Unlink className="h-4 w-4 mr-2" />
-                                  Unlink Account
-                                </DropdownMenuItem>
+                                {user.has_member_record && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setUnlinkDialogOpen(true);
+                                    }}
+                                  >
+                                    <Unlink className="h-4 w-4 mr-2" />
+                                    Unlink Account
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
@@ -694,7 +635,11 @@ const UserManagementTab = () => {
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Permanently delete their authentication account</li>
                 <li>Remove their login ability</li>
-                <li>Preserve their member record in the system</li>
+                {selectedUser?.has_member_record ? (
+                  <li>Preserve their member record in the system</li>
+                ) : (
+                  <li>Remove this direct user account from the system</li>
+                )}
               </ul>
               <br />
               This action cannot be undone.
