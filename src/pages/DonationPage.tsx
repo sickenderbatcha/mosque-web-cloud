@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { Heart, User, Phone, CreditCard, Loader2, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,6 +138,8 @@ const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canCashPay = isAdmin || canAccessTab('donations');
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
@@ -149,7 +152,7 @@ const SubscriptionForm = () => {
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [completedSubscription, setCompletedSubscription] = useState<any>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [paidMonthsWarning, setPaidMonthsWarning] = useState<string[]>([]);
   const [validatingMonths, setValidatingMonths] = useState(false);
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -446,7 +449,7 @@ const SubscriptionForm = () => {
     }
 
     // For cash payments, skip Razorpay check
-    if (!(isAdmin && paymentMethod === "cash")) {
+    if (!(canCashPay && paymentMethod === "cash")) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -570,7 +573,7 @@ const SubscriptionForm = () => {
       const toYearNum = endDate.getFullYear();
       
       // For cash payments (admin only), record directly without Razorpay
-      if (isAdmin && paymentMethod === "cash") {
+      if (canCashPay && paymentMethod === "cash") {
         const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
           member_id: memberId,
           member_name: memberName,
@@ -617,7 +620,7 @@ const SubscriptionForm = () => {
         setFromMonth(currentMonth);
         setFromYear(String(currentYear));
         setSubscriptionYear(String(currentYear));
-        setPaymentMethod("online");
+        setPaymentMethod("cash");
         setLoading(false);
         return;
       }
@@ -1109,24 +1112,13 @@ const SubscriptionForm = () => {
               </div>
             )}
 
-            {/* Payment Method Selector (Admin Only) */}
-            {isAdmin && (
+            {/* Payment Method Selector (Admin / Donations Permission) */}
+            {canCashPay && (
               <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-primary/30">
                 <Label className="font-tamil text-sm font-medium mb-3 block">
-                  கட்டண முறை (Admin Only)
+                  கட்டண முறை (Payment Method)
                 </Label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="subscriptionPaymentMethod"
-                      value="online"
-                      checked={paymentMethod === "online"}
-                      onChange={() => setPaymentMethod("online")}
-                      className="w-4 h-4 text-primary"
-                    />
-                    <span className="text-sm">Online Payment</span>
-                  </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
@@ -1137,6 +1129,17 @@ const SubscriptionForm = () => {
                       className="w-4 h-4 text-primary"
                     />
                     <span className="text-sm">Cash Payment</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="subscriptionPaymentMethod"
+                      value="online"
+                      checked={paymentMethod === "online"}
+                      onChange={() => setPaymentMethod("online")}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm">Online Payment</span>
                   </label>
                 </div>
                 {paymentMethod === "cash" && (
@@ -1215,6 +1218,8 @@ const SubscriptionForm = () => {
 
 const DonationPage = () => {
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canCashPay = isAdmin || canAccessTab('donations');
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
@@ -1224,7 +1229,7 @@ const DonationPage = () => {
   const [purpose, setPurpose] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [showDonationReceipt, setShowDonationReceipt] = useState(false);
   const [donationReceiptData, setDonationReceiptData] = useState<{
@@ -1375,7 +1380,7 @@ const DonationPage = () => {
     }
 
     // For cash payments, skip Razorpay check
-    if (!(isAdmin && paymentMethod === "cash")) {
+    if (!(canCashPay && paymentMethod === "cash")) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -1402,7 +1407,7 @@ const DonationPage = () => {
       const amount = parseFloat(donationAmount);
 
       // For cash payments (admin only), record directly without Razorpay
-      if (isAdmin && paymentMethod === "cash") {
+      if (canCashPay && paymentMethod === "cash") {
         const cashDonationId = crypto.randomUUID();
         const { error } = await supabase.from("donations").insert({
           id: cashDonationId,
@@ -1451,7 +1456,7 @@ const DonationPage = () => {
         setDonationMemberFound(false);
         setKanjiSaathak(false);
         setKanjiSirappu(false);
-        setPaymentMethod("online");
+        setPaymentMethod("cash");
         setLoading(false);
         return;
       }
@@ -1899,24 +1904,13 @@ const DonationPage = () => {
                           </div>
                         )}
 
-                        {/* Payment Method Selector (Admin Only) */}
-                        {isAdmin && (
+                        {/* Payment Method Selector (Admin / Donations Permission) */}
+                        {canCashPay && (
                           <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-primary/30">
                             <Label className="font-tamil text-sm font-medium mb-3 block">
-                              கட்டண முறை (Admin Only)
+                              கட்டண முறை (Payment Method)
                             </Label>
                             <div className="flex gap-4">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name="paymentMethod"
-                                  value="online"
-                                  checked={paymentMethod === "online"}
-                                  onChange={() => setPaymentMethod("online")}
-                                  className="w-4 h-4 text-primary"
-                                />
-                                <span className="text-sm">Online Payment</span>
-                              </label>
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                   type="radio"
@@ -1927,6 +1921,17 @@ const DonationPage = () => {
                                   className="w-4 h-4 text-primary"
                                 />
                                 <span className="text-sm">Cash Payment</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="paymentMethod"
+                                  value="online"
+                                  checked={paymentMethod === "online"}
+                                  onChange={() => setPaymentMethod("online")}
+                                  className="w-4 h-4 text-primary"
+                                />
+                                <span className="text-sm">Online Payment</span>
                               </label>
                             </div>
                             {paymentMethod === "cash" && (
@@ -1990,7 +1995,7 @@ const DonationPage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h3 className="font-tamil text-lg font-semibold mb-4">ஏற்றுக்கொள்ளப்படும் கட்டண முறைகள்</h3>
             <div className="flex flex-wrap justify-center gap-4">
-              {["Credit Card", "Debit Card", "UPI", "Net Banking", ...(isAdmin ? ["Cash"] : [])].map((method) => (
+              {["Credit Card", "Debit Card", "UPI", "Net Banking", ...(canCashPay ? ["Cash"] : [])].map((method) => (
                 <div key={method} className="px-4 py-2 bg-card rounded-lg shadow-soft">
                   <span className="text-sm text-muted-foreground">{method}</span>
                 </div>
