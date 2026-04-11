@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { Heart, User, Phone, CreditCard, Loader2, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
