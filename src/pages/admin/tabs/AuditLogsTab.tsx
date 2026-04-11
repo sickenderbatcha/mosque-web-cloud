@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAdminUserDirectory } from "@/lib/adminUserDirectory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -90,17 +91,18 @@ const AuditLogsTab = () => {
 
       if (error) throw error;
 
-      // Fetch admin names from gb_members
-      const performerIds = [...new Set((logsData || []).map((l) => l.performed_by))];
-      const { data: members } = await supabase
-        .from("gb_members")
-        .select("auth_user_id, full_name")
-        .in("auth_user_id", performerIds);
-
       const nameMap = new Map<string, string>();
-      (members || []).forEach((m) => {
-        if (m.auth_user_id) nameMap.set(m.auth_user_id, m.full_name);
-      });
+
+      try {
+        const directoryUsers = await fetchAdminUserDirectory();
+        directoryUsers.forEach((directoryUser) => {
+          if (directoryUser.auth_user_id) {
+            nameMap.set(directoryUser.auth_user_id, directoryUser.full_name);
+          }
+        });
+      } catch (directoryError) {
+        console.warn("Failed to load admin user directory for audit log names:", directoryError);
+      }
 
       const enriched = (logsData || []).map((log) => ({
         ...log,

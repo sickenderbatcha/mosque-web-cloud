@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/auditLog";
+import { fetchAdminUserDirectory } from "@/lib/adminUserDirectory";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,33 +77,18 @@ const TabPermissionsTab = () => {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      // Get members with linked auth accounts and their roles
-      const { data: members, error: membersError } = await supabase
-        .from("gb_members")
-        .select("auth_user_id, member_id, full_name")
-        .not("auth_user_id", "is", null);
+      const directoryUsers = await fetchAdminUserDirectory();
 
-      if (membersError) throw membersError;
-
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      if (rolesError) throw rolesError;
-
-      const roleMap = new Map(roles?.map((r) => [r.user_id, r.role]) || []);
-
-      const userList: UserOption[] = (members || [])
-        .filter((m) => {
-          const role = roleMap.get(m.auth_user_id!) || "user";
-          // Don't show admins/superadmins (they already have full access)
-          return role !== "admin" && role !== "superadmin";
+      const userList: UserOption[] = directoryUsers
+        .filter((directoryUser) => {
+          if (!directoryUser.auth_user_id) return false;
+          return directoryUser.role !== "admin" && directoryUser.role !== "superadmin";
         })
-        .map((m) => ({
-          id: m.auth_user_id!,
-          full_name: m.full_name || "Unknown",
-          member_id: m.member_id || "-",
-          role: (roleMap.get(m.auth_user_id!) as string) || "user",
+        .map((directoryUser) => ({
+          id: directoryUser.auth_user_id!,
+          full_name: directoryUser.full_name || "Unknown",
+          member_id: directoryUser.member_id || "-",
+          role: directoryUser.role || "user",
         }));
 
       setUsers(userList);

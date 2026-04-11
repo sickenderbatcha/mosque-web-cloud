@@ -36,43 +36,76 @@ serve(async (req) => {
       .from("user_roles")
       .select("role")
       .eq("user_id", adminUser.id)
-      .eq("role", "admin")
-      .maybeSingle();
+      .in("role", ["admin", "superadmin"]);
 
-    if (!roleData) {
+    if (!roleData?.length) {
       throw new Error("Only admins can delete user accounts");
     }
 
-    const { memberId } = await req.json();
+    const { memberId, userId } = await req.json();
 
-    if (!memberId) {
-      throw new Error("Member ID is required");
+    if (!memberId && !userId) {
+      throw new Error("Member ID or user ID is required");
     }
 
-    console.log("Admin user deletion requested for member:", memberId);
+    console.log("Admin user deletion requested for:", memberId || userId);
 
-    // Get member details
-    const { data: member, error: memberError } = await supabase
-      .from("gb_members")
-      .select("member_id, full_name, auth_user_id")
-      .eq("member_id", memberId)
-      .maybeSingle();
+    let authUserId: string | null = null;
+    let fullName = "User";
+    let resolvedMemberId: string | null = null;
+    let hasMemberRecord = false;
 
-    if (memberError) {
-      console.error("Error fetching member:", memberError);
-      throw new Error("Failed to find member");
+    if (memberId) {
+      const { data: member, error: memberError } = await supabase
+        .from("gb_members")
+        .select("member_id, full_name, auth_user_id")
+        .eq("member_id", memberId)
+        .maybeSingle();
+
+      if (memberError) {
+        console.error("Error fetching member:", memberError);
+        throw new Error("Failed to find member");
+      }
+
+      if (member?.auth_user_id) {
+        authUserId = member.auth_user_id;
+        fullName = member.full_name;
+        resolvedMemberId = member.member_id;
+        hasMemberRecord = true;
+      }
     }
 
-    if (!member) {
-      throw new Error("Member not found");
+    if (!authUserId && userId) {
+      const { data: authUserData, error: authUserError } = await supabase.auth.admin.getUserById(userId);
+
+      if (authUserError || !authUserData.user) {
+        console.error("Error fetching auth user:", authUserError);
+        throw new Error("User not found");
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const metadata = authUserData.user.user_metadata ?? {};
+
+      authUserId = authUserData.user.id;
+      fullName =
+        profile?.full_name ||
+        (typeof metadata.full_name === "string" ? metadata.full_name : null) ||
+        authUserData.user.email ||
+        "User";
+      resolvedMemberId = typeof metadata.member_id === "string" ? metadata.member_id : null;
     }
 
-    if (!member.auth_user_id) {
-      throw new Error("Member does not have an account");
+    if (!authUserId) {
+      throw new Error("User not found");
     }
 
     // Prevent deleting the admin's own account
-    if (member.auth_user_id === adminUser.id) {
+    if (authUserId === adminUser.id) {
       throw new Error("You cannot delete your own account");
     }
 
@@ -80,25 +113,24 @@ serve(async (req) => {
     const { data: targetRoleData } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", member.auth_user_id)
-      .eq("role", "admin")
-      .maybeSingle();
+      .eq("user_id", authUserId)
+      .in("role", ["admin", "superadmin"]);
 
-    if (targetRoleData) {
+    if (targetRoleData?.length) {
       throw new Error("Cannot delete another admin's account. Please demote them first.");
     }
 
-    const authUserId = member.auth_user_id;
-
     // Unlink the auth_user_id from the member record first
-    const { error: unlinkError } = await supabase
-      .from("gb_members")
-      .update({ auth_user_id: null })
-      .eq("member_id", memberId);
+    if (hasMemberRecord && resolvedMemberId) {
+      const { error: unlinkError } = await supabase
+        .from("gb_members")
+        .update({ auth_user_id: null })
+        .eq("member_id", resolvedMemberId);
 
-    if (unlinkError) {
-      console.error("Error unlinking member:", unlinkError);
-      throw new Error("Failed to unlink member account");
+      if (unlinkError) {
+        console.error("Error unlinking member:", unlinkError);
+        throw new Error("Failed to unlink member account");
+      }
     }
 
     // Delete user roles
@@ -112,6 +144,15 @@ serve(async (req) => {
       // Continue even if roles deletion fails
     }
 
+    const { error: profileDeleteError } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", authUserId);
+
+    if (profileDeleteError) {
+      console.error("Error deleting profile:", profileDeleteError);
+    }
+
     // Delete the auth user
     const { error: deleteError } = await supabase.auth.admin.deleteUser(authUserId);
 
@@ -120,12 +161,12 @@ serve(async (req) => {
       throw new Error("Failed to delete user account");
     }
 
-    console.log("User account deleted successfully for member:", memberId);
+    console.log("User account deleted successfully for:", memberId || userId);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `User account for ${member.full_name} has been deleted successfully.`,
+        message: `User account for ${fullName} has been deleted successfully.`,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

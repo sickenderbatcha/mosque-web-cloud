@@ -125,32 +125,82 @@ serve(async (req) => {
       throw new Error("Only admins can reset passwords");
     }
 
-    const { memberId } = await req.json();
+    const { memberId, userId } = await req.json();
 
-    if (!memberId) {
-      throw new Error("Member ID is required");
+    if (!memberId && !userId) {
+      throw new Error("Member ID or user ID is required");
     }
 
-    console.log("Admin password reset requested for member:", memberId);
+    console.log("Admin password reset requested for user:", memberId || userId);
 
-    // Get member details
-    const { data: member, error: memberError } = await supabase
-      .from("gb_members")
-      .select("member_id, full_name, email, phone, auth_user_id")
-      .eq("member_id", memberId)
-      .maybeSingle();
+    let account: {
+      member_id: string | null;
+      full_name: string;
+      email: string | null;
+      phone: string | null;
+      auth_user_id: string;
+    } | null = null;
 
-    if (memberError) {
-      console.error("Error fetching member:", memberError);
-      throw new Error("Failed to find member");
+    if (memberId) {
+      const { data: member, error: memberError } = await supabase
+        .from("gb_members")
+        .select("member_id, full_name, email, phone, auth_user_id")
+        .eq("member_id", memberId)
+        .maybeSingle();
+
+      if (memberError) {
+        console.error("Error fetching member:", memberError);
+        throw new Error("Failed to find member");
+      }
+
+      if (member?.auth_user_id) {
+        account = {
+          member_id: member.member_id,
+          full_name: member.full_name,
+          email: member.email,
+          phone: member.phone,
+          auth_user_id: member.auth_user_id,
+        };
+      }
     }
 
-    if (!member) {
-      throw new Error("Member not found");
+    if (!account && userId) {
+      const { data: authUserData, error: authUserError } = await supabase.auth.admin.getUserById(userId);
+
+      if (authUserError || !authUserData.user) {
+        console.error("Error fetching auth user:", authUserError);
+        throw new Error("User not found");
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("full_name, phone")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+      }
+
+      const metadata = authUserData.user.user_metadata ?? {};
+
+      account = {
+        member_id: typeof metadata.member_id === "string" ? metadata.member_id : null,
+        full_name:
+          profile?.full_name ||
+          (typeof metadata.full_name === "string" ? metadata.full_name : null) ||
+          authUserData.user.email ||
+          "User",
+        email: authUserData.user.email ?? null,
+        phone:
+          profile?.phone ||
+          (typeof metadata.phone === "string" ? metadata.phone : null),
+        auth_user_id: authUserData.user.id,
+      };
     }
 
-    if (!member.auth_user_id) {
-      throw new Error("Member does not have an account");
+    if (!account?.auth_user_id) {
+      throw new Error("User not found");
     }
 
     // Generate new password
@@ -158,7 +208,7 @@ serve(async (req) => {
 
     // Update the password
     const { error: updateError } = await supabase.auth.admin.updateUserById(
-      member.auth_user_id,
+      account.auth_user_id,
       { password: newPassword }
     );
 
@@ -167,27 +217,27 @@ serve(async (req) => {
       throw new Error("Failed to reset password");
     }
 
-    console.log("Password reset successful for member:", memberId);
+    console.log("Password reset successful for user:", memberId || userId);
 
     // Send notifications with new password
-    const resetMessage = `Assalamu Alaikum ${member.full_name}! Your password has been reset by the administrator. Your new temporary password is: ${newPassword}. Please login and change your password immediately.`;
+    const resetMessage = `Assalamu Alaikum ${account.full_name}! Your password has been reset by the administrator. Your new temporary password is: ${newPassword}. Please login and change your password immediately.`;
 
     let notificationSent = false;
 
     // Try SMS first
-    if (member.phone) {
-      notificationSent = await sendSMS(member.phone, resetMessage);
+    if (account.phone) {
+      notificationSent = await sendSMS(account.phone, resetMessage);
     }
 
     // Also try email if available
-    if (member.email) {
+    if (account.email) {
       const emailSent = await sendEmail(
-        member.email,
+        account.email,
         "Password Reset by Admin - Mosque Portal",
         `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #16a34a;">Password Reset</h2>
-          <p>Assalamu Alaikum ${member.full_name},</p>
+          <p>Assalamu Alaikum ${account.full_name},</p>
           <p>Your password has been reset by the administrator.</p>
           <p>Your new temporary password is:</p>
           <div style="background: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">

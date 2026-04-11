@@ -59,6 +59,7 @@ serve(async (req) => {
       user_metadata: {
         full_name: fullName,
         member_id: memberId,
+        phone,
       },
     });
 
@@ -71,6 +72,34 @@ serve(async (req) => {
       throw new Error(`Failed to create user: ${createError.message}`);
     } else {
       userId = authData.user.id;
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert({
+        id: userId,
+        full_name: fullName,
+        phone,
+      });
+
+    if (profileError) {
+      await supabase.auth.admin.deleteUser(userId);
+      throw new Error(`Failed to create user profile: ${profileError.message}`);
+    }
+
+    const { error: roleError } = await supabase
+      .from("user_roles")
+      .upsert(
+        {
+          user_id: userId,
+          role: "user",
+        },
+        { onConflict: "user_id,role" },
+      );
+
+    if (roleError) {
+      await supabase.auth.admin.deleteUser(userId);
+      throw new Error(`Failed to assign default role: ${roleError.message}`);
     }
 
     // Optionally link to gb_members if exists
