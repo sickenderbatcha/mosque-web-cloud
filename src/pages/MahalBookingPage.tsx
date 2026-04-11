@@ -41,10 +41,13 @@ const bookingSchema = z.object({
 });
 
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 
 const MahalBookingPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canDoCashPayment = isAdmin || canAccessTab("bookings");
   const { settings: bookingSettings, isLoading: settingsLoading } = useAppSettings([
     "booking_rate_nikkah_book",
     "booking_rate_hall",
