@@ -138,6 +138,8 @@ const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canCashPay = isAdmin || canAccessTab('donations');
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
@@ -150,7 +152,7 @@ const SubscriptionForm = () => {
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [completedSubscription, setCompletedSubscription] = useState<any>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [paidMonthsWarning, setPaidMonthsWarning] = useState<string[]>([]);
   const [validatingMonths, setValidatingMonths] = useState(false);
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
@@ -447,7 +449,7 @@ const SubscriptionForm = () => {
     }
 
     // For cash payments, skip Razorpay check
-    if (!(isAdmin && paymentMethod === "cash")) {
+    if (!(canCashPay && paymentMethod === "cash")) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -571,7 +573,7 @@ const SubscriptionForm = () => {
       const toYearNum = endDate.getFullYear();
       
       // For cash payments (admin only), record directly without Razorpay
-      if (isAdmin && paymentMethod === "cash") {
+      if (canCashPay && paymentMethod === "cash") {
         const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
           member_id: memberId,
           member_name: memberName,
@@ -618,7 +620,7 @@ const SubscriptionForm = () => {
         setFromMonth(currentMonth);
         setFromYear(String(currentYear));
         setSubscriptionYear(String(currentYear));
-        setPaymentMethod("online");
+        setPaymentMethod("cash");
         setLoading(false);
         return;
       }
@@ -1110,24 +1112,13 @@ const SubscriptionForm = () => {
               </div>
             )}
 
-            {/* Payment Method Selector (Admin Only) */}
-            {isAdmin && (
+            {/* Payment Method Selector (Admin / Donations Permission) */}
+            {canCashPay && (
               <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-primary/30">
                 <Label className="font-tamil text-sm font-medium mb-3 block">
-                  கட்டண முறை (Admin Only)
+                  கட்டண முறை (Payment Method)
                 </Label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="subscriptionPaymentMethod"
-                      value="online"
-                      checked={paymentMethod === "online"}
-                      onChange={() => setPaymentMethod("online")}
-                      className="w-4 h-4 text-primary"
-                    />
-                    <span className="text-sm">Online Payment</span>
-                  </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
@@ -1138,6 +1129,17 @@ const SubscriptionForm = () => {
                       className="w-4 h-4 text-primary"
                     />
                     <span className="text-sm">Cash Payment</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="subscriptionPaymentMethod"
+                      value="online"
+                      checked={paymentMethod === "online"}
+                      onChange={() => setPaymentMethod("online")}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-sm">Online Payment</span>
                   </label>
                 </div>
                 {paymentMethod === "cash" && (
