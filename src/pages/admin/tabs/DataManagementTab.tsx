@@ -67,6 +67,12 @@ const AVAILABLE_TABLES: Omit<TableInfo, "count">[] = [
   { name: "app_settings", displayName: "App Settings", displayNameTamil: "அமைப்புகள்", description: "Application configuration settings" },
   { name: "receipt_sequences", displayName: "Receipt Sequences", displayNameTamil: "ரசீது வரிசைகள்", description: "Receipt number sequences" },
   { name: "booking_otp_tokens", displayName: "Booking OTP Tokens", displayNameTamil: "முன்பதிவு OTP டோக்கன்கள்", description: "OTP verification tokens" },
+  { name: "user_roles", displayName: "User Roles", displayNameTamil: "பயனர் பாத்திரங்கள்", description: "User role assignments" },
+  { name: "user_tab_permissions", displayName: "User Tab Permissions", displayNameTamil: "பயனர் தாவல் அனுமதிகள்", description: "Tab-level access permissions" },
+  { name: "admin_audit_logs", displayName: "Audit Logs", displayNameTamil: "தணிக்கை பதிவுகள்", description: "Admin action audit trail" },
+  { name: "belong_to_us_items", displayName: "Belong To Us Items", displayNameTamil: "நமக்கு சொந்தமானவை", description: "Belong to us section items" },
+  { name: "ex_managing_trustees", displayName: "Ex Managing Trustees", displayNameTamil: "முன்னாள் நிர்வாக அறங்காவலர்கள்", description: "Former managing trustees" },
+  { name: "password_reset_tokens", displayName: "Password Reset Tokens", displayNameTamil: "கடவுச்சொல் மீட்டமைப்பு டோக்கன்கள்", description: "Password reset token records" },
 ];
 
 const DataManagementTab = () => {
