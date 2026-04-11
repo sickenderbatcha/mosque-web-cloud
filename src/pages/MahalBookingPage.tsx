@@ -41,10 +41,13 @@ const bookingSchema = z.object({
 });
 
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 
 const MahalBookingPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canDoCashPayment = isAdmin || canAccessTab("bookings");
   const { settings: bookingSettings, isLoading: settingsLoading } = useAppSettings([
     "booking_rate_nikkah_book",
     "booking_rate_hall",
@@ -501,7 +504,7 @@ const MahalBookingPage = () => {
       }
 
       if (conflictData && conflictData.length > 0 && conflictData[0].has_conflict) {
-        if (isAdmin) {
+        if (canDoCashPayment) {
           // Admin gets a soft warning but can proceed
           adminOverrideNeeded = true;
           setIsAdminOverride(true);
@@ -530,7 +533,7 @@ const MahalBookingPage = () => {
     const otpRequired = bookingSettings.booking_otp_required === "true";
 
     // Skip OTP for admin cash payments OR when OTP is not required
-    if ((isAdmin && paymentMethod === "cash") || !otpRequired) {
+    if ((canDoCashPayment && paymentMethod === "cash") || !otpRequired) {
       setShowConfirmDialog(true);
       return;
     }
@@ -546,8 +549,8 @@ const MahalBookingPage = () => {
     const totalAmount = calculateTotal();
 
     try {
-      // For cash payments (admin only), create booking immediately and mark as paid
-      if (isAdmin && paymentMethod === "cash") {
+      // For cash payments (admin/permitted user), create booking immediately and mark as paid
+      if (canDoCashPayment && paymentMethod === "cash") {
         // Use admin override RPC if date is already taken
         const rpcName = isAdminOverride ? "create_mahal_booking_admin_override" : "create_mahal_booking";
         const { data: bookingId, error } = await supabase.rpc(rpcName, {
@@ -1163,7 +1166,7 @@ const MahalBookingPage = () => {
                     </motion.div>
 
                     {/* Payment Method Selector (Admin Only) */}
-                    {isAdmin && (
+                    {canDoCashPayment && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1171,7 +1174,7 @@ const MahalBookingPage = () => {
                       >
                         <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-primary/30">
                           <Label className="font-tamil text-sm font-medium mb-3 block">
-                            கட்டண முறை (Admin Only)
+                            கட்டண முறை (Payment Method)
                           </Label>
                           <div className="flex gap-4">
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -1256,7 +1259,7 @@ const MahalBookingPage = () => {
                       </div>
                       
                       {/* Cash Payment Request Button for Normal Users */}
-                      {!isAdmin && (
+                      {!canDoCashPayment && (
                         <Button
                           type="button"
                           variant="secondary"
