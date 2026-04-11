@@ -58,7 +58,7 @@ const MahalBookingPage = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [formData, setFormData] = useState({
     applicantName: "",
     applicantPhone: "",
