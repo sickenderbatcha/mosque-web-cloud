@@ -104,7 +104,7 @@ const UserManagementTab = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch all members with auth accounts
+      // Fetch all members
       const allUsers: UserWithMember[] = [];
       const pageSize = 1000;
       let from = 0;
@@ -128,23 +128,51 @@ const UserManagementTab = () => {
         }
       }
 
-      // Fetch user roles for those with accounts
-      const usersWithAccounts = allUsers.filter(u => u.auth_user_id);
-      if (usersWithAccounts.length > 0) {
-        const { data: rolesData } = await supabase
-          .from("user_roles")
-          .select("user_id, role")
-          .in("user_id", usersWithAccounts.map(u => u.auth_user_id));
+      // Collect auth_user_ids from gb_members for dedup
+      const knownAuthIds = new Set(allUsers.filter(u => u.auth_user_id).map(u => u.auth_user_id));
 
-        if (rolesData) {
-          const roleMap = new Map(rolesData.map(r => [r.user_id, r.role]));
-          allUsers.forEach(user => {
-            if (user.auth_user_id && roleMap.has(user.auth_user_id)) {
-              user.role = roleMap.get(user.auth_user_id);
-            }
-          });
+      // Fetch ALL user_roles to find users not in gb_members (e.g. direct-created users)
+      const { data: allRoles } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+
+      const roleMap = new Map((allRoles || []).map(r => [r.user_id, r.role]));
+
+      // Find user_ids from roles that are NOT in gb_members
+      const orphanUserIds = (allRoles || [])
+        .map(r => r.user_id)
+        .filter(uid => !knownAuthIds.has(uid));
+
+      // Fetch profiles for orphan users to get their names
+      if (orphanUserIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name, phone, created_at")
+          .in("id", orphanUserIds);
+
+        if (profilesData) {
+          for (const profile of profilesData) {
+            allUsers.push({
+              id: profile.id,
+              member_id: "—",
+              full_name: profile.full_name || "Unknown User",
+              phone: profile.phone || null,
+              email: null,
+              auth_user_id: profile.id,
+              is_active: true,
+              created_at: profile.created_at,
+              role: roleMap.get(profile.id),
+            });
+          }
         }
       }
+
+      // Apply roles to gb_members users
+      allUsers.forEach(user => {
+        if (user.auth_user_id && roleMap.has(user.auth_user_id) && !user.role) {
+          user.role = roleMap.get(user.auth_user_id);
+        }
+      });
 
       setUsers(allUsers);
     } catch (error: any) {
