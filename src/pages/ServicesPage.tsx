@@ -56,8 +56,17 @@ interface CertificatePayment {
 const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
-  const { settings, isLoading: settingsLoading } = useAppSettings(["certificate_fee"]);
+  const { canAccessTab } = useUserTabPermissions();
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled"]);
   const certificateFee = parseInt(settings.certificate_fee) || 100;
+
+  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
+  const canBypassBonafideOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassBonafideOnlineDisable;
+
+  // Cash payment request dialog state for bonafide
+  const [showBonafideCashDialog, setShowBonafideCashDialog] = useState(false);
+  const [bonafideCashRequestData, setBonafideCashRequestData] = useState<any>(null);
 
   const [activeCertificateType, setActiveCertificateType] = useState<
     "marriage" | "death" | "bonafide" | "noc" | "heir"
