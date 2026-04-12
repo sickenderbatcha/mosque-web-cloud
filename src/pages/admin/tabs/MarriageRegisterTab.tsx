@@ -77,6 +77,8 @@ import { getCertificateAccessStatus } from "@/lib/certificatePayments";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import MarriagePhotoUpload from "@/components/admin/MarriagePhotoUpload";
 
 declare global {
