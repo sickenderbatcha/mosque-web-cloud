@@ -123,6 +123,7 @@ const SuperAdminSettingsTab = () => {
     fetchHeroOverlayColor();
     fetchMahalOnlineSetting();
     fetchDonationOnlineSetting();
+    fetchMarriageCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
