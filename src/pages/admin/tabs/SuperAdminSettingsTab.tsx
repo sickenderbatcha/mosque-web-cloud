@@ -99,6 +99,10 @@ const SuperAdminSettingsTab = () => {
   const [nocCertOnlineDisabled, setNocCertOnlineDisabled] = useState(false);
   const [savingNocCertOnline, setSavingNocCertOnline] = useState(false);
 
+  // Heir certificate online payment toggle
+  const [heirCertOnlineDisabled, setHeirCertOnlineDisabled] = useState(false);
+  const [savingHeirCertOnline, setSavingHeirCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -139,6 +143,7 @@ const SuperAdminSettingsTab = () => {
     fetchDeathCertOnlineSetting();
     fetchBonafideCertOnlineSetting();
     fetchNocCertOnlineSetting();
+    fetchHeirCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -380,6 +385,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingNocCertOnline(false);
+    }
+  };
+
+  const fetchHeirCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "heir_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setHeirCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching heir cert online setting:", error);
+    }
+  };
+
+  const saveHeirCertOnlineSetting = async (value: boolean) => {
+    setSavingHeirCertOnline(true);
+    try {
+      await upsertAppSetting("heir_cert_online_disabled", value ? "true" : "false", "Disable online payment for heir certificate for public users");
+      setHeirCertOnlineDisabled(value);
+      toast({
+        title: "Heir Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingHeirCertOnline(false);
     }
   };
 
@@ -1600,6 +1642,39 @@ const SuperAdminSettingsTab = () => {
                   checked={nocCertOnlineDisabled}
                   onCheckedChange={(checked) => saveNocCertOnlineSetting(checked)}
                   disabled={savingNocCertOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Heir Certificate</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will not see the online payment button for Heir certificates
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்களுக்கு வாரிசு சான்றிதழுக்கான ஆன்லைன் செலுத்துதல் பொத்தான் மறைக்கப்படும்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    heirCertOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {heirCertOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={heirCertOnlineDisabled}
+                  onCheckedChange={(checked) => saveHeirCertOnlineSetting(checked)}
+                  disabled={savingHeirCertOnline}
                 />
               </div>
             </div>

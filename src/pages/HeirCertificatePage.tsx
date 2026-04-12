@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -79,7 +80,12 @@ const RELATIONSHIP_OPTIONS = [
 export default function HeirCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
   const { getSetting } = useAppSettings();
+
+  const heirCertOnlineDisabled = getSetting("heir_cert_online_disabled") === "true";
+  const canBypassHeirOnlineDisable = isAdmin || canAccessTab("heir-certificates");
+  const isHeirOnlineDisabledForUser = heirCertOnlineDisabled && !canBypassHeirOnlineDisable;
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [fetchingMember, setFetchingMember] = useState(false);
@@ -725,19 +731,21 @@ export default function HeirCertificatePage() {
                     </div>
                     
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        type="button"
-                        onClick={handlePayment}
-                        disabled={loading}
-                        className="flex-1 min-w-0 h-auto py-2"
-                      >
-                        {loading ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <CreditCard className="h-4 w-4 mr-2" />
-                        )}
-                        <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
-                      </Button>
+                      {!isHeirOnlineDisabledForUser && (
+                        <Button
+                          type="button"
+                          onClick={handlePayment}
+                          disabled={loading}
+                          className="flex-1 min-w-0 h-auto py-2"
+                        >
+                          {loading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <CreditCard className="h-4 w-4 mr-2" />
+                          )}
+                          <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
+                        </Button>
+                      )}
                       
                       {isAdmin ? (
                         <Button
