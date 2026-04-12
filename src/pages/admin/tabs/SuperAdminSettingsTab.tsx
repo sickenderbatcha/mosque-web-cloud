@@ -221,7 +221,43 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
-  const saveOtpSetting = async (value: boolean) => {
+  const fetchMarriageCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "marriage_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setMarriageCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching marriage cert online setting:", error);
+    }
+  };
+
+  const saveMarriageCertOnlineSetting = async (value: boolean) => {
+    setSavingMarriageCertOnline(true);
+    try {
+      await upsertAppSetting("marriage_cert_online_disabled", value ? "true" : "false", "Disable online payment for marriage certificate for public users");
+      setMarriageCertOnlineDisabled(value);
+      toast({
+        title: "Marriage Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingMarriageCertOnline(false);
+    }
+  };
+
     setSavingOtpSetting(true);
     try {
       await upsertAppSetting("booking_otp_required", value ? "true" : "false", "Whether OTP verification is required for Mahal bookings");
