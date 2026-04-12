@@ -1282,22 +1282,68 @@ export default function DeathRegisterTab() {
                   </ScrollArea>
                 </TabsContent>
                 
-                <div className="flex gap-2 pt-4 border-t mt-4">
-                  <Button
-                    onClick={() => printDeathCertificate(viewRecord)}
-                    disabled={paymentLoading || !isPaymentCompleted}
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    அச்சிடு
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => generateDeathCertificatePdf(viewRecord)}
-                    disabled={paymentLoading || !isPaymentCompleted}
-                  >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    பதிவிறக்கு
-                  </Button>
+                <div className="flex flex-wrap gap-2 pt-4 border-t mt-4">
+                  {isPaymentCompleted ? (
+                    <>
+                      <Button
+                        onClick={() => printDeathCertificate(viewRecord)}
+                        disabled={paymentLoading}
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        அச்சிடு
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => generateDeathCertificatePdf(viewRecord)}
+                        disabled={paymentLoading}
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        பதிவிறக்கு
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {isOnlineDisabledForUser ? (
+                        <Button
+                          size="sm"
+                          onClick={() => handleRazorpayPayment(viewRecord)}
+                          disabled={paymentLoading || paymentProcessing}
+                        >
+                          <IndianRupee className="h-4 w-4 mr-2" />
+                          பணம் செலுத்து (₹{certificateFee})
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => handleRazorpayPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            ஆன்லைன் பணம் (₹{certificateFee})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCashPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <Banknote className="h-4 w-4 mr-2" />
+                            ரொக்க பணம்
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleManualCashRequest(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <IndianRupee className="h-4 w-4 mr-2" />
+                            கோரிக்கை அனுப்பு
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
                 {!isPaymentCompleted && (
                   <p className="text-sm text-amber-600 font-tamil mt-2">
