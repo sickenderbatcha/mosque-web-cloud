@@ -208,7 +208,12 @@ interface MemberDetails {
 
 export default function MarriageRegisterTab() {
   const { user } = useAuth();
-  const { getSetting } = useAppSettings(["certificate_fee_marriage"]);
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const { getSetting } = useAppSettings(["certificate_fee_marriage", "marriage_cert_online_disabled"]);
+  const marriageCertOnlineDisabled = getSetting("marriage_cert_online_disabled") === "true";
+  const canBypassOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isOnlineDisabledForUser = marriageCertOnlineDisabled && !canBypassOnlineDisable;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewRecord, setViewRecord] = useState<any>(null);
   const [previewRecord, setPreviewRecord] = useState<any>(null);
