@@ -75,6 +75,10 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
+  // Mahal booking online payment toggle
+  const [mahalOnlineDisabled, setMahalOnlineDisabled] = useState(false);
+  const [savingMahalOnline, setSavingMahalOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -109,6 +113,7 @@ const SuperAdminSettingsTab = () => {
     fetchBookingAlertMessage();
     fetchFooterCreditText();
     fetchHeroOverlayColor();
+    fetchMahalOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -129,6 +134,43 @@ const SuperAdminSettingsTab = () => {
       }
     } catch (error) {
       console.error("Error fetching OTP setting:", error);
+    }
+  };
+
+  const fetchMahalOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "mahal_booking_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setMahalOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching mahal online setting:", error);
+    }
+  };
+
+  const saveMahalOnlineSetting = async (value: boolean) => {
+    setSavingMahalOnline(true);
+    try {
+      await upsertAppSetting("mahal_booking_online_disabled", value ? "true" : "false", "Disable online payment for mahal booking for public users");
+      setMahalOnlineDisabled(value);
+      toast({
+        title: "Mahal Booking Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingMahalOnline(false);
     }
   };
 
