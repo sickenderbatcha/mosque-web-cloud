@@ -450,8 +450,8 @@ const SubscriptionForm = () => {
       return;
     }
 
-    // For cash payments, skip Razorpay check
-    if (!(canCashPay && paymentMethod === "cash")) {
+    // For cash payments or when online is disabled for public, skip Razorpay check
+    if (!(canCashPay && paymentMethod === "cash") && !isOnlineDisabledForPublic) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
