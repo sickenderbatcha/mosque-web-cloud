@@ -17,8 +17,10 @@ import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecor
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { Badge } from "@/components/ui/badge";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 
 declare global {
   interface Window {
