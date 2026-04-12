@@ -1410,18 +1410,18 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* Cash Payment Request Dialog for Bonafide */}
-      {bonafideCashRequestData && (
+      {/* Cash Payment Request Dialog for certificates with online disabled */}
+      {certCashRequestData && (
         <CashPaymentRequestDialog
-          open={showBonafideCashDialog}
-          onOpenChange={setShowBonafideCashDialog}
+          open={showCertCashDialog}
+          onOpenChange={setShowCertCashDialog}
           serviceType="certificate"
-          referenceId={bonafideCashRequestData.referenceId}
-          amount={bonafideCashRequestData.amount}
-          applicantName={bonafideCashRequestData.applicantName}
-          applicantPhone={bonafideCashRequestData.applicantPhone}
-          failureReason={bonafideCashRequestData.failureReason}
-          serviceDetails={bonafideCashRequestData.serviceDetails}
+          referenceId={certCashRequestData.referenceId}
+          amount={certCashRequestData.amount}
+          applicantName={certCashRequestData.applicantName}
+          applicantPhone={certCashRequestData.applicantPhone}
+          failureReason={certCashRequestData.failureReason}
+          serviceDetails={certCashRequestData.serviceDetails}
         />
       )}
     </div>
