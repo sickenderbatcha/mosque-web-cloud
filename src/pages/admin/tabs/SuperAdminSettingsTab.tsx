@@ -1271,6 +1271,40 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
+          {/* Donation & Subscription Online Payment Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Donation & Subscription</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will be directed to cash payment request instead of online payment
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்கள் ஆன்லைன் பணம் செலுத்துதலுக்கு பதிலாக ரொக்க செலுத்துதல் கோரிக்கைக்கு அனுப்பப்படுவார்கள்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    donationOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {donationOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={donationOnlineDisabled}
+                  onCheckedChange={(checked) => saveDonationOnlineSetting(checked)}
+                  disabled={savingDonationOnline}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
