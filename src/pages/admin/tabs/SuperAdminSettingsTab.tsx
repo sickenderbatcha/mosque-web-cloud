@@ -87,6 +87,10 @@ const SuperAdminSettingsTab = () => {
   const [marriageCertOnlineDisabled, setMarriageCertOnlineDisabled] = useState(false);
   const [savingMarriageCertOnline, setSavingMarriageCertOnline] = useState(false);
 
+  // Death certificate online payment toggle
+  const [deathCertOnlineDisabled, setDeathCertOnlineDisabled] = useState(false);
+  const [savingDeathCertOnline, setSavingDeathCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -124,6 +128,7 @@ const SuperAdminSettingsTab = () => {
     fetchMahalOnlineSetting();
     fetchDonationOnlineSetting();
     fetchMarriageCertOnlineSetting();
+    fetchDeathCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -257,6 +262,43 @@ const SuperAdminSettingsTab = () => {
       setSavingMarriageCertOnline(false);
     }
   };
+  const fetchDeathCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "death_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setDeathCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching death cert online setting:", error);
+    }
+  };
+
+  const saveDeathCertOnlineSetting = async (value: boolean) => {
+    setSavingDeathCertOnline(true);
+    try {
+      await upsertAppSetting("death_cert_online_disabled", value ? "true" : "false", "Disable online payment for death certificate for public users");
+      setDeathCertOnlineDisabled(value);
+      toast({
+        title: "Death Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDeathCertOnline(false);
+    }
+  };
+
   const saveOtpSetting = async (value: boolean) => {
     setSavingOtpSetting(true);
     try {
@@ -1375,6 +1417,39 @@ const SuperAdminSettingsTab = () => {
                   checked={marriageCertOnlineDisabled}
                   onCheckedChange={(checked) => saveMarriageCertOnlineSetting(checked)}
                   disabled={savingMarriageCertOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Death Certificate</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will be directed to cash payment request instead of online payment
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்கள் ஆன்லைன் பணம் செலுத்துதலுக்கு பதிலாக ரொக்க செலுத்துதல் கோரிக்கைக்கு அனுப்பப்படுவார்கள்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    deathCertOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {deathCertOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={deathCertOnlineDisabled}
+                  onCheckedChange={(checked) => saveDeathCertOnlineSetting(checked)}
+                  disabled={savingDeathCertOnline}
                 />
               </div>
             </div>

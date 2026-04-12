@@ -65,12 +65,20 @@ import {
   FileDown,
   Printer,
   Pencil,
+  CreditCard,
+  Banknote,
+  IndianRupee,
 } from "lucide-react";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { getCertificateAccessStatus } from "@/lib/certificatePayments";
 import DeathCertificatePreview from "@/components/DeathCertificatePreview";
+import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 
 const islamicMonths = [
   "முஹர்ரம்",
@@ -183,6 +191,13 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function DeathRegisterTab() {
+  const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const { getSetting } = useAppSettings(["certificate_fee_death", "death_cert_online_disabled"]);
+  const deathCertOnlineDisabled = getSetting("death_cert_online_disabled") === "true";
+  const canBypassOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isOnlineDisabledForUser = deathCertOnlineDisabled && !canBypassOnlineDisable;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewRecord, setViewRecord] = useState<DeathRecord | null>(null);
   const [editRecord, setEditRecord] = useState<DeathRecord | null>(null);
@@ -190,7 +205,35 @@ export default function DeathRegisterTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const queryClient = useQueryClient();
+
+  // Cash payment request state
+  const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
+  const [cashRequestData, setCashRequestData] = useState<{
+    referenceId: string;
+    amount: number;
+    failureReason?: string;
+    deceasedName: string;
+    applicantPhone: string;
+  } | null>(null);
+
+  const certificateFee = Number(getSetting("certificate_fee_death") || "100");
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
@@ -216,6 +259,168 @@ export default function DeathRegisterTab() {
   }, [viewRecord?.id]);
 
   const isPaymentCompleted = paymentStatus === "completed";
+
+  // Handle Razorpay payment for death certificate
+  const handleRazorpayPayment = async (record: DeathRecord) => {
+    if (isOnlineDisabledForUser) {
+      setCashRequestData({
+        referenceId: record.id,
+        amount: certificateFee,
+        failureReason: "Online payment disabled by admin",
+        deceasedName: record.deceased_name,
+        applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+      });
+      setShowCashRequestDialog(true);
+      return;
+    }
+
+    if (!razorpayLoaded) {
+      toast.error("பணம் செலுத்தும் சேவை ஏற்றப்படவில்லை");
+      return;
+    }
+
+    setPaymentProcessing(true);
+    try {
+      const { data: paymentData, error: paymentError } = await supabase
+        .from("certificate_payments")
+        .insert({
+          certificate_type: "death",
+          reference_id: record.id,
+          applicant_name: record.informant_name,
+          applicant_phone: record.informant_phone || "N/A",
+          amount: certificateFee,
+          payment_status: "pending",
+          user_id: user?.id || null,
+        })
+        .select()
+        .single();
+
+      if (paymentError) throw paymentError;
+
+      const { data: orderData, error: orderError } = await supabase.functions.invoke(
+        "create-razorpay-order",
+        {
+          body: {
+            amount: certificateFee,
+            certificatePaymentId: paymentData.id,
+            type: "certificate",
+          },
+        }
+      );
+
+      if (orderError) throw orderError;
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        order_id: orderData.orderId,
+        name: "I.N.P.T ஜமாத்",
+        description: "Death Certificate Fee",
+        handler: async function (response: any) {
+          try {
+            const { error: verifyError } = await supabase.functions.invoke(
+              "create-razorpay-order?action=verify",
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  certificatePaymentId: paymentData.id,
+                  type: "certificate",
+                },
+              }
+            );
+
+            if (verifyError) {
+              toast.error("பணம் செலுத்துதல் சரிபார்ப்பு தோல்வியுற்றது");
+              return;
+            }
+
+            setPaymentStatus("completed");
+            toast.success("பணம் வெற்றிகரமாக செலுத்தப்பட்டது!");
+          } catch (err) {
+            console.error("Payment verification error:", err);
+            toast.error("பணம் செலுத்துதல் சரிபார்ப்பு பிழை");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast.info("பணம் செலுத்துதல் ரத்து செய்யப்பட்டது");
+            setCashRequestData({
+              referenceId: record.id,
+              amount: certificateFee,
+              failureReason: "Payment cancelled by user",
+              deceasedName: record.deceased_name,
+              applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+            });
+            setShowCashRequestDialog(true);
+          },
+        },
+        theme: {
+          color: "#059669",
+        },
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.on("payment.failed", function (response: any) {
+        setCashRequestData({
+          referenceId: record.id,
+          amount: certificateFee,
+          failureReason: response.error?.description || response.error?.reason || "Payment failed",
+          deceasedName: record.deceased_name,
+          applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+        });
+        setShowCashRequestDialog(true);
+      });
+      razorpay.open();
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error("பணம் செலுத்துதல் பிழை: " + error.message);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  // Handle Cash Payment (Admin only)
+  const handleCashPayment = async (record: DeathRecord) => {
+    setPaymentProcessing(true);
+    try {
+      const { error: paymentError } = await supabase
+        .from("certificate_payments")
+        .insert({
+          certificate_type: "death",
+          reference_id: record.id,
+          applicant_name: record.informant_name,
+          applicant_phone: record.informant_phone || "N/A",
+          amount: certificateFee,
+          payment_status: "completed",
+          payment_method: "cash",
+          user_id: user?.id || null,
+        });
+
+      if (paymentError) throw paymentError;
+
+      setPaymentStatus("completed");
+      toast.success("ரொக்க பணம் பதிவு செய்யப்பட்டது!");
+    } catch (error: any) {
+      console.error("Cash payment error:", error);
+      toast.error("ரொக்க பணம் பதிவு பிழை: " + error.message);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  // Manual cash request
+  const handleManualCashRequest = (record: DeathRecord) => {
+    setCashRequestData({
+      referenceId: record.id,
+      amount: certificateFee,
+      deceasedName: record.deceased_name,
+      applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+    });
+    setShowCashRequestDialog(true);
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -1077,22 +1282,68 @@ export default function DeathRegisterTab() {
                   </ScrollArea>
                 </TabsContent>
                 
-                <div className="flex gap-2 pt-4 border-t mt-4">
-                  <Button
-                    onClick={() => printDeathCertificate(viewRecord)}
-                    disabled={paymentLoading || !isPaymentCompleted}
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    அச்சிடு
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => generateDeathCertificatePdf(viewRecord)}
-                    disabled={paymentLoading || !isPaymentCompleted}
-                  >
-                    <FileDown className="h-4 w-4 mr-2" />
-                    பதிவிறக்கு
-                  </Button>
+                <div className="flex flex-wrap gap-2 pt-4 border-t mt-4">
+                  {isPaymentCompleted ? (
+                    <>
+                      <Button
+                        onClick={() => printDeathCertificate(viewRecord)}
+                        disabled={paymentLoading}
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        அச்சிடு
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => generateDeathCertificatePdf(viewRecord)}
+                        disabled={paymentLoading}
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        பதிவிறக்கு
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {isOnlineDisabledForUser ? (
+                        <Button
+                          size="sm"
+                          onClick={() => handleRazorpayPayment(viewRecord)}
+                          disabled={paymentLoading || paymentProcessing}
+                        >
+                          <IndianRupee className="h-4 w-4 mr-2" />
+                          பணம் செலுத்து (₹{certificateFee})
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => handleRazorpayPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            ஆன்லைன் பணம் (₹{certificateFee})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCashPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <Banknote className="h-4 w-4 mr-2" />
+                            ரொக்க பணம்
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleManualCashRequest(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <IndianRupee className="h-4 w-4 mr-2" />
+                            கோரிக்கை அனுப்பு
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
                 {!isPaymentCompleted && (
                   <p className="text-sm text-amber-600 font-tamil mt-2">
@@ -1129,6 +1380,27 @@ export default function DeathRegisterTab() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      {/* Cash Payment Request Dialog */}
+      {cashRequestData && (
+        <CashPaymentRequestDialog
+          open={showCashRequestDialog}
+          onOpenChange={setShowCashRequestDialog}
+          serviceType="certificate"
+          referenceId={cashRequestData.referenceId}
+          amount={cashRequestData.amount}
+          applicantName={cashRequestData.deceasedName}
+          applicantPhone={cashRequestData.applicantPhone}
+          failureReason={cashRequestData.failureReason}
+          serviceDetails={{
+            certificateType: "death",
+            deceasedName: cashRequestData.deceasedName,
+          }}
+          onSuccess={() => {
+            setCashRequestData(null);
+            toast.success("ரொக்க செலுத்துதல் கோரிக்கை அனுப்பப்பட்டது");
+          }}
+        />
+      )}
       </CardContent>
     </Card>
   );
