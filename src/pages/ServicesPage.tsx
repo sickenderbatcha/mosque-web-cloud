@@ -390,6 +390,24 @@ const ServicesPage = () => {
       return;
     }
 
+    // If bonafide online payment is disabled for this user, redirect to cash request
+    if (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) {
+      setBonafideCashRequestData({
+        referenceId: currentReferenceId,
+        amount: certificateFee,
+        applicantName,
+        applicantPhone,
+        failureReason: "Online payment disabled by admin",
+        serviceDetails: {
+          certificateType: "bonafide",
+          membershipNo,
+          memberName: memberDetails.name,
+        },
+      });
+      setShowBonafideCashDialog(true);
+      return;
+    }
+
     setIsPaymentLoading(true);
 
     try {
