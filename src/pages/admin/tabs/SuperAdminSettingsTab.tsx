@@ -1346,10 +1346,40 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
+          {/* Marriage Certificate Online Payment Toggle */}
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Home className="h-5 w-5 text-primary" />
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Marriage Certificate</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will be directed to cash payment request instead of online payment
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்கள் ஆன்லைன் பணம் செலுத்துதலுக்கு பதிலாக ரொக்க செலுத்துதல் கோரிக்கைக்கு அனுப்பப்படுவார்கள்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    marriageCertOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {marriageCertOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={marriageCertOnlineDisabled}
+                  onCheckedChange={(checked) => saveMarriageCertOnlineSetting(checked)}
+                  disabled={savingMarriageCertOnline}
+                />
+              </div>
+            </div>
+          </div>
+
                 <div>
                   <h4 className="font-medium">Back Office Cards on Homepage</h4>
                   <p className="text-sm text-muted-foreground">
