@@ -1650,6 +1650,39 @@ const SuperAdminSettingsTab = () => {
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Heir Certificate</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will not see the online payment button for Heir certificates
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்களுக்கு வாரிசு சான்றிதழுக்கான ஆன்லைன் செலுத்துதல் பொத்தான் மறைக்கப்படும்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    heirCertOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {heirCertOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={heirCertOnlineDisabled}
+                  onCheckedChange={(checked) => saveHeirCertOnlineSetting(checked)}
+                  disabled={savingHeirCertOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Home className="h-5 w-5 text-primary" />
                 <div>
                   <h4 className="font-medium">Back Office Cards on Homepage</h4>

@@ -731,19 +731,21 @@ export default function HeirCertificatePage() {
                     </div>
                     
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        type="button"
-                        onClick={handlePayment}
-                        disabled={loading}
-                        className="flex-1 min-w-0 h-auto py-2"
-                      >
-                        {loading ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <CreditCard className="h-4 w-4 mr-2" />
-                        )}
-                        <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
-                      </Button>
+                      {!isHeirOnlineDisabledForUser && (
+                        <Button
+                          type="button"
+                          onClick={handlePayment}
+                          disabled={loading}
+                          className="flex-1 min-w-0 h-auto py-2"
+                        >
+                          {loading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <CreditCard className="h-4 w-4 mr-2" />
+                          )}
+                          <span className="font-tamil break-words">ஆன்லைன் செலுத்து</span>
+                        </Button>
+                      )}
                       
                       {isAdmin ? (
                         <Button
