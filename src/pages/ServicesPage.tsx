@@ -57,16 +57,23 @@ const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
-  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled"]);
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
   const certificateFee = parseInt(settings.certificate_fee) || 100;
 
-  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
-  const canBypassBonafideOnlineDisable = isAdmin || canAccessTab("certificate-payments");
-  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassBonafideOnlineDisable;
+  const canBypassCertOnlineDisable = isAdmin || canAccessTab("certificate-payments");
 
-  // Cash payment request dialog state for bonafide
-  const [showBonafideCashDialog, setShowBonafideCashDialog] = useState(false);
-  const [bonafideCashRequestData, setBonafideCashRequestData] = useState<any>(null);
+  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
+  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  const marriageCertOnlineDisabled = getSetting("marriage_cert_online_disabled") === "true";
+  const isMarriageOnlineDisabledForUser = marriageCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  const deathCertOnlineDisabled = getSetting("death_cert_online_disabled") === "true";
+  const isDeathOnlineDisabledForUser = deathCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  // Cash payment request dialog state
+  const [showCertCashDialog, setShowCertCashDialog] = useState(false);
+  const [certCashRequestData, setCertCashRequestData] = useState<any>(null);
 
   const [activeCertificateType, setActiveCertificateType] = useState<
     "marriage" | "death" | "bonafide" | "noc" | "heir"
@@ -390,21 +397,27 @@ const ServicesPage = () => {
       return;
     }
 
-    // If bonafide online payment is disabled for this user, redirect to cash request
-    if (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) {
-      setBonafideCashRequestData({
+    // If online payment is disabled for this user for the active certificate type, redirect to cash request
+    const isOnlineDisabledForCurrentType =
+      (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) ||
+      (activeCertificateType === "marriage" && isMarriageOnlineDisabledForUser) ||
+      (activeCertificateType === "death" && isDeathOnlineDisabledForUser);
+
+    if (isOnlineDisabledForCurrentType) {
+      const detailsByType: Record<string, any> = {
+        bonafide: { certificateType: "bonafide", membershipNo, memberName: memberDetails.name },
+        marriage: { certificateType: "marriage", groomName: fullMarriageRecord?.groom_name, brideName: fullMarriageRecord?.bride_name },
+        death: { certificateType: "death", deceasedName: fullDeathRecord?.deceased_name },
+      };
+      setCertCashRequestData({
         referenceId: currentReferenceId,
         amount: certificateFee,
         applicantName,
         applicantPhone,
         failureReason: "Online payment disabled by admin",
-        serviceDetails: {
-          certificateType: "bonafide",
-          membershipNo,
-          memberName: memberDetails.name,
-        },
+        serviceDetails: detailsByType[activeCertificateType] || { certificateType: activeCertificateType },
       });
-      setShowBonafideCashDialog(true);
+      setShowCertCashDialog(true);
       return;
     }
 
@@ -1397,18 +1410,18 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* Cash Payment Request Dialog for Bonafide */}
-      {bonafideCashRequestData && (
+      {/* Cash Payment Request Dialog for certificates with online disabled */}
+      {certCashRequestData && (
         <CashPaymentRequestDialog
-          open={showBonafideCashDialog}
-          onOpenChange={setShowBonafideCashDialog}
+          open={showCertCashDialog}
+          onOpenChange={setShowCertCashDialog}
           serviceType="certificate"
-          referenceId={bonafideCashRequestData.referenceId}
-          amount={bonafideCashRequestData.amount}
-          applicantName={bonafideCashRequestData.applicantName}
-          applicantPhone={bonafideCashRequestData.applicantPhone}
-          failureReason={bonafideCashRequestData.failureReason}
-          serviceDetails={bonafideCashRequestData.serviceDetails}
+          referenceId={certCashRequestData.referenceId}
+          amount={certCashRequestData.amount}
+          applicantName={certCashRequestData.applicantName}
+          applicantPhone={certCashRequestData.applicantPhone}
+          failureReason={certCashRequestData.failureReason}
+          serviceDetails={certCashRequestData.serviceDetails}
         />
       )}
     </div>
