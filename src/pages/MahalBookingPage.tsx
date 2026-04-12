@@ -54,7 +54,9 @@ const MahalBookingPage = () => {
     "booking_rate_food_facility",
     "booking_otp_required",
     "booking_alert_message",
+    "mahal_booking_online_disabled",
   ]);
+  const isOnlineBookingDisabled = bookingSettings.mahal_booking_online_disabled === "true" && !canDoCashPayment;
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -1222,7 +1224,7 @@ const MahalBookingPage = () => {
                           variant="gold" 
                           size="lg" 
                           className="flex-1" 
-                          disabled={loading || paymentLoading || calculateTotal() <= 0}
+                          disabled={loading || paymentLoading || calculateTotal() <= 0 || isOnlineBookingDisabled}
                         >
                           {loading || paymentLoading ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
@@ -1233,6 +1235,11 @@ const MahalBookingPage = () => {
                             </>
                           )}
                         </Button>
+                        {isOnlineBookingDisabled && (
+                          <p className="text-sm text-destructive font-tamil">
+                            ஆன்லைன் பணம் செலுத்துதல் தற்போது முடக்கப்பட்டுள்ளது. தயவுசெய்து நிர்வாகத்தை தொடர்பு கொள்ளவும்.
+                          </p>
+                        )}
                         <Button 
                           type="button" 
                           variant="outline" 

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff, Building2 } from "lucide-react";
 import { useMenuVisibility, defaultMenuVisibility, type MenuVisibilityConfig } from "@/hooks/useMenuVisibility";
 import { Clock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -75,6 +75,10 @@ const SuperAdminSettingsTab = () => {
   const [otpRequired, setOtpRequired] = useState(true);
   const [savingOtpSetting, setSavingOtpSetting] = useState(false);
 
+  // Mahal booking online payment toggle
+  const [mahalOnlineDisabled, setMahalOnlineDisabled] = useState(false);
+  const [savingMahalOnline, setSavingMahalOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -109,6 +113,7 @@ const SuperAdminSettingsTab = () => {
     fetchBookingAlertMessage();
     fetchFooterCreditText();
     fetchHeroOverlayColor();
+    fetchMahalOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -129,6 +134,43 @@ const SuperAdminSettingsTab = () => {
       }
     } catch (error) {
       console.error("Error fetching OTP setting:", error);
+    }
+  };
+
+  const fetchMahalOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "mahal_booking_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setMahalOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching mahal online setting:", error);
+    }
+  };
+
+  const saveMahalOnlineSetting = async (value: boolean) => {
+    setSavingMahalOnline(true);
+    try {
+      await upsertAppSetting("mahal_booking_online_disabled", value ? "true" : "false", "Disable online payment for mahal booking for public users");
+      setMahalOnlineDisabled(value);
+      toast({
+        title: "Mahal Booking Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingMahalOnline(false);
     }
   };
 
@@ -1153,7 +1195,40 @@ const SuperAdminSettingsTab = () => {
             </div>
           </div>
 
-          {/* Back Office Homepage Visibility */}
+          {/* Mahal Booking Online Payment Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Building2 className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Mahal Booking</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, online payment button is disabled for public users
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்களுக்கு ஆன்லைன் பணம் செலுத்துதல் பொத்தான் முடக்கப்படும்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    mahalOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {mahalOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={mahalOnlineDisabled}
+                  onCheckedChange={(checked) => saveMahalOnlineSetting(checked)}
+                  disabled={savingMahalOnline}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
