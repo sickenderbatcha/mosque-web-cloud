@@ -79,6 +79,10 @@ const SuperAdminSettingsTab = () => {
   const [mahalOnlineDisabled, setMahalOnlineDisabled] = useState(false);
   const [savingMahalOnline, setSavingMahalOnline] = useState(false);
 
+  // Donation & Subscription online payment toggle
+  const [donationOnlineDisabled, setDonationOnlineDisabled] = useState(false);
+  const [savingDonationOnline, setSavingDonationOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
