@@ -1254,6 +1254,8 @@ const DonationPage = () => {
   const { canAccessTab } = useUserTabPermissions();
   const canCashPay = isAdmin || canAccessTab('donations');
   const { settings, isLoading: settingsLoading } = useAppSettings();
+  const donationOnlineDisabled = (settings?.donation_subscription_online_disabled || "false") === "true";
+  const isOnlineDisabledForPublic = donationOnlineDisabled && !canCashPay;
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
