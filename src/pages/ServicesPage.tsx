@@ -397,21 +397,27 @@ const ServicesPage = () => {
       return;
     }
 
-    // If bonafide online payment is disabled for this user, redirect to cash request
-    if (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) {
-      setBonafideCashRequestData({
+    // If online payment is disabled for this user for the active certificate type, redirect to cash request
+    const isOnlineDisabledForCurrentType =
+      (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) ||
+      (activeCertificateType === "marriage" && isMarriageOnlineDisabledForUser) ||
+      (activeCertificateType === "death" && isDeathOnlineDisabledForUser);
+
+    if (isOnlineDisabledForCurrentType) {
+      const detailsByType: Record<string, any> = {
+        bonafide: { certificateType: "bonafide", membershipNo, memberName: memberDetails.name },
+        marriage: { certificateType: "marriage", groomName: fullMarriageRecord?.groom_name, brideName: fullMarriageRecord?.bride_name },
+        death: { certificateType: "death", deceasedName: fullDeathRecord?.deceased_name },
+      };
+      setCertCashRequestData({
         referenceId: currentReferenceId,
         amount: certificateFee,
         applicantName,
         applicantPhone,
         failureReason: "Online payment disabled by admin",
-        serviceDetails: {
-          certificateType: "bonafide",
-          membershipNo,
-          memberName: memberDetails.name,
-        },
+        serviceDetails: detailsByType[activeCertificateType] || { certificateType: activeCertificateType },
       });
-      setShowBonafideCashDialog(true);
+      setShowCertCashDialog(true);
       return;
     }
 
