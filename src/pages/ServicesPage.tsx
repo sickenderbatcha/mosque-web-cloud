@@ -1396,6 +1396,21 @@ const ServicesPage = () => {
           </p>
         </div>
       </section>
+
+      {/* Cash Payment Request Dialog for Bonafide */}
+      {bonafideCashRequestData && (
+        <CashPaymentRequestDialog
+          open={showBonafideCashDialog}
+          onOpenChange={setShowBonafideCashDialog}
+          serviceType="certificate"
+          referenceId={bonafideCashRequestData.referenceId}
+          amount={bonafideCashRequestData.amount}
+          applicantName={bonafideCashRequestData.applicantName}
+          applicantPhone={bonafideCashRequestData.applicantPhone}
+          failureReason={bonafideCashRequestData.failureReason}
+          serviceDetails={bonafideCashRequestData.serviceDetails}
+        />
+      )}
     </div>
   );
 };
