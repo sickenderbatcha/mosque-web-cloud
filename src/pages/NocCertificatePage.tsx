@@ -906,19 +906,21 @@ export default function NocCertificatePage() {
                       </>
                     ) : (
                       <>
-                        <Button
-                          type="button"
-                          onClick={handlePayment}
-                          disabled={loading || !razorpayLoaded}
-                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
-                        >
-                          {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
-                          ) : (
-                            <CreditCard className="h-4 w-4 mr-2 shrink-0" />
-                          )}
-                          <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
-                        </Button>
+                        {!isNocOnlineDisabledForUser && (
+                          <Button
+                            type="button"
+                            onClick={handlePayment}
+                            disabled={loading || !razorpayLoaded}
+                            className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
+                          >
+                            {loading ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
+                            ) : (
+                              <CreditCard className="h-4 w-4 mr-2 shrink-0" />
+                            )}
+                            <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
+                          </Button>
+                        )}
                         <Button
                           type="button"
                           variant="secondary"
