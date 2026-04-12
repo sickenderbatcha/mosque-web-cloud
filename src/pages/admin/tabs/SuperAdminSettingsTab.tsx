@@ -388,6 +388,43 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
+  const fetchHeirCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "heir_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setHeirCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching heir cert online setting:", error);
+    }
+  };
+
+  const saveHeirCertOnlineSetting = async (value: boolean) => {
+    setSavingHeirCertOnline(true);
+    try {
+      await upsertAppSetting("heir_cert_online_disabled", value ? "true" : "false", "Disable online payment for heir certificate for public users");
+      setHeirCertOnlineDisabled(value);
+      toast({
+        title: "Heir Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingHeirCertOnline(false);
+    }
+  };
+
   const saveOtpSetting = async (value: boolean) => {
     setSavingOtpSetting(true);
     try {
