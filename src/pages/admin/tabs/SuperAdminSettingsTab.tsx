@@ -257,7 +257,7 @@ const SuperAdminSettingsTab = () => {
       setSavingMarriageCertOnline(false);
     }
   };
-
+  const saveOtpSetting = async (value: boolean) => {
     setSavingOtpSetting(true);
     try {
       await upsertAppSetting("booking_otp_required", value ? "true" : "false", "Whether OTP verification is required for Mahal bookings");
