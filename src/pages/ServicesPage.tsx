@@ -57,16 +57,23 @@ const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
-  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled"]);
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
   const certificateFee = parseInt(settings.certificate_fee) || 100;
 
-  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
-  const canBypassBonafideOnlineDisable = isAdmin || canAccessTab("certificate-payments");
-  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassBonafideOnlineDisable;
+  const canBypassCertOnlineDisable = isAdmin || canAccessTab("certificate-payments");
 
-  // Cash payment request dialog state for bonafide
-  const [showBonafideCashDialog, setShowBonafideCashDialog] = useState(false);
-  const [bonafideCashRequestData, setBonafideCashRequestData] = useState<any>(null);
+  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
+  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  const marriageCertOnlineDisabled = getSetting("marriage_cert_online_disabled") === "true";
+  const isMarriageOnlineDisabledForUser = marriageCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  const deathCertOnlineDisabled = getSetting("death_cert_online_disabled") === "true";
+  const isDeathOnlineDisabledForUser = deathCertOnlineDisabled && !canBypassCertOnlineDisable;
+
+  // Cash payment request dialog state
+  const [showCertCashDialog, setShowCertCashDialog] = useState(false);
+  const [certCashRequestData, setCertCashRequestData] = useState<any>(null);
 
   const [activeCertificateType, setActiveCertificateType] = useState<
     "marriage" | "death" | "bonafide" | "noc" | "heir"
