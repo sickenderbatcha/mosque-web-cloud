@@ -1380,6 +1380,27 @@ export default function DeathRegisterTab() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      {/* Cash Payment Request Dialog */}
+      {cashRequestData && (
+        <CashPaymentRequestDialog
+          open={showCashRequestDialog}
+          onOpenChange={setShowCashRequestDialog}
+          serviceType="certificate"
+          referenceId={cashRequestData.referenceId}
+          amount={cashRequestData.amount}
+          applicantName={cashRequestData.deceasedName}
+          applicantPhone={cashRequestData.applicantPhone}
+          failureReason={cashRequestData.failureReason}
+          serviceDetails={{
+            certificateType: "death",
+            deceasedName: cashRequestData.deceasedName,
+          }}
+          onSuccess={() => {
+            setCashRequestData(null);
+            toast.success("ரொக்க செலுத்துதல் கோரிக்கை அனுப்பப்பட்டது");
+          }}
+        />
+      )}
       </CardContent>
     </Card>
   );
