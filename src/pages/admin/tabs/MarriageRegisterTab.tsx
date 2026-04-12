@@ -77,6 +77,8 @@ import { getCertificateAccessStatus } from "@/lib/certificatePayments";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import MarriagePhotoUpload from "@/components/admin/MarriagePhotoUpload";
 
 declare global {
@@ -206,7 +208,12 @@ interface MemberDetails {
 
 export default function MarriageRegisterTab() {
   const { user } = useAuth();
-  const { getSetting } = useAppSettings(["certificate_fee_marriage"]);
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const { getSetting } = useAppSettings(["certificate_fee_marriage", "marriage_cert_online_disabled"]);
+  const marriageCertOnlineDisabled = getSetting("marriage_cert_online_disabled") === "true";
+  const canBypassOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isOnlineDisabledForUser = marriageCertOnlineDisabled && !canBypassOnlineDisable;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewRecord, setViewRecord] = useState<any>(null);
   const [previewRecord, setPreviewRecord] = useState<any>(null);
@@ -279,6 +286,20 @@ export default function MarriageRegisterTab() {
 
   // Handle Razorpay payment for marriage certificate
   const handleRazorpayPayment = async (record: any) => {
+    // If online payment is disabled for this user, redirect to cash payment request
+    if (isOnlineDisabledForUser) {
+      setCashRequestData({
+        referenceId: record.id,
+        amount: certificateFee,
+        failureReason: "Online payment disabled by admin",
+        groomName: record.groom_name,
+        brideName: record.bride_name,
+        applicantPhone: "தொடர்புக்கு: நிர்வாகி",
+      });
+      setShowCashRequestDialog(true);
+      return;
+    }
+
     if (!razorpayLoaded) {
       toast.error("பணம் செலுத்தும் சேவை ஏற்றப்படவில்லை");
       return;
@@ -1755,32 +1776,45 @@ export default function MarriageRegisterTab() {
                     </>
                   ) : (
                     <>
-                      <Button
-                        size="sm"
-                        onClick={() => handleRazorpayPayment(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
-                      >
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        ஆன்லைன் பணம் (₹{certificateFee})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCashPayment(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing}
-                      >
-                        <Banknote className="h-4 w-4 mr-2" />
-                        ரொக்க பணம்
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleManualCashRequest(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing}
-                      >
-                        <IndianRupee className="h-4 w-4 mr-2" />
-                        கோரிக்கை அனுப்பு
-                      </Button>
+                      {isOnlineDisabledForUser ? (
+                        <Button
+                          size="sm"
+                          onClick={() => handleRazorpayPayment(viewRecord)}
+                          disabled={paymentLoading || paymentProcessing}
+                        >
+                          <IndianRupee className="h-4 w-4 mr-2" />
+                          பணம் செலுத்து (₹{certificateFee})
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => handleRazorpayPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            ஆன்லைன் பணம் (₹{certificateFee})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCashPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <Banknote className="h-4 w-4 mr-2" />
+                            ரொக்க பணம்
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleManualCashRequest(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <IndianRupee className="h-4 w-4 mr-2" />
+                            கோரிக்கை அனுப்பு
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
