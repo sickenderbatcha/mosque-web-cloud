@@ -99,6 +99,10 @@ const SuperAdminSettingsTab = () => {
   const [nocCertOnlineDisabled, setNocCertOnlineDisabled] = useState(false);
   const [savingNocCertOnline, setSavingNocCertOnline] = useState(false);
 
+  // Heir certificate online payment toggle
+  const [heirCertOnlineDisabled, setHeirCertOnlineDisabled] = useState(false);
+  const [savingHeirCertOnline, setSavingHeirCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -139,6 +143,7 @@ const SuperAdminSettingsTab = () => {
     fetchDeathCertOnlineSetting();
     fetchBonafideCertOnlineSetting();
     fetchNocCertOnlineSetting();
+    fetchHeirCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
