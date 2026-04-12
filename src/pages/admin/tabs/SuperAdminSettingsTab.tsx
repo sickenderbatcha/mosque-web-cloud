@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff, Building2 } from "lucide-react";
 import { useMenuVisibility, defaultMenuVisibility, type MenuVisibilityConfig } from "@/hooks/useMenuVisibility";
 import { Clock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
