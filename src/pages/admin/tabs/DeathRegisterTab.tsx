@@ -260,6 +260,168 @@ export default function DeathRegisterTab() {
 
   const isPaymentCompleted = paymentStatus === "completed";
 
+  // Handle Razorpay payment for death certificate
+  const handleRazorpayPayment = async (record: DeathRecord) => {
+    if (isOnlineDisabledForUser) {
+      setCashRequestData({
+        referenceId: record.id,
+        amount: certificateFee,
+        failureReason: "Online payment disabled by admin",
+        deceasedName: record.deceased_name,
+        applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+      });
+      setShowCashRequestDialog(true);
+      return;
+    }
+
+    if (!razorpayLoaded) {
+      toast.error("பணம் செலுத்தும் சேவை ஏற்றப்படவில்லை");
+      return;
+    }
+
+    setPaymentProcessing(true);
+    try {
+      const { data: paymentData, error: paymentError } = await supabase
+        .from("certificate_payments")
+        .insert({
+          certificate_type: "death",
+          reference_id: record.id,
+          applicant_name: record.informant_name,
+          applicant_phone: record.informant_phone || "N/A",
+          amount: certificateFee,
+          payment_status: "pending",
+          user_id: user?.id || null,
+        })
+        .select()
+        .single();
+
+      if (paymentError) throw paymentError;
+
+      const { data: orderData, error: orderError } = await supabase.functions.invoke(
+        "create-razorpay-order",
+        {
+          body: {
+            amount: certificateFee,
+            certificatePaymentId: paymentData.id,
+            type: "certificate",
+          },
+        }
+      );
+
+      if (orderError) throw orderError;
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        order_id: orderData.orderId,
+        name: "I.N.P.T ஜமாத்",
+        description: "Death Certificate Fee",
+        handler: async function (response: any) {
+          try {
+            const { error: verifyError } = await supabase.functions.invoke(
+              "create-razorpay-order?action=verify",
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  certificatePaymentId: paymentData.id,
+                  type: "certificate",
+                },
+              }
+            );
+
+            if (verifyError) {
+              toast.error("பணம் செலுத்துதல் சரிபார்ப்பு தோல்வியுற்றது");
+              return;
+            }
+
+            setPaymentStatus("completed");
+            toast.success("பணம் வெற்றிகரமாக செலுத்தப்பட்டது!");
+          } catch (err) {
+            console.error("Payment verification error:", err);
+            toast.error("பணம் செலுத்துதல் சரிபார்ப்பு பிழை");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast.info("பணம் செலுத்துதல் ரத்து செய்யப்பட்டது");
+            setCashRequestData({
+              referenceId: record.id,
+              amount: certificateFee,
+              failureReason: "Payment cancelled by user",
+              deceasedName: record.deceased_name,
+              applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+            });
+            setShowCashRequestDialog(true);
+          },
+        },
+        theme: {
+          color: "#059669",
+        },
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.on("payment.failed", function (response: any) {
+        setCashRequestData({
+          referenceId: record.id,
+          amount: certificateFee,
+          failureReason: response.error?.description || response.error?.reason || "Payment failed",
+          deceasedName: record.deceased_name,
+          applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+        });
+        setShowCashRequestDialog(true);
+      });
+      razorpay.open();
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error("பணம் செலுத்துதல் பிழை: " + error.message);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  // Handle Cash Payment (Admin only)
+  const handleCashPayment = async (record: DeathRecord) => {
+    setPaymentProcessing(true);
+    try {
+      const { error: paymentError } = await supabase
+        .from("certificate_payments")
+        .insert({
+          certificate_type: "death",
+          reference_id: record.id,
+          applicant_name: record.informant_name,
+          applicant_phone: record.informant_phone || "N/A",
+          amount: certificateFee,
+          payment_status: "completed",
+          payment_method: "cash",
+          user_id: user?.id || null,
+        });
+
+      if (paymentError) throw paymentError;
+
+      setPaymentStatus("completed");
+      toast.success("ரொக்க பணம் பதிவு செய்யப்பட்டது!");
+    } catch (error: any) {
+      console.error("Cash payment error:", error);
+      toast.error("ரொக்க பணம் பதிவு பிழை: " + error.message);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  // Manual cash request
+  const handleManualCashRequest = (record: DeathRecord) => {
+    setCashRequestData({
+      referenceId: record.id,
+      amount: certificateFee,
+      deceasedName: record.deceased_name,
+      applicantPhone: record.informant_phone || "தொடர்புக்கு: நிர்வாகி",
+    });
+    setShowCashRequestDialog(true);
+  };
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
