@@ -1645,6 +1645,54 @@ const SuperAdminSettingsTab = () => {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Booking Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Booking Settings (முன்பதிவு அமைப்புகள்)
+          </CardTitle>
+          <CardDescription>
+            Configure booking payment timeout and auto-cancellation settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* OTP Verification Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">OTP Verification (OTP சரிபார்ப்பு)</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Require phone/email OTP verification before booking
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    முன்பதிவுக்கு முன் தொலைபேசி/மின்னஞ்சல் OTP சரிபார்ப்பு தேவை
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    otpRequired
+                      ? "text-sm font-medium text-primary"
+                      : "text-sm font-medium text-muted-foreground"
+                  }
+                >
+                  {otpRequired ? "Required" : "Not Required"}
+                </span>
+                <Switch
+                  checked={otpRequired}
+                  onCheckedChange={(checked) => saveOtpSetting(checked)}
+                  disabled={savingOtpSetting}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
