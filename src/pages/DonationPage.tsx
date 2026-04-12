@@ -626,7 +626,38 @@ const SubscriptionForm = () => {
         setLoading(false);
         return;
       }
-      
+      // When online payment is disabled for public users, create pending subscription and show cash request dialog
+      if (isOnlineDisabledForPublic) {
+        const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
+          member_id: memberId,
+          member_name: memberName,
+          member_phone: normalizedMemberPhone,
+          member_address: memberAddress || null,
+          subscription_type: subscriptionType,
+          amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
+          total_amount: payableAmount,
+          from_month: subscriptionType === "monthly" ? fromMonthNum : null,
+          from_year: subscriptionType === "monthly" ? fromYearNum : null,
+          to_month: subscriptionType === "monthly" ? toMonthNum : null,
+          to_year: subscriptionType === "monthly" ? toYearNum : null,
+          number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
+          subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
+          payment_status: "pending",
+          payment_method: "Cash",
+        }).select().single();
+
+        if (insertError) throw insertError;
+
+        setCashRequestData({
+          subscriptionId: subscriptionData.id,
+          amount: payableAmount,
+          failureReason: "ஆன்லைன் பணம் செலுத்துதல் தற்போது செயலில் இல்லை",
+        });
+        setShowCashRequestDialog(true);
+        setLoading(false);
+        return;
+      }
+
       // First, create subscription record with pending status
       const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
         member_id: memberId,
