@@ -1776,32 +1776,45 @@ export default function MarriageRegisterTab() {
                     </>
                   ) : (
                     <>
-                      <Button
-                        size="sm"
-                        onClick={() => handleRazorpayPayment(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
-                      >
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        ஆன்லைன் பணம் (₹{certificateFee})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCashPayment(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing}
-                      >
-                        <Banknote className="h-4 w-4 mr-2" />
-                        ரொக்க பணம்
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleManualCashRequest(viewRecord)}
-                        disabled={paymentLoading || paymentProcessing}
-                      >
-                        <IndianRupee className="h-4 w-4 mr-2" />
-                        கோரிக்கை அனுப்பு
-                      </Button>
+                      {isOnlineDisabledForUser ? (
+                        <Button
+                          size="sm"
+                          onClick={() => handleRazorpayPayment(viewRecord)}
+                          disabled={paymentLoading || paymentProcessing}
+                        >
+                          <IndianRupee className="h-4 w-4 mr-2" />
+                          பணம் செலுத்து (₹{certificateFee})
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => handleRazorpayPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            ஆன்லைன் பணம் (₹{certificateFee})
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCashPayment(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <Banknote className="h-4 w-4 mr-2" />
+                            ரொக்க பணம்
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleManualCashRequest(viewRecord)}
+                            disabled={paymentLoading || paymentProcessing}
+                          >
+                            <IndianRupee className="h-4 w-4 mr-2" />
+                            கோரிக்கை அனுப்பு
+                          </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
