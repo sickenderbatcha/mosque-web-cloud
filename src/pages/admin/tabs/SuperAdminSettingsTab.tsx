@@ -87,6 +87,10 @@ const SuperAdminSettingsTab = () => {
   const [marriageCertOnlineDisabled, setMarriageCertOnlineDisabled] = useState(false);
   const [savingMarriageCertOnline, setSavingMarriageCertOnline] = useState(false);
 
+  // Death certificate online payment toggle
+  const [deathCertOnlineDisabled, setDeathCertOnlineDisabled] = useState(false);
+  const [savingDeathCertOnline, setSavingDeathCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -124,6 +128,7 @@ const SuperAdminSettingsTab = () => {
     fetchMahalOnlineSetting();
     fetchDonationOnlineSetting();
     fetchMarriageCertOnlineSetting();
+    fetchDeathCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -257,6 +262,43 @@ const SuperAdminSettingsTab = () => {
       setSavingMarriageCertOnline(false);
     }
   };
+  const fetchDeathCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "death_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setDeathCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching death cert online setting:", error);
+    }
+  };
+
+  const saveDeathCertOnlineSetting = async (value: boolean) => {
+    setSavingDeathCertOnline(true);
+    try {
+      await upsertAppSetting("death_cert_online_disabled", value ? "true" : "false", "Disable online payment for death certificate for public users");
+      setDeathCertOnlineDisabled(value);
+      toast({
+        title: "Death Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDeathCertOnline(false);
+    }
+  };
+
   const saveOtpSetting = async (value: boolean) => {
     setSavingOtpSetting(true);
     try {
