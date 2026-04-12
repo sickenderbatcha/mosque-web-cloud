@@ -118,6 +118,7 @@ const SuperAdminSettingsTab = () => {
     fetchFooterCreditText();
     fetchHeroOverlayColor();
     fetchMahalOnlineSetting();
+    fetchDonationOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
