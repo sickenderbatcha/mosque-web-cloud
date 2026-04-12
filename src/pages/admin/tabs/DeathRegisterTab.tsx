@@ -65,12 +65,20 @@ import {
   FileDown,
   Printer,
   Pencil,
+  CreditCard,
+  Banknote,
+  IndianRupee,
 } from "lucide-react";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { getCertificateAccessStatus } from "@/lib/certificatePayments";
 import DeathCertificatePreview from "@/components/DeathCertificatePreview";
+import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 
 const islamicMonths = [
   "முஹர்ரம்",
@@ -183,6 +191,13 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function DeathRegisterTab() {
+  const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const { getSetting } = useAppSettings(["certificate_fee_death", "death_cert_online_disabled"]);
+  const deathCertOnlineDisabled = getSetting("death_cert_online_disabled") === "true";
+  const canBypassOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isOnlineDisabledForUser = deathCertOnlineDisabled && !canBypassOnlineDisable;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewRecord, setViewRecord] = useState<DeathRecord | null>(null);
   const [editRecord, setEditRecord] = useState<DeathRecord | null>(null);
@@ -190,7 +205,35 @@ export default function DeathRegisterTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const queryClient = useQueryClient();
+
+  // Cash payment request state
+  const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
+  const [cashRequestData, setCashRequestData] = useState<{
+    referenceId: string;
+    amount: number;
+    failureReason?: string;
+    deceasedName: string;
+    applicantPhone: string;
+  } | null>(null);
+
+  const certificateFee = Number(getSetting("certificate_fee_death") || "100");
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
