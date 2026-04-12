@@ -1495,6 +1495,33 @@ const DonationPage = () => {
         setLoading(false);
         return;
       }
+      // When online payment is disabled for public users, create pending donation and show cash request dialog
+      if (isOnlineDisabledForPublic) {
+        const donationId = crypto.randomUUID();
+        const { error: insertError } = await supabase.from("donations").insert({
+          id: donationId,
+          donor_name: isAnonymous ? "Anonymous" : donorName,
+          donor_phone: phone,
+          donor_email: email || null,
+          donor_address: address || null,
+          amount: amount,
+          purpose: donationPurpose,
+          is_anonymous: isAnonymous,
+          payment_method: "Cash",
+          payment_status: "pending",
+        });
+
+        if (insertError) throw insertError;
+
+        setCashRequestData({
+          donationId,
+          amount: amount,
+          failureReason: "ஆன்லைன் பணம் செலுத்துதல் தற்போது செயலில் இல்லை",
+        });
+        setShowCashRequestDialog(true);
+        setLoading(false);
+        return;
+      }
 
       // Online payment flow - First create donation with pending status
       // Important: don't use .select().single() here because public users can INSERT donations
