@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -68,7 +69,12 @@ type FormData = z.infer<typeof formSchema>;
 export default function NocCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
   const { getSetting } = useAppSettings();
+
+  const nocCertOnlineDisabled = getSetting("noc_cert_online_disabled") === "true";
+  const canBypassNocOnlineDisable = isAdmin || canAccessTab("noc-certificates");
+  const isNocOnlineDisabledForUser = nocCertOnlineDisabled && !canBypassNocOnlineDisable;
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [fetchingMember, setFetchingMember] = useState(false);
