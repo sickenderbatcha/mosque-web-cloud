@@ -179,6 +179,43 @@ const SuperAdminSettingsTab = () => {
     }
   };
 
+  const fetchDonationOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "donation_subscription_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setDonationOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching donation online setting:", error);
+    }
+  };
+
+  const saveDonationOnlineSetting = async (value: boolean) => {
+    setSavingDonationOnline(true);
+    try {
+      await upsertAppSetting("donation_subscription_online_disabled", value ? "true" : "false", "Disable online payment for donation & subscription for public users");
+      setDonationOnlineDisabled(value);
+      toast({
+        title: "Donation & Subscription Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDonationOnline(false);
+    }
+  };
+
   const saveOtpSetting = async (value: boolean) => {
     setSavingOtpSetting(true);
     try {
