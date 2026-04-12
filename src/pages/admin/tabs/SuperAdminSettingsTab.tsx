@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff, Building2 } from "lucide-react";
+import { Settings, Edit, Plus, Trash2, RefreshCw, Mail, Key, Calendar, FileText, Upload, Image, Home, Video, X, Palette, Check, ShieldCheck, Eye, EyeOff, Building2, Heart } from "lucide-react";
 import { useMenuVisibility, defaultMenuVisibility, type MenuVisibilityConfig } from "@/hooks/useMenuVisibility";
 import { Clock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -79,6 +79,10 @@ const SuperAdminSettingsTab = () => {
   const [mahalOnlineDisabled, setMahalOnlineDisabled] = useState(false);
   const [savingMahalOnline, setSavingMahalOnline] = useState(false);
 
+  // Donation & Subscription online payment toggle
+  const [donationOnlineDisabled, setDonationOnlineDisabled] = useState(false);
+  const [savingDonationOnline, setSavingDonationOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -114,6 +118,7 @@ const SuperAdminSettingsTab = () => {
     fetchFooterCreditText();
     fetchHeroOverlayColor();
     fetchMahalOnlineSetting();
+    fetchDonationOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -171,6 +176,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingMahalOnline(false);
+    }
+  };
+
+  const fetchDonationOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "donation_subscription_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setDonationOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching donation online setting:", error);
+    }
+  };
+
+  const saveDonationOnlineSetting = async (value: boolean) => {
+    setSavingDonationOnline(true);
+    try {
+      await upsertAppSetting("donation_subscription_online_disabled", value ? "true" : "false", "Disable online payment for donation & subscription for public users");
+      setDonationOnlineDisabled(value);
+      toast({
+        title: "Donation & Subscription Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDonationOnline(false);
     }
   };
 
@@ -1224,6 +1266,40 @@ const SuperAdminSettingsTab = () => {
                   checked={mahalOnlineDisabled}
                   onCheckedChange={(checked) => saveMahalOnlineSetting(checked)}
                   disabled={savingMahalOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Donation & Subscription Online Payment Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Donation & Subscription</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will be directed to cash payment request instead of online payment
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்கள் ஆன்லைன் பணம் செலுத்துதலுக்கு பதிலாக ரொக்க செலுத்துதல் கோரிக்கைக்கு அனுப்பப்படுவார்கள்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    donationOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {donationOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={donationOnlineDisabled}
+                  onCheckedChange={(checked) => saveDonationOnlineSetting(checked)}
+                  disabled={savingDonationOnline}
                 />
               </div>
             </div>

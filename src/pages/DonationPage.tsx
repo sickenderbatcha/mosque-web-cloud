@@ -137,9 +137,11 @@ const subscriptionSchema = z.object({
 const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
+  const donationOnlineDisabled = (settings?.donation_subscription_online_disabled || "false") === "true";
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
   const canCashPay = isAdmin || canAccessTab('donations');
+  const isOnlineDisabledForPublic = donationOnlineDisabled && !canCashPay;
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
@@ -448,8 +450,8 @@ const SubscriptionForm = () => {
       return;
     }
 
-    // For cash payments, skip Razorpay check
-    if (!(canCashPay && paymentMethod === "cash")) {
+    // For cash payments or when online is disabled for public, skip Razorpay check
+    if (!(canCashPay && paymentMethod === "cash") && !isOnlineDisabledForPublic) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -624,7 +626,38 @@ const SubscriptionForm = () => {
         setLoading(false);
         return;
       }
-      
+      // When online payment is disabled for public users, create pending subscription and show cash request dialog
+      if (isOnlineDisabledForPublic) {
+        const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
+          member_id: memberId,
+          member_name: memberName,
+          member_phone: normalizedMemberPhone,
+          member_address: memberAddress || null,
+          subscription_type: subscriptionType,
+          amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
+          total_amount: payableAmount,
+          from_month: subscriptionType === "monthly" ? fromMonthNum : null,
+          from_year: subscriptionType === "monthly" ? fromYearNum : null,
+          to_month: subscriptionType === "monthly" ? toMonthNum : null,
+          to_year: subscriptionType === "monthly" ? toYearNum : null,
+          number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
+          subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
+          payment_status: "pending",
+          payment_method: "Cash",
+        }).select().single();
+
+        if (insertError) throw insertError;
+
+        setCashRequestData({
+          subscriptionId: subscriptionData.id,
+          amount: payableAmount,
+          failureReason: "ஆன்லைன் பணம் செலுத்துதல் தற்போது செயலில் இல்லை",
+        });
+        setShowCashRequestDialog(true);
+        setLoading(false);
+        return;
+      }
+
       // First, create subscription record with pending status
       const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
         member_id: memberId,
@@ -1221,6 +1254,8 @@ const DonationPage = () => {
   const { canAccessTab } = useUserTabPermissions();
   const canCashPay = isAdmin || canAccessTab('donations');
   const { settings, isLoading: settingsLoading } = useAppSettings();
+  const donationOnlineDisabled = (settings?.donation_subscription_online_disabled || "false") === "true";
+  const isOnlineDisabledForPublic = donationOnlineDisabled && !canCashPay;
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -1379,8 +1414,8 @@ const DonationPage = () => {
       return;
     }
 
-    // For cash payments, skip Razorpay check
-    if (!(canCashPay && paymentMethod === "cash")) {
+    // For cash payments or when online is disabled for public, skip Razorpay check
+    if (!(canCashPay && paymentMethod === "cash") && !isOnlineDisabledForPublic) {
       const isRazorpayReady = razorpayLoaded || (await loadRazorpayCheckout());
       if (!isRazorpayReady || !window.Razorpay) {
         toast({
@@ -1457,6 +1492,33 @@ const DonationPage = () => {
         setKanjiSaathak(false);
         setKanjiSirappu(false);
         setPaymentMethod("cash");
+        setLoading(false);
+        return;
+      }
+      // When online payment is disabled for public users, create pending donation and show cash request dialog
+      if (isOnlineDisabledForPublic) {
+        const donationId = crypto.randomUUID();
+        const { error: insertError } = await supabase.from("donations").insert({
+          id: donationId,
+          donor_name: isAnonymous ? "Anonymous" : donorName,
+          donor_phone: phone,
+          donor_email: email || null,
+          donor_address: address || null,
+          amount: amount,
+          purpose: donationPurpose,
+          is_anonymous: isAnonymous,
+          payment_method: "Cash",
+          payment_status: "pending",
+        });
+
+        if (insertError) throw insertError;
+
+        setCashRequestData({
+          donationId,
+          amount: amount,
+          failureReason: "ஆன்லைன் பணம் செலுத்துதல் தற்போது செயலில் இல்லை",
+        });
+        setShowCashRequestDialog(true);
         setLoading(false);
         return;
       }
