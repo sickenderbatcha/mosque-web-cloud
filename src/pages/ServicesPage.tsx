@@ -1231,7 +1231,7 @@ const ServicesPage = () => {
                                   />
                                 </div>
                               </div>
-                              {isAdmin && (
+                              {isAdmin && !isBonafideOnlineDisabledForUser && (
                                 <div className="flex gap-4 items-center p-3 bg-secondary/20 rounded-lg">
                                   <Label className="font-tamil">கட்டண முறை:</Label>
                                   <RadioGroup
@@ -1263,7 +1263,11 @@ const ServicesPage = () => {
                                   <CreditCard className="h-4 w-4 mr-2" />
                                 )}
                                 <span className="font-tamil">
-                                  {isAdmin && paymentMethod === "cash" ? "பணம் பெறப்பட்டது" : "கட்டணம் செலுத்து"}
+                                  {isBonafideOnlineDisabledForUser
+                                    ? "பணம் செலுத்து"
+                                    : isAdmin && paymentMethod === "cash"
+                                    ? "பணம் பெறப்பட்டது"
+                                    : "கட்டணம் செலுத்து"}
                                 </span>
                               </Button>
                               {(!applicantName.trim() || !applicantPhone.trim()) && (
