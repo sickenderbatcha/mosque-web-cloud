@@ -17,8 +17,10 @@ import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecor
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { Badge } from "@/components/ui/badge";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
 
 declare global {
   interface Window {
@@ -54,8 +56,17 @@ interface CertificatePayment {
 const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
-  const { settings, isLoading: settingsLoading } = useAppSettings(["certificate_fee"]);
+  const { canAccessTab } = useUserTabPermissions();
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled"]);
   const certificateFee = parseInt(settings.certificate_fee) || 100;
+
+  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
+  const canBypassBonafideOnlineDisable = isAdmin || canAccessTab("certificate-payments");
+  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassBonafideOnlineDisable;
+
+  // Cash payment request dialog state for bonafide
+  const [showBonafideCashDialog, setShowBonafideCashDialog] = useState(false);
+  const [bonafideCashRequestData, setBonafideCashRequestData] = useState<any>(null);
 
   const [activeCertificateType, setActiveCertificateType] = useState<
     "marriage" | "death" | "bonafide" | "noc" | "heir"
@@ -376,6 +387,24 @@ const ServicesPage = () => {
         description: "Please select a record and fill applicant name & phone number",
         variant: "destructive",
       });
+      return;
+    }
+
+    // If bonafide online payment is disabled for this user, redirect to cash request
+    if (activeCertificateType === "bonafide" && isBonafideOnlineDisabledForUser) {
+      setBonafideCashRequestData({
+        referenceId: currentReferenceId,
+        amount: certificateFee,
+        applicantName,
+        applicantPhone,
+        failureReason: "Online payment disabled by admin",
+        serviceDetails: {
+          certificateType: "bonafide",
+          membershipNo,
+          memberName: memberDetails.name,
+        },
+      });
+      setShowBonafideCashDialog(true);
       return;
     }
 
@@ -1202,7 +1231,7 @@ const ServicesPage = () => {
                                   />
                                 </div>
                               </div>
-                              {isAdmin && (
+                              {isAdmin && !isBonafideOnlineDisabledForUser && (
                                 <div className="flex gap-4 items-center p-3 bg-secondary/20 rounded-lg">
                                   <Label className="font-tamil">கட்டண முறை:</Label>
                                   <RadioGroup
@@ -1234,7 +1263,11 @@ const ServicesPage = () => {
                                   <CreditCard className="h-4 w-4 mr-2" />
                                 )}
                                 <span className="font-tamil">
-                                  {isAdmin && paymentMethod === "cash" ? "பணம் பெறப்பட்டது" : "கட்டணம் செலுத்து"}
+                                  {isBonafideOnlineDisabledForUser
+                                    ? "பணம் செலுத்து"
+                                    : isAdmin && paymentMethod === "cash"
+                                    ? "பணம் பெறப்பட்டது"
+                                    : "கட்டணம் செலுத்து"}
                                 </span>
                               </Button>
                               {(!applicantName.trim() || !applicantPhone.trim()) && (
@@ -1363,6 +1396,21 @@ const ServicesPage = () => {
           </p>
         </div>
       </section>
+
+      {/* Cash Payment Request Dialog for Bonafide */}
+      {bonafideCashRequestData && (
+        <CashPaymentRequestDialog
+          open={showBonafideCashDialog}
+          onOpenChange={setShowBonafideCashDialog}
+          serviceType="certificate"
+          referenceId={bonafideCashRequestData.referenceId}
+          amount={bonafideCashRequestData.amount}
+          applicantName={bonafideCashRequestData.applicantName}
+          applicantPhone={bonafideCashRequestData.applicantPhone}
+          failureReason={bonafideCashRequestData.failureReason}
+          serviceDetails={bonafideCashRequestData.serviceDetails}
+        />
+      )}
     </div>
   );
 };
