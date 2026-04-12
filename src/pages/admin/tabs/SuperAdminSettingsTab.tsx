@@ -91,6 +91,10 @@ const SuperAdminSettingsTab = () => {
   const [deathCertOnlineDisabled, setDeathCertOnlineDisabled] = useState(false);
   const [savingDeathCertOnline, setSavingDeathCertOnline] = useState(false);
 
+  // Bonafide certificate online payment toggle
+  const [bonafideCertOnlineDisabled, setBonafideCertOnlineDisabled] = useState(false);
+  const [savingBonafideCertOnline, setSavingBonafideCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
@@ -129,6 +133,7 @@ const SuperAdminSettingsTab = () => {
     fetchDonationOnlineSetting();
     fetchMarriageCertOnlineSetting();
     fetchDeathCertOnlineSetting();
+    fetchBonafideCertOnlineSetting();
   }, []);
 
   // Sync live visibility into local edit state when it loads
@@ -296,6 +301,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingDeathCertOnline(false);
+    }
+  };
+
+  const fetchBonafideCertOnlineSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "bonafide_cert_online_disabled")
+        .maybeSingle();
+      if (data && !error) {
+        setBonafideCertOnlineDisabled(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error fetching bonafide cert online setting:", error);
+    }
+  };
+
+  const saveBonafideCertOnlineSetting = async (value: boolean) => {
+    setSavingBonafideCertOnline(true);
+    try {
+      await upsertAppSetting("bonafide_cert_online_disabled", value ? "true" : "false", "Disable online payment for bonafide certificate for public users");
+      setBonafideCertOnlineDisabled(value);
+      toast({
+        title: "Bonafide Certificate Online Payment",
+        description: value
+          ? "Online payment is now disabled for public users"
+          : "Online payment is now enabled for public users",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingBonafideCertOnline(false);
     }
   };
 
@@ -1450,6 +1492,39 @@ const SuperAdminSettingsTab = () => {
                   checked={deathCertOnlineDisabled}
                   onCheckedChange={(checked) => saveDeathCertOnlineSetting(checked)}
                   disabled={savingDeathCertOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Disable Online Payment for Bonafide Certificate</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, public users will be directed to cash payment request instead of online payment
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    இயக்கப்பட்டால், பொது பயனர்கள் ஆன்லைன் பணம் செலுத்துதலுக்கு பதிலாக ரொக்க செலுத்துதல் கோரிக்கைக்கு அனுப்பப்படுவார்கள்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    bonafideCertOnlineDisabled
+                      ? "text-sm font-medium text-destructive"
+                      : "text-sm font-medium text-primary"
+                  }
+                >
+                  {bonafideCertOnlineDisabled ? "Disabled" : "Enabled"}
+                </span>
+                <Switch
+                  checked={bonafideCertOnlineDisabled}
+                  onCheckedChange={(checked) => saveBonafideCertOnlineSetting(checked)}
+                  disabled={savingBonafideCertOnline}
                 />
               </div>
             </div>
