@@ -83,6 +83,10 @@ const SuperAdminSettingsTab = () => {
   const [donationOnlineDisabled, setDonationOnlineDisabled] = useState(false);
   const [savingDonationOnline, setSavingDonationOnline] = useState(false);
 
+  // Marriage certificate online payment toggle
+  const [marriageCertOnlineDisabled, setMarriageCertOnlineDisabled] = useState(false);
+  const [savingMarriageCertOnline, setSavingMarriageCertOnline] = useState(false);
+
   // Back office homepage visibility toggle
   const [showBackofficeHomepage, setShowBackofficeHomepage] = useState(true);
   const [savingBackofficeSetting, setSavingBackofficeSetting] = useState(false);
