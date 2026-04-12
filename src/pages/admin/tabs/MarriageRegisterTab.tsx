@@ -286,6 +286,20 @@ export default function MarriageRegisterTab() {
 
   // Handle Razorpay payment for marriage certificate
   const handleRazorpayPayment = async (record: any) => {
+    // If online payment is disabled for this user, redirect to cash payment request
+    if (isOnlineDisabledForUser) {
+      setCashRequestData({
+        referenceId: record.id,
+        amount: certificateFee,
+        failureReason: "Online payment disabled by admin",
+        groomName: record.groom_name,
+        brideName: record.bride_name,
+        applicantPhone: "தொடர்புக்கு: நிர்வாகி",
+      });
+      setShowCashRequestDialog(true);
+      return;
+    }
+
     if (!razorpayLoaded) {
       toast.error("பணம் செலுத்தும் சேவை ஏற்றப்படவில்லை");
       return;
