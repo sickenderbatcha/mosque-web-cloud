@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -68,7 +69,12 @@ type FormData = z.infer<typeof formSchema>;
 export default function NocCertificatePage() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
   const { getSetting } = useAppSettings();
+
+  const nocCertOnlineDisabled = getSetting("noc_cert_online_disabled") === "true";
+  const canBypassNocOnlineDisable = isAdmin || canAccessTab("noc-certificates");
+  const isNocOnlineDisabledForUser = nocCertOnlineDisabled && !canBypassNocOnlineDisable;
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [fetchingMember, setFetchingMember] = useState(false);
@@ -900,19 +906,21 @@ export default function NocCertificatePage() {
                       </>
                     ) : (
                       <>
-                        <Button
-                          type="button"
-                          onClick={handlePayment}
-                          disabled={loading || !razorpayLoaded}
-                          className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
-                        >
-                          {loading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
-                          ) : (
-                            <CreditCard className="h-4 w-4 mr-2 shrink-0" />
-                          )}
-                          <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
-                        </Button>
+                        {!isNocOnlineDisabledForUser && (
+                          <Button
+                            type="button"
+                            onClick={handlePayment}
+                            disabled={loading || !razorpayLoaded}
+                            className="w-full md:flex-1 md:min-w-[170px] min-w-0 h-auto py-2 px-3"
+                          >
+                            {loading ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2 shrink-0" />
+                            ) : (
+                              <CreditCard className="h-4 w-4 mr-2 shrink-0" />
+                            )}
+                            <span className="font-tamil block min-w-0 truncate">ஆன்லைன் செலுத்து</span>
+                          </Button>
+                        )}
                         <Button
                           type="button"
                           variant="secondary"
