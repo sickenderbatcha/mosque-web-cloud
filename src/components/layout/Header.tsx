@@ -370,7 +370,7 @@ const Header = () => {
                 {/* Welcome message for logged in users - Mobile */}
                 {user && !loading &&
                 <span className="text-xs text-muted-foreground font-tamil truncate max-w-[120px]">
-                    நல்வரவு, <span className="font-medium text-foreground">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
+                    <span className="font-medium text-foreground">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
                   </span>
                 }
                 
