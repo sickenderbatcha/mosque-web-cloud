@@ -169,7 +169,7 @@ const AboutPage = () => {
               {get("about_hero", "title", "ஐ.என்.பி பற்றி")}
             </h1>
             <p className="text-primary-foreground/80 font-display text-xl">
-              {get("about_hero", "subtitle", "About I.N.P. - Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal")}
+              {get("about_hero", "subtitle_en", "About I.N.P. - Ilayangudi Nesavu Pattadai Tholukai Medai Pallivasal")}
             </p>
           </motion.div>
         </div>
