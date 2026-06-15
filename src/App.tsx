@@ -36,6 +36,7 @@ import NocCertificatePage from "./pages/NocCertificatePage";
 import HeirCertificatePage from "./pages/HeirCertificatePage";
 import InstallAppPage from "./pages/InstallAppPage";
 import NotFound from "./pages/NotFound";
+import AdminSetupPage from "./pages/AdminSetupPage";
 import BackOfficeIncomePage from "./pages/backoffice/BackOfficeIncomePage";
 import BackOfficeExpensesPage from "./pages/backoffice/BackOfficeExpensesPage";
 import BackOfficeMarriagePage from "./pages/backoffice/BackOfficeMarriagePage";
@@ -58,7 +59,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      {/* admin-setup route removed for security - use edge functions directly */}
+      <Route path="/admin-setup" element={<AdminSetupPage />} />
       <Route path="/" element={<Layout><HomePage /></Layout>} />
       <Route path="/about" element={<Layout><AboutPage /></Layout>} />
       <Route path="/donation" element={<Layout><DonationPage /></Layout>} />
