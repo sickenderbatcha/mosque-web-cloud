@@ -125,7 +125,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in setup-admin function:", error);
     return new Response(
-      JSON.stringify({ error: "Setup failed" }),
+      JSON.stringify({ error: error?.message || "Setup failed" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
