@@ -1204,6 +1204,8 @@ const MahalBookingPage = () => {
                           </div>
                           {paymentMethod === "cash" && (
                             <p className="text-xs text-muted-foreground mt-2">
+                              ரொக்கப் பணம் நேரடியாக பதிவு செய்யப்பட்டு முன்பதிவு தானாக அங்கீகரிக்கப்படும்.
+                              <br />
                               Cash payments will be recorded directly and booking will be auto-approved.
                             </p>
                           )}
