@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
           await conn.queryObject("BEGIN READ ONLY");
           let result;
           try {
-            result = await conn.queryObject(`${stripped} LIMIT 1000`.replace(/\blimit\s+\d+\s+limit\s+1000$/i, (m) => m.replace(/\s+limit\s+1000$/i, "")));
+            result = await conn.queryObject(`SELECT * FROM (${stripped}) AS _q LIMIT 1000`);
             await conn.queryObject("COMMIT");
           } catch (e) {
             await conn.queryObject("ROLLBACK");
