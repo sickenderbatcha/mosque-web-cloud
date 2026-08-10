@@ -1,9 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
 
 // Columns that reference auth.users and should be nulled out during restore
 const AUTH_USER_FK_COLUMNS: Record<string, string[]> = {
@@ -32,6 +29,7 @@ const SKIP_TABLES = ["profiles", "user_roles"];
 const SKIP_VIEWS = ["visitor_stats"];
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
