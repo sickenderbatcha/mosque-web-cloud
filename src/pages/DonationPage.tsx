@@ -487,11 +487,10 @@ const SubscriptionForm = () => {
       if (subscriptionType === "monthly" && !(hasForcedPending && pendingMonths.length > 0)) {
         const { hasPaidMonths, paidMonths } = await checkAlreadyPaidMonths(memberId);
         if (hasPaidMonths) {
-          const { data: paidSlots, error: paidSlotsError } = await supabase
-            .from("subscription_slots")
-            .select("year, month")
-            .eq("member_id", memberId)
-            .eq("is_paid", true);
+          const { data: paidSlots, error: paidSlotsError } = await supabase.rpc(
+            "get_paid_subscription_months",
+            { _member_id: memberId }
+          );
 
           if (paidSlotsError) {
             throw paidSlotsError;
@@ -538,12 +537,11 @@ const SubscriptionForm = () => {
       // For yearly subscription, check if any months are already paid in that year
       if (subscriptionType === "yearly") {
         const yearToCheck = parseInt(subscriptionYear);
-        const { data: paidSlots, error: slotsError } = await supabase
-          .from("subscription_slots")
-          .select("year, month")
-          .eq("member_id", memberId)
-          .eq("is_paid", true)
-          .eq("year", yearToCheck);
+        const { data: allPaidSlots, error: slotsError } = await supabase.rpc(
+          "get_paid_subscription_months",
+          { _member_id: memberId }
+        );
+        const paidSlots = (allPaidSlots || []).filter((s) => s.year === yearToCheck);
 
         if (!slotsError && paidSlots && paidSlots.length > 0) {
           const paidMonthNames = paidSlots
