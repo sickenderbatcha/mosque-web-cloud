@@ -121,22 +121,19 @@ export default function HeirSpreadsheetTable({
     setLoadingFamily(true);
     try {
       // First get the member's UUID from member_id string
-      const { data: member, error: memberError } = await supabase
-        .from("gb_members")
-        .select("id, full_name")
-        .eq("member_id", memberId)
-        .maybeSingle();
+      const { data: familyRows, error } = await supabase.rpc("get_member_family", {
+        _member_id: memberId,
+      });
 
-      if (memberError || !member) {
+      if (!error && (!familyRows || familyRows.length === 0)) {
         toast.error("உறுப்பினர் கண்டறியப்படவில்லை");
         return;
       }
 
-      // Fetch family members including date_of_birth
-      const { data: familyMembers, error } = await supabase
-        .from("gb_family_members")
-        .select("name, relationship, marital_status, date_of_birth")
-        .eq("member_id", member.id);
+      const member = familyRows?.[0]
+        ? { id: familyRows[0].member_uuid, full_name: familyRows[0].member_full_name }
+        : null;
+      const familyMembers = (familyRows || []).filter((r) => r.name);
 
       if (error) {
         console.error("Error fetching family members:", error);

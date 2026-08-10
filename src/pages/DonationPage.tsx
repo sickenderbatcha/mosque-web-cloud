@@ -242,13 +242,9 @@ const SubscriptionForm = () => {
     }
 
     // Query subscription_slots for these months
-    const { data: paidSlots, error } = await supabase
-      .from("subscription_slots")
-      .select("year, month")
-      .eq("member_id", memberId)
-      .eq("is_paid", true)
-      .in("year", [...new Set(monthsToCheck.map(m => m.year))])
-      .in("month", [...new Set(monthsToCheck.map(m => m.month))]);
+    const { data: paidSlots, error } = await supabase.rpc("get_paid_subscription_months", {
+      _member_id: memberId,
+    });
 
     if (error) {
       console.error("Error checking paid months:", error);
@@ -337,11 +333,9 @@ const SubscriptionForm = () => {
       }
 
       // Fetch paid slots for the member
-      const { data: paidSlots } = await supabase
-        .from("subscription_slots")
-        .select("year, month")
-        .eq("member_id", memberId)
-        .eq("is_paid", true);
+      const { data: paidSlots } = await supabase.rpc("get_paid_subscription_months", {
+        _member_id: memberId,
+      });
 
       const paidSet = new Set(
         (paidSlots || []).map((s) => `${Number(s.year)}-${Number(s.month)}`)
@@ -740,11 +734,10 @@ const SubscriptionForm = () => {
             }
 
             // Fetch the updated subscription for receipt
-            const { data: updatedSubscription } = await supabase
-              .from("subscriptions")
-              .select("*")
-              .eq("id", subscriptionData.id)
-              .single();
+            const { data: updatedRows } = await supabase.rpc("get_subscription_by_id", {
+              _id: subscriptionData.id,
+            });
+            const updatedSubscription = updatedRows?.[0] ?? null;
 
             if (updatedSubscription) {
               setCompletedSubscription(updatedSubscription);
