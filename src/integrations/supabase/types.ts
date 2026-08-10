@@ -2454,12 +2454,102 @@ export type Database = {
         Returns: string
       }
       get_app_local_date: { Args: never; Returns: string }
+      get_blood_donors: {
+        Args: never
+        Returns: {
+          address: string
+          blood_group: Database["public"]["Enums"]["blood_group"]
+          full_name: string
+          id: string
+          member_id: string
+          phone: string
+          photo_url: string
+        }[]
+      }
+      get_death_register: {
+        Args: { _id: string }
+        Returns: {
+          burial_date: string | null
+          burial_place: string | null
+          burial_place_en: string | null
+          burial_time: string | null
+          cause_of_death: string | null
+          created_at: string
+          created_by: string | null
+          day_name: string
+          death_date: string
+          death_time: string | null
+          deceased_address: string
+          deceased_age: number
+          deceased_father_name: string
+          deceased_father_name_en: string | null
+          deceased_gender: string
+          deceased_husband_name: string | null
+          deceased_husband_name_en: string | null
+          deceased_name: string
+          deceased_name_en: string | null
+          deceased_occupation: string | null
+          gregorian_day: number
+          gregorian_month: string
+          gregorian_year: number
+          hijri_day: number
+          hijri_month: string
+          hijri_year: number
+          id: string
+          informant_address: string | null
+          informant_name: string
+          informant_name_en: string | null
+          informant_phone: string | null
+          informant_relationship: string
+          member_id: string | null
+          place_of_death: string
+          register_page_number: string | null
+          registrar_father_name: string | null
+          registrar_name: string
+          updated_at: string
+          witness1_father_name: string | null
+          witness1_name: string | null
+          witness1_name_en: string | null
+          witness2_father_name: string | null
+          witness2_name: string | null
+          witness2_name_en: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "death_registers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_mahal_availability: {
         Args: { _end: string; _start: string }
         Returns: {
           event_date: string
           event_type: string
           status: Database["public"]["Enums"]["booking_status"]
+        }[]
+      }
+      get_member_family: {
+        Args: { _member_id: string }
+        Returns: {
+          date_of_birth: string
+          marital_status: Database["public"]["Enums"]["marital_status"]
+          member_full_name: string
+          member_uuid: string
+          name: string
+          relationship: Database["public"]["Enums"]["family_relationship"]
+        }[]
+      }
+      get_member_public_info: {
+        Args: { _member_id: string }
+        Returns: {
+          address: string
+          family_name: string
+          father_name: string
+          full_name: string
+          id: string
+          member_id: string
+          phone: string
         }[]
       }
       get_next_receipt_number: {
@@ -2496,6 +2586,45 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_paid_subscription_months: {
+        Args: { _member_id: string }
+        Returns: {
+          month: number
+          year: number
+        }[]
+      }
+      get_subscription_by_id: {
+        Args: { _id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          from_month: number | null
+          from_year: number | null
+          id: string
+          member_address: string | null
+          member_id: string
+          member_name: string
+          member_phone: string
+          number_of_months: number | null
+          payment_method: string | null
+          payment_status: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          subscription_type: string
+          subscription_year: number | null
+          to_month: number | null
+          to_year: number | null
+          total_amount: number
+          transaction_id: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2506,6 +2635,18 @@ export type Database = {
       has_tab_permission: {
         Args: { _tab_key: string; _user_id: string }
         Returns: boolean
+      }
+      search_death_registers: {
+        Args: { _day: number; _month: string; _year: number }
+        Returns: {
+          death_date: string
+          deceased_father_name: string
+          deceased_name: string
+          gregorian_day: number
+          gregorian_month: string
+          gregorian_year: number
+          id: string
+        }[]
       }
     }
     Enums: {
