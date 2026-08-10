@@ -152,11 +152,8 @@ export default function NocCertificatePage() {
     setFetchingMember(true);
     try {
       const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, father_name, family_name")
-        .eq("member_id", memberId)
-        .eq("is_active", true)
-        .single();
+        .rpc("get_member_public_info", { _member_id: memberId })
+        .maybeSingle();
 
       if (!error && data) {
         form.setValue("applicant_name", data.full_name);
@@ -175,11 +172,8 @@ export default function NocCertificatePage() {
     setFetchingFather(true);
     try {
       const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, father_name, family_name")
-        .eq("member_id", memberId)
-        .eq("is_active", true)
-        .single();
+        .rpc("get_member_public_info", { _member_id: memberId })
+        .maybeSingle();
 
       if (!error && data) {
         form.setValue("father_name", data.full_name);

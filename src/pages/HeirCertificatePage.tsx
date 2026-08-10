@@ -158,9 +158,7 @@ export default function HeirCertificatePage() {
     setFetchingMember(true);
     try {
       const { data, error } = await supabase
-        .from("gb_members")
-        .select("full_name, father_name, address")
-        .eq("member_id", memberId)
+        .rpc("get_member_public_info", { _member_id: memberId })
         .maybeSingle();
 
       if (!error && data) {

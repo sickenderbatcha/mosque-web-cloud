@@ -225,11 +225,10 @@ const ServicesPage = () => {
 
     // Fetch full record for death certificate printing
     if (activeCertificateType === "death") {
-      const { data, error } = await supabase
-        .from("death_registers")
-        .select("*")
-        .eq("id", recordId)
-        .single();
+      const { data: rows, error } = await supabase.rpc("get_death_register", {
+        _id: recordId,
+      });
+      const data = rows?.[0];
 
       if (!error && data) {
         setFullDeathRecord(data as DeathRecord);
@@ -268,12 +267,11 @@ const ServicesPage = () => {
                           "July", "August", "September", "October", "November", "December"];
       const month = monthNames[dateObj.getMonth()];
 
-      const { data, error } = await supabase
-        .from("death_registers")
-        .select("id, deceased_name, deceased_father_name, gregorian_day, gregorian_month, gregorian_year, death_date")
-        .eq("gregorian_day", day)
-        .eq("gregorian_month", month)
-        .eq("gregorian_year", year);
+      const { data, error } = await supabase.rpc("search_death_registers", {
+        _day: day,
+        _month: month,
+        _year: year,
+      });
 
       if (error) throw error;
 
@@ -642,11 +640,8 @@ const ServicesPage = () => {
 
     try {
       const { data, error } = await supabase
-        .from("gb_members")
-        .select("id, full_name, father_name, phone, address")
-        .eq("member_id", membershipNo.trim())
-        .eq("is_active", true)
-        .single();
+        .rpc("get_member_public_info", { _member_id: membershipNo.trim() })
+        .maybeSingle();
 
       if (error || !data) {
         toast({
