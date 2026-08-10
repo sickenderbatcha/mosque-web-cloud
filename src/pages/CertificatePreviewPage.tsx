@@ -53,10 +53,11 @@ export default function CertificatePreviewPage() {
         let paid = false;
 
         if (type === "death") {
-          const [{ data }, access] = await Promise.all([
-            supabase.from("death_registers").select("*").eq("id", id).single(),
+          const [{ data: rows }, access] = await Promise.all([
+            supabase.rpc("get_death_register", { _id: id }),
             getCertificateAccessStatus({ referenceId: id, certificateType: type }),
           ]);
+          const data = rows?.[0];
           if (data) setDeathRecord(data as DeathRecord);
           paid = access.isPaid;
         } else if (type === "marriage") {

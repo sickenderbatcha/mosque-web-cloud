@@ -1,9 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders, corsHeaders as defaultCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+let corsHeaders: Record<string, string> = defaultCorsHeaders;
+
 
 function jsonResponse(data: any, status = 200) {
   return new Response(JSON.stringify(data, (_key, value) =>
@@ -48,6 +47,7 @@ function escapeIdentifier(name: string): string {
 }
 
 Deno.serve(async (req) => {
+  corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -220,14 +220,51 @@ Deno.serve(async (req) => {
 
         case "run_sql": {
           const { sql } = body;
-          if (!sql?.trim()) return jsonResponse({ error: "SQL required" }, 400);
-          
-          // Execute the SQL (superadmin-only, already authenticated)
-          const result = await conn.queryObject(sql);
-          return jsonResponse({ 
-            success: true, 
+          if (typeof sql !== "string" || !sql.trim()) {
+            return jsonResponse({ error: "SQL required" }, 400);
+          }
+
+          // Read-only guard: strip comments, allow a single SELECT/WITH statement only
+          const stripped = sql
+            .replace(/--[^\n]*/g, " ")
+            .replace(/\/\*[\s\S]*?\*\//g, " ")
+            .trim()
+            .replace(/;\s*$/, "");
+
+          if (stripped.includes(";")) {
+            return jsonResponse({ error: "Only a single statement is allowed" }, 400);
+          }
+          if (!/^(select|with)\s/i.test(stripped)) {
+            return jsonResponse({ error: "Only read-only SELECT queries are allowed" }, 400);
+          }
+          if (/\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|copy|call|do|vacuum|reindex|refresh|comment|set|reset|listen|notify|pg_read_file|pg_ls_dir|lo_import|lo_export|dblink|pg_sleep)\b/i.test(stripped)) {
+            return jsonResponse({ error: "Only read-only SELECT queries are allowed" }, 400);
+          }
+
+          // Enforce read-only at the transaction level as defense in depth
+          await conn.queryObject("BEGIN READ ONLY");
+          let result;
+          try {
+            result = await conn.queryObject(`SELECT * FROM (${stripped}) AS _q LIMIT 1000`);
+            await conn.queryObject("COMMIT");
+          } catch (e) {
+            await conn.queryObject("ROLLBACK");
+            throw e;
+          }
+
+          // Audit the query
+          await adminClient.from("admin_audit_logs").insert({
+            performed_by: user.id,
+            action_type: "run_sql",
+            action_description: "Executed a read-only SQL query in the database manager",
+            target_table: null,
+            target_details: { sql: stripped.slice(0, 2000) },
+          });
+
+          return jsonResponse({
+            success: true,
             rowCount: result.rowCount,
-            rows: result.rows?.slice(0, 100)
+            rows: result.rows?.slice(0, 100),
           });
         }
 

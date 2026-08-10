@@ -42,12 +42,7 @@ const BloodDonorFinderPage = () => {
   const fetchDonors = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("gb_members")
-        .select("id, member_id, full_name, phone, address, blood_group, photo_url")
-        .eq("is_active", true)
-        .not("blood_group", "is", null)
-        .order("blood_group");
+      const { data, error } = await supabase.rpc("get_blood_donors");
 
       if (error) throw error;
       setDonors(data || []);
