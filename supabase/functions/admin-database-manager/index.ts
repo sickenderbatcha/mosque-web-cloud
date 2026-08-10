@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getCorsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders, corsHeaders as defaultCorsHeaders } from "../_shared/cors.ts";
+
+let corsHeaders: Record<string, string> = defaultCorsHeaders;
 
 
 function jsonResponse(data: any, status = 200) {
@@ -45,7 +47,7 @@ function escapeIdentifier(name: string): string {
 }
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
+  corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
