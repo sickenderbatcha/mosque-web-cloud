@@ -19,7 +19,7 @@ import {
   type LetterheadLayout,
 } from "@/lib/letterheadHtml";
 
-const PAGE_TITLE = "Letterhead Generator | INPT Jamaat Masjid";
+const PAGE_TITLE = "Letterhead Generator | INPT - Ilayangudi Nesavu Pattadai Webportal";
 const PAGE_DESCRIPTION =
   "Compose, preview and print official mosque letters on the INPT Jamaat Masjid letterhead.";
 
