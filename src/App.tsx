@@ -12,7 +12,10 @@ import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import SuperAdminRoute from "./components/SuperAdminRoute";
+import TabPermissionRoute from "./components/TabPermissionRoute";
+import LetterheadPage from "./pages/LetterheadPage";
 import HomePage from "./pages/HomePage";
+
 import AboutPage from "./pages/AboutPage";
 import DonationPage from "./pages/DonationPage";
 import MahalBookingPage from "./pages/MahalBookingPage";
