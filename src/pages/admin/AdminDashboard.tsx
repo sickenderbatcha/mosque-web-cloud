@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet, Home, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+import { DollarSign, Calendar, Users, AlertCircle, UserPlus, Image, Bell, RotateCcw, Settings, UserCheck, TrendingUp, TrendingDown, Heart, FileText, Skull, FileCheck, UserCog, CreditCard, Info, Activity, ScrollText, Banknote, Archive, FilePlus2, DatabaseBackup, Package, Wallet, Home, Clock, FileSignature } from "lucide-react";
+
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,7 +144,17 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2">Manage donations, bookings, grievances, and events</p>
+            {canAccessTab("letterhead") && (
+              <Link
+                to="/letterhead"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                <FileSignature className="h-4 w-4" />
+                Letterhead Generator
+              </Link>
+            )}
           </div>
+
           
           {/* Visitor Stats */}
           <div className="flex flex-wrap gap-3">

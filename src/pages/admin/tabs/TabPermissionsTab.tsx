@@ -42,7 +42,9 @@ const ADMIN_TABS = [
   { key: "rental-agreements", label: "Rental Agreements" },
   { key: "asset-management", label: "Asset Management" },
   { key: "backup-restore", label: "Backup & Restore" },
+  { key: "letterhead", label: "Letterhead" },
   { key: "settings", label: "Settings" },
+
 ];
 
 interface UserOption {
