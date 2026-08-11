@@ -1,133 +1,59 @@
+# Letterhead Generator
 
+A new `/letterhead` screen where authorised staff compose an official letter, see a live A4 preview, and print it on the mosque letterhead.
 
-# Comprehensive Security Review - Findings and Remediation Plan
+## Branding source
 
-## Summary
+The letterhead header reuses the existing receipt header settings already configured in the admin dashboard (Tamil + English organisation name, address line 1 and 2, phone) plus the mosque seal image already stored for certificates, used as the letterhead logo. The footer tagline is the existing Tamil footer message with the English one below it. No new settings screen is added; while these settings load, the page shows a loading state, and if the logo image is missing the header renders without it.
 
-After a thorough review of your database policies, backend functions, authentication flow, and client-side code, I found **several critical and moderate security issues** that should be addressed. Here is a prioritized breakdown:
+## Access
 
----
+`/letterhead` is visible only to signed-in users who are admin, superadmin, or have been granted a new "Letterhead" tab permission. The new `letterhead` key is added to the tab permission list so superadmins can grant it. A link to the page appears in the admin dashboard area for users who can access it.
 
-## CRITICAL ISSUES (Fix Immediately)
+## The form (left column, stacked on mobile)
 
-### 1. Hardcoded Secret Keys Exposed in Code
+All fields optional, labels bilingual (Tamil with English beneath):
 
-The admin setup, superadmin setup, and emergency password reset functions use hardcoded secret keys like `MOSQUE_ADMIN_SETUP_2024` and `MOSQUE_EMERGENCY_RESET_2026`. Worse, the setup-admin key is **also visible in the login page client code**, meaning anyone can view the source and call the function to reset the admin password to `admin123`.
+- Reference number, Date (date picker showing and printing `dd/mm/yyyy`)
+- Recipient name, Recipient address (3-row textarea)
+- Subject, Salutation
+- Body (10-row textarea)
+- Closing, Signatory name, Designation
 
-**Fix:**
-- Move all secret keys to environment variables (backend secrets)
-- Remove the "Setup Admin" button from the login page entirely (admin already exists)
-- Consider removing the `emergency-password-reset` function or restricting it further
+Below, a bordered "Print layout / அச்சு அமைப்பு" group:
 
-### 2. Password Reset Tokens Publicly Readable
+- Top margin mm (0–40, step 1, default 18)
+- Bottom margin mm (0–40, step 1, default 18)
+- Body font size px (9–20, step 0.5, default 13.5)
+- Reset button restoring those three defaults
 
-The `password_reset_tokens` table has a SELECT policy of `USING (true)`, meaning **anyone** can read all active reset tokens. An attacker could:
-1. Request a password reset for any member
-2. Immediately query the tokens table to steal the reset code
-3. Reset the victim's password
+Then a Print button with a printer icon.
 
-**Fix:**
-- Remove the public SELECT policy entirely
-- Token verification already happens in the backend function using the service role key, so client-side access is unnecessary
+## Live preview (right column)
 
-### 3. 1,541 Member Records Publicly Accessible
+An iframe with `aspect-ratio: 210 / 297` rendering the exact same generated HTML through `srcDoc`, refreshing as the user types and as the layout controls change.
 
-The `gb_members` table allows anyone (even unauthenticated users) to read all active member records, exposing names, phone numbers, email addresses, physical addresses, dates of birth, blood groups, and more.
+## Letter body rules
 
-**Fix:**
-- Restrict SELECT to authenticated users only, or to admins + individual members viewing their own record
-- The Members Directory page should require login
+If only the body field is filled and everything else is empty, the printed letter shows just the body text inside the letterhead header and footer — no labels, no empty rows, no signature block. Otherwise only blocks with content render, in this order:
 
-### 4. Pending Users Table Stores Passwords in Plain Text
+1. Meta row: `Ref: <value>` left, `Date: <dd/mm/yyyy>` right (each side omitted when empty)
+2. Recipient block: name bold, then address preserving line breaks
+3. Subject: bold and underlined
+4. Salutation
+5. Body, preserving line breaks
+6. Closing
+7. Signature block: signatory name bold, designation smaller and muted beneath
 
-The `pending_users` table has a column called `password_hash`, but it actually stores the **raw password in plain text**. Additionally, the DELETE policy allows any anonymous user to delete any pending registration without identity verification.
+## Print
 
-**Fix:**
-- Redesign the registration flow to avoid storing passwords, or hash them before storage
-- Fix the DELETE policy to include proper identity checks
+Opens a ~900x1100 window, writes the standalone HTML document, and calls `window.print()` roughly 300ms after load.
 
-### 5. Death Records Publicly Readable
+## Technical notes
 
-The `death_registers` table allows anyone to read all records including deceased names, addresses, causes of death, and informant contact details.
-
-**Fix:**
-- Restrict SELECT to admin/superadmin roles, or require authentication
-
----
-
-## MODERATE ISSUES (Fix Soon)
-
-### 6. Multiple Tables Allow Unrestricted Public INSERT
-
-Nine tables (donations, subscriptions, bookings, certificates, event registrations, etc.) use `WITH CHECK (true)` for INSERT, meaning anyone can flood them with spam data.
-
-**Fix:**
-- For tables that should require login: change to `WITH CHECK (auth.uid() IS NOT NULL)`
-- For genuinely public forms (donations, contact): add rate limiting
-
-### 7. Edge Functions Bypass JWT Verification
-
-All 12+ backend functions have JWT verification disabled. While some implement manual auth checks, critical functions like `create-razorpay-order` have **no authentication at all**, meaning anyone could create payment orders.
-
-**Fix:**
-- Enable JWT verification for functions that require authentication (approve-user, admin-reset-password, admin-delete-user, send-notification-email)
-- Add input validation to create-razorpay-order
-
-### 8. Email Templates Vulnerable to HTML Injection
-
-User-provided content (names, messages, subjects) is inserted directly into HTML email templates without escaping. Malicious users could inject HTML to create phishing emails.
-
-**Fix:**
-- Add HTML escaping helper function to all edge functions that send emails
-
-### 9. Functions Missing search_path Setting
-
-Two database functions (`record_outside_marriage_certificate_payment_income` and `record_certificate_payment_income`) are missing the `SET search_path TO 'public'` setting, which is a security best practice.
-
-### 10. Leaked Password Protection Disabled
-
-The authentication system does not check passwords against known leaked password databases.
-
----
-
-## Technical Implementation Plan
-
-### Step 1: Fix Password Reset Token Exposure (Critical)
-- Drop the public SELECT policy on `password_reset_tokens`
-- Token verification is already handled server-side
-
-### Step 2: Restrict Member Data Access
-- Update `gb_members` SELECT policy to require authentication
-- Update `death_registers` SELECT policy to require authentication or admin role
-- Update `gb_family_members` SELECT policy similarly
-
-### Step 3: Secure Edge Functions
-- Move hardcoded secret keys to environment variables
-- Remove admin setup button from login page
-- Add HTML escaping to email templates
-- Add input validation to Razorpay function
-
-### Step 4: Fix Pending Users Security
-- Fix the DELETE policy to require identity verification
-- Consider hashing passwords before storage or redesigning the flow
-
-### Step 5: Tighten INSERT Policies
-- Add `auth.uid() IS NOT NULL` checks where authentication is expected
-- Keep truly public forms (donations, contact) open but monitor for abuse
-
-### Step 6: Fix Database Function Security
-- Add `SET search_path TO 'public'` to the two functions missing it
-
----
-
-## Impact Assessment
-
-Fixing these issues will:
-- **Protect personal data** of 1,541+ members from unauthorized access
-- **Prevent account takeover** via token theft or password reset exploitation
-- **Prevent spam** and data pollution through unrestricted inserts
-- **Harden admin access** by removing hardcoded credentials
-- **Protect email recipients** from HTML injection attacks
-
-Some changes (like restricting `gb_members` SELECT) may affect features like the Members Directory or Blood Donor Finder pages, which will need to be updated to work with authenticated-only access.
-
+- New `src/lib/letterheadHtml.ts` builds the standalone document string: `.sheet` at `210mm` wide, `min-height: 297mm`, `margin: 0 auto`, white background, flex column, padding `{top}mm 16mm {bottom}mm`; body area flexes to fill at `{bodyFontPx}px` / `line-height: 1.65`; footer pinned at the bottom with a 1px top border, centred, 12px, weight 600. Under 640px the header stacks vertically, centres, and shrinks the logo to 72px, with `@media print` forcing the horizontal desktop layout back.
+- All interpolated values are HTML-escaped; newlines in multi-line fields become `<br/>`.
+- New page `src/pages/LetterheadPage.tsx`, route registered in `src/App.tsx` behind the same guard style as existing admin routes, extended to accept the `letterhead` tab permission.
+- Date handling uses the existing `IsoDatePicker` (stores ISO, displays `dd/mm/yyyy`).
+- Page colours use semantic tokens only; the printed sheet keeps fixed print colours inside the generated document, which is correct for paper output.
+- A page title and meta description are set for the route via a small document-head effect.
