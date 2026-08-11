@@ -80,6 +80,8 @@ const AppContent = () => {
       <Route path="/bookmarked-verses" element={<Layout><ProtectedRoute><BookmarkedVersesPage /></ProtectedRoute></Layout>} />
       <Route path="/admin" element={<Layout><AdminRoute><AdminDashboard /></AdminRoute></Layout>} />
       <Route path="/superadmin" element={<Layout><SuperAdminRoute><SuperAdminDashboard /></SuperAdminRoute></Layout>} />
+      <Route path="/letterhead" element={<Layout><TabPermissionRoute tabKey="letterhead"><LetterheadPage /></TabPermissionRoute></Layout>} />
+
       <Route path="/certificate-preview" element={<ProtectedRoute><CertificatePreviewPage /></ProtectedRoute>} />
       <Route path="/noc-certificate" element={<ProtectedRoute><NocCertificatePage /></ProtectedRoute>} />
       <Route path="/heir-certificate" element={<ProtectedRoute><HeirCertificatePage /></ProtectedRoute>} />
