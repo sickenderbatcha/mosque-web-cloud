@@ -31,6 +31,7 @@ export interface MenuVisibilityConfig {
   nav_backoffice_death: boolean;
   nav_backoffice_rental: boolean;
   nav_backoffice_assets: boolean;
+  nav_backoffice_letterhead: boolean;
   // Back office homepage cards
   card_backoffice_income: boolean;
   card_backoffice_expenses: boolean;
