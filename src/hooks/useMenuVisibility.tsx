@@ -69,6 +69,7 @@ export const defaultMenuVisibility: MenuVisibilityConfig = {
   nav_backoffice_death: true,
   nav_backoffice_rental: true,
   nav_backoffice_assets: true,
+  nav_backoffice_letterhead: true,
   card_backoffice_income: true,
   card_backoffice_expenses: true,
   card_backoffice_marriage: true,
@@ -76,6 +77,7 @@ export const defaultMenuVisibility: MenuVisibilityConfig = {
   card_backoffice_death: true,
   card_backoffice_rental: true,
   card_backoffice_assets: true,
+  card_backoffice_letterhead: true,
 };
 
 const SETTINGS_KEY = "menu_visibility";
