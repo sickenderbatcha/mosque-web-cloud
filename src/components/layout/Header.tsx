@@ -46,6 +46,7 @@ const allBackOfficeItems = [
   { path: "/backoffice/death", labelTamil: "இறப்புப் பதிவு", labelEnglish: "Death Register", visKey: "nav_backoffice_death" as const, tabKey: "death-register" },
   { path: "/backoffice/rental", labelTamil: "வாடகை மேலாண்மை", labelEnglish: "Rental", visKey: "nav_backoffice_rental" as const, tabKey: "rental-agreements" },
   { path: "/backoffice/assets", labelTamil: "சொத்து மேலாண்மை", labelEnglish: "Assets", visKey: "nav_backoffice_assets" as const, tabKey: "asset-management" },
+  { path: "/letterhead", labelTamil: "கடிதத் தலைப்பு", labelEnglish: "Letterhead", visKey: "nav_backoffice_letterhead" as const, tabKey: "letterhead" },
 ];
 
 const Header = () => {
