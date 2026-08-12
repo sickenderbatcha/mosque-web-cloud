@@ -1884,6 +1884,7 @@ const SuperAdminSettingsTab = () => {
               { key: "nav_backoffice_death" as const, label: "இறப்புப் பதிவு / Death Register" },
               { key: "nav_backoffice_rental" as const, label: "வாடகை மேலாண்மை / Rental" },
               { key: "nav_backoffice_assets" as const, label: "சொத்துக்கள் / Assets" },
+              { key: "nav_backoffice_letterhead" as const, label: "கடிதத் தலைப்பு / Letterhead" },
             ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between py-1">
                 <span className="text-sm font-tamil">{label}</span>
