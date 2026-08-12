@@ -40,6 +40,7 @@ export interface MenuVisibilityConfig {
   card_backoffice_death: boolean;
   card_backoffice_rental: boolean;
   card_backoffice_assets: boolean;
+  card_backoffice_letterhead: boolean;
 }
 
 export const defaultMenuVisibility: MenuVisibilityConfig = {
