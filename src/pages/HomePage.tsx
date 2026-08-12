@@ -93,6 +93,7 @@ const HomePage = () => {
     { icon: MuslimGraveIcon, titleTamil: "இறப்புப் பதிவு", titleEnglish: "Death Register", path: "/backoffice/death", visKey: "card_backoffice_death" as const, tabKey: "death-register" },
     { icon: Home, titleTamil: "வாடகை மேலாண்மை", titleEnglish: "Rent Management", path: "/backoffice/rental", visKey: "card_backoffice_rental" as const, tabKey: "rental-agreements" },
     { icon: Package, titleTamil: "சொத்து மேலாண்மை", titleEnglish: "Assets Management", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const, tabKey: "asset-management" },
+    { icon: FileSignature, titleTamil: "கடிதத் தலைப்பு", titleEnglish: "Letterhead", path: "/letterhead", visKey: "card_backoffice_letterhead" as const, tabKey: "letterhead" },
   ];
   const backOfficeItems = allBackOfficeItems.filter((item) => isVisible(item.visKey) && (isAdmin || canAccessTab(item.tabKey)));
 
