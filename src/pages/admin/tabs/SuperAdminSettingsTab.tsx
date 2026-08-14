@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import HomepageSectionOrderManager from "@/components/admin/HomepageSectionOrderManager";
 import CertificateHeaderSettings from "@/components/admin/CertificateHeaderSettings";
 import ReceiptHeaderSettings from "@/components/admin/ReceiptHeaderSettings";
+import LetterheadFooterSettings from "@/components/admin/LetterheadFooterSettings";
 import HeaderTextsSettings from "@/components/admin/HeaderTextsSettings";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import ReceiptSequenceResetSettings from "@/components/admin/ReceiptSequenceResetSettings";
@@ -1948,6 +1949,9 @@ const SuperAdminSettingsTab = () => {
 
       {/* Receipt Header Settings - applies to all receipts */}
       <ReceiptHeaderSettings />
+
+      {/* Letterhead Footer Settings - applies to the letterhead generator */}
+      <LetterheadFooterSettings />
 
       {/* Receipt Number Settings - configurable prefixes for each receipt type */}
       <ReceiptNumberSettings />

@@ -1,5 +1,4 @@
 export interface LetterheadBranding {
-  logoUrl?: string;
   organizationNameTa: string;
   organizationNameEn: string;
   addressLine1: string;
@@ -143,7 +142,6 @@ export const buildLetterheadHtml = (
   fields: LetterheadFields,
   layout: LetterheadLayout
 ): string => {
-  const logo = trimmed(branding.logoUrl);
   const footerTa = trimmed(branding.footerTagline);
   const footerEn = trimmed(branding.footerTaglineEn);
 
@@ -182,9 +180,8 @@ export const buildLetterheadHtml = (
     border-bottom: 2px solid #0f5132;
     padding-bottom: 10px;
   }
-  .lh-logo { width: 96px; height: 96px; object-fit: contain; flex-shrink: 0; }
   .lh-titles { flex: 1; text-align: center; }
-  .org-ta { font-size: 20px; font-weight: 700; color: #0f5132; line-height: 1.3; }
+  .org-ta { font-size: 10px; font-weight: 700; color: #0f5132; line-height: 1.3; }
   .org-en { font-size: 13px; font-weight: 600; color: #444; margin-top: 2px; }
   .addr { font-size: 11.5px; color: #555; margin-top: 4px; line-height: 1.5; }
   .lh-content { flex: 1 1 auto; font-size: ${layout.bodyFontPx}px; line-height: 1.65; padding-top: 12px; }
@@ -211,20 +208,18 @@ export const buildLetterheadHtml = (
   @media (max-width: 640px) {
     .sheet { width: 100%; min-height: 0; }
     .lh-header { flex-direction: column; text-align: center; }
-    .lh-logo { width: 72px; height: 72px; }
   }
   @media print {
     html, body { background: #fff; }
     .sheet { width: 210mm; min-height: 297mm; }
     .lh-header { flex-direction: row; text-align: left; }
-    .lh-logo { width: 96px; height: 96px; }
   }
 </style>
 </head>
 <body>
   <div class="sheet">
     <header class="lh-header">
-      ${logo ? `<img class="lh-logo" src="${escapeHtml(logo)}" alt="" onerror="this.style.display='none'" />` : ""}
+      
       <div class="lh-titles">
         <div class="org-ta">${escapeHtml(branding.organizationNameTa)}</div>
         <div class="org-en">${escapeHtml(branding.organizationNameEn)}</div>
