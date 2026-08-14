@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getCertificateImages } from "@/lib/certificateImages";
+import { useLetterheadSettings } from "@/hooks/useLetterheadSettings";
 import {
   buildLetterheadHtml,
   printLetterheadHtml,
@@ -54,23 +54,9 @@ const LetterheadPage = () => {
   useDocumentHead();
 
   const { settings, isLoading } = useReceiptHeaderSettings();
-  const [logoUrl, setLogoUrl] = useState<string>("");
+  const { settings: letterheadSettings, isLoading: isLoadingLetterhead } = useLetterheadSettings();
   const [fields, setFields] = useState<LetterheadFields>(EMPTY_LETTERHEAD_FIELDS);
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
-
-  useEffect(() => {
-    let active = true;
-    getCertificateImages()
-      .then((images) => {
-        if (active) setLogoUrl(images.sealUrl || "");
-      })
-      .catch(() => {
-        if (active) setLogoUrl("");
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const setField = (key: keyof LetterheadFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -79,19 +65,18 @@ const LetterheadPage = () => {
     () =>
       buildLetterheadHtml(
         {
-          logoUrl,
           organizationNameTa: settings.organizationNameTa,
           organizationNameEn: settings.organizationNameEn,
           addressLine1: settings.addressLine1,
           addressLine2: settings.addressLine2,
           phone: settings.phone,
-          footerTagline: settings.footerMessage,
-          footerTaglineEn: settings.footerMessageEn,
+          footerTagline: letterheadSettings.footerTa,
+          footerTaglineEn: letterheadSettings.footerEn,
         },
         fields,
         layout
       ),
-    [logoUrl, settings, fields, layout]
+    [settings, letterheadSettings, fields, layout]
   );
 
   const handlePrint = () => {
