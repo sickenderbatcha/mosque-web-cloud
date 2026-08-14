@@ -1,5 +1,4 @@
 export interface LetterheadBranding {
-  logoUrl?: string;
   organizationNameTa: string;
   organizationNameEn: string;
   addressLine1: string;
@@ -143,7 +142,6 @@ export const buildLetterheadHtml = (
   fields: LetterheadFields,
   layout: LetterheadLayout
 ): string => {
-  const logo = trimmed(branding.logoUrl);
   const footerTa = trimmed(branding.footerTagline);
   const footerEn = trimmed(branding.footerTaglineEn);
 
