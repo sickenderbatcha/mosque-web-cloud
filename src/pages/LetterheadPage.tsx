@@ -88,7 +88,7 @@ const LetterheadPage = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingLetterhead) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
