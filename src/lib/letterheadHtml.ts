@@ -219,7 +219,7 @@ export const buildLetterheadHtml = (
 <body>
   <div class="sheet">
     <header class="lh-header">
-      ${logo ? `<img class="lh-logo" src="${escapeHtml(logo)}" alt="" onerror="this.style.display='none'" />` : ""}
+      
       <div class="lh-titles">
         <div class="org-ta">${escapeHtml(branding.organizationNameTa)}</div>
         <div class="org-en">${escapeHtml(branding.organizationNameEn)}</div>
