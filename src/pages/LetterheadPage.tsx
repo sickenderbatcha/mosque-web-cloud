@@ -331,6 +331,16 @@ const LetterheadPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      <div className="mt-6">
+        <SavedLetterheads
+          fields={fields}
+          layout={layout}
+          currentId={currentId}
+          onLoad={handleLoadSaved}
+          onNew={handleNewLetter}
+        />
+      </div>
     </div>
   );
 };
