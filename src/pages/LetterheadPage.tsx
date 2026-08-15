@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
+import SavedLetterheads from "@/components/letterhead/SavedLetterheads";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useLetterheadSettings } from "@/hooks/useLetterheadSettings";
 import {
@@ -57,6 +58,23 @@ const LetterheadPage = () => {
   const { settings: letterheadSettings, isLoading: isLoadingLetterhead } = useLetterheadSettings();
   const [fields, setFields] = useState<LetterheadFields>(EMPTY_LETTERHEAD_FIELDS);
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
+  const [currentId, setCurrentId] = useState<string | null>(null);
+
+  const handleLoadSaved = (
+    nextFields: LetterheadFields,
+    nextLayout: LetterheadLayout,
+    id: string
+  ) => {
+    setFields(nextFields);
+    setLayout(nextLayout);
+    setCurrentId(id);
+  };
+
+  const handleNewLetter = () => {
+    setFields(EMPTY_LETTERHEAD_FIELDS);
+    setLayout(DEFAULT_LETTERHEAD_LAYOUT);
+    setCurrentId(null);
+  };
 
   const setField = (key: keyof LetterheadFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -312,6 +330,16 @@ const LetterheadPage = () => {
             />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <SavedLetterheads
+          fields={fields}
+          layout={layout}
+          currentId={currentId}
+          onLoad={handleLoadSaved}
+          onNew={handleNewLetter}
+        />
       </div>
     </div>
   );

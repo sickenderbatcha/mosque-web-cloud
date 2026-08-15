@@ -1324,6 +1324,60 @@ export type Database = {
         }
         Relationships: []
       }
+      letterheads: {
+        Row: {
+          body: string | null
+          closing: string | null
+          created_at: string
+          created_by: string | null
+          designation: string | null
+          id: string
+          layout: Json
+          letter_date: string | null
+          recipient_address: string | null
+          recipient_name: string | null
+          reference_number: string | null
+          salutation: string | null
+          signatory_name: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          closing?: string | null
+          created_at?: string
+          created_by?: string | null
+          designation?: string | null
+          id?: string
+          layout?: Json
+          letter_date?: string | null
+          recipient_address?: string | null
+          recipient_name?: string | null
+          reference_number?: string | null
+          salutation?: string | null
+          signatory_name?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          closing?: string | null
+          created_at?: string
+          created_by?: string | null
+          designation?: string | null
+          id?: string
+          layout?: Json
+          letter_date?: string | null
+          recipient_address?: string | null
+          recipient_name?: string | null
+          reference_number?: string | null
+          salutation?: string | null
+          signatory_name?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mahal_bookings: {
         Row: {
           admin_notes: string | null
