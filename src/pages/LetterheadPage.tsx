@@ -58,6 +58,23 @@ const LetterheadPage = () => {
   const { settings: letterheadSettings, isLoading: isLoadingLetterhead } = useLetterheadSettings();
   const [fields, setFields] = useState<LetterheadFields>(EMPTY_LETTERHEAD_FIELDS);
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
+  const [currentId, setCurrentId] = useState<string | null>(null);
+
+  const handleLoadSaved = (
+    nextFields: LetterheadFields,
+    nextLayout: LetterheadLayout,
+    id: string
+  ) => {
+    setFields(nextFields);
+    setLayout(nextLayout);
+    setCurrentId(id);
+  };
+
+  const handleNewLetter = () => {
+    setFields(EMPTY_LETTERHEAD_FIELDS);
+    setLayout(DEFAULT_LETTERHEAD_LAYOUT);
+    setCurrentId(null);
+  };
 
   const setField = (key: keyof LetterheadFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
