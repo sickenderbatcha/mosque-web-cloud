@@ -60,6 +60,26 @@ const LetterheadPage = () => {
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
   const [currentId, setCurrentId] = useState<string | null>(null);
 
+  const { isReady, restored, saveDraft, clearDraft, dismissRestoredNotice } = useLetterheadDraft();
+  const [draftApplied, setDraftApplied] = useState(false);
+
+  // Restore any locally stored draft once
+  useEffect(() => {
+    if (!isReady || draftApplied) return;
+    if (restored) {
+      setFields(restored.fields);
+      setLayout(restored.layout);
+      setCurrentId(restored.currentId);
+    }
+    setDraftApplied(true);
+  }, [isReady, restored, draftApplied]);
+
+  // Auto-save the draft while typing
+  useEffect(() => {
+    if (!isReady || !draftApplied) return;
+    saveDraft(fields, layout, currentId);
+  }, [fields, layout, currentId, isReady, draftApplied, saveDraft]);
+
   const handleLoadSaved = (
     nextFields: LetterheadFields,
     nextLayout: LetterheadLayout,
@@ -68,16 +88,26 @@ const LetterheadPage = () => {
     setFields(nextFields);
     setLayout(nextLayout);
     setCurrentId(id);
+    dismissRestoredNotice();
   };
 
   const handleNewLetter = () => {
     setFields(EMPTY_LETTERHEAD_FIELDS);
     setLayout(DEFAULT_LETTERHEAD_LAYOUT);
     setCurrentId(null);
+    clearDraft();
+  };
+
+  const handleDiscardDraft = () => {
+    setFields(EMPTY_LETTERHEAD_FIELDS);
+    setLayout(DEFAULT_LETTERHEAD_LAYOUT);
+    setCurrentId(null);
+    clearDraft();
   };
 
   const setField = (key: keyof LetterheadFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
+
 
   const html = useMemo(
     () =>
