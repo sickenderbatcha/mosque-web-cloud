@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Save, Search, Trash2, X, FileDown, RefreshCw } from "lucide-react";
+import { Loader2, Save, Search, Trash2, X, FileDown, RefreshCw, History } from "lucide-react";
 import { format, isValid, parse } from "date-fns";
 import { toast } from "sonner";
 
@@ -11,6 +11,9 @@ import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { supabase } from "@/integrations/supabase/client";
 import type { LetterheadFields, LetterheadLayout } from "@/lib/letterheadHtml";
 import { DEFAULT_LETTERHEAD_LAYOUT, EMPTY_LETTERHEAD_FIELDS } from "@/lib/letterheadHtml";
+import { diffLetterheadFields, logLetterheadAudit } from "@/lib/letterheadAudit";
+import LetterheadHistoryDialog from "./LetterheadHistoryDialog";
+
 
 interface SavedLetterheadRow {
   id: string;
@@ -34,6 +37,7 @@ interface SavedLetterheadsProps {
   currentId: string | null;
   onLoad: (fields: LetterheadFields, layout: LetterheadLayout, id: string) => void;
   onNew: () => void;
+  onSaved?: () => void;
 }
 
 const displayDate = (iso: string | null) => {
@@ -64,13 +68,14 @@ const rowToLayout = (row: SavedLetterheadRow): LetterheadLayout => {
   };
 };
 
-const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLetterheadsProps) => {
+const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }: SavedLetterheadsProps) => {
   const [rows, setRows] = useState<SavedLetterheadRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   const fetchRows = useCallback(async () => {
     setIsLoading(true);
@@ -125,23 +130,52 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLet
     }
     setIsSaving(true);
     try {
+      const nextPayload = payload();
       if (mode === "update" && currentId) {
+        const previous = rows.find((r) => r.id === currentId) ?? null;
+        const previousPayload = previous
+          ? {
+              reference_number: previous.reference_number,
+              letter_date: previous.letter_date,
+              recipient_name: previous.recipient_name,
+              recipient_address: previous.recipient_address,
+              subject: previous.subject,
+              salutation: previous.salutation,
+              body: previous.body,
+              closing: previous.closing,
+              signatory_name: previous.signatory_name,
+              designation: previous.designation,
+              layout: previous.layout,
+            }
+          : null;
+
         const { error } = await supabase
           .from("letterheads")
-          .update({ ...payload(), updated_at: new Date().toISOString() })
+          .update({ ...nextPayload, updated_at: new Date().toISOString() })
           .eq("id", currentId);
         if (error) throw error;
         toast.success("கடிதம் புதுப்பிக்கப்பட்டது / Letter updated");
+        await logLetterheadAudit(
+          currentId,
+          "updated",
+          diffLetterheadFields(previousPayload, nextPayload),
+          nextPayload
+        );
+        onSaved?.();
       } else {
         const { data: userData } = await supabase.auth.getUser();
         const { data, error } = await supabase
           .from("letterheads")
-          .insert({ ...payload(), created_by: userData.user?.id ?? null })
+          .insert({ ...nextPayload, created_by: userData.user?.id ?? null })
           .select("id")
           .single();
         if (error) throw error;
         toast.success("கடிதம் சேமிக்கப்பட்டது / Letter saved");
-        if (data?.id) onLoad(fields, layout, data.id);
+        if (data?.id) {
+          onLoad(fields, layout, data.id);
+          await logLetterheadAudit(data.id, "created", [], nextPayload);
+        }
+        onSaved?.();
       }
       await fetchRows();
     } catch (error: any) {
@@ -156,9 +190,11 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLet
 
   const handleDelete = async (id: string) => {
     try {
+      const row = rows.find((r) => r.id === id) ?? null;
       const { error } = await supabase.from("letterheads").delete().eq("id", id);
       if (error) throw error;
       toast.success("கடிதம் நீக்கப்பட்டது / Letter deleted");
+      await logLetterheadAudit(id, "deleted", [], (row ?? {}) as Record<string, unknown>);
       if (currentId === id) onNew();
       await fetchRows();
     } catch (error: any) {
@@ -296,6 +332,15 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLet
                   </Button>
                   <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setHistoryId(row.id)}
+                  >
+                    <History className="mr-1 h-4 w-4" />
+                    வரலாறு / History
+                  </Button>
+                  <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(row.id)}
@@ -308,6 +353,12 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLet
             ))}
           </ul>
         )}
+
+        <LetterheadHistoryDialog
+          letterheadId={historyId}
+          open={!!historyId}
+          onOpenChange={(open) => !open && setHistoryId(null)}
+        />
       </CardContent>
     </Card>
   );

@@ -11,6 +11,7 @@ import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import SavedLetterheads from "@/components/letterhead/SavedLetterheads";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useLetterheadSettings } from "@/hooks/useLetterheadSettings";
+import { useLetterheadDraft } from "@/hooks/useLetterheadDraft";
 import {
   buildLetterheadHtml,
   printLetterheadHtml,
@@ -60,6 +61,26 @@ const LetterheadPage = () => {
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
   const [currentId, setCurrentId] = useState<string | null>(null);
 
+  const { isReady, restored, saveDraft, clearDraft, dismissRestoredNotice } = useLetterheadDraft();
+  const [draftApplied, setDraftApplied] = useState(false);
+
+  // Restore any locally stored draft once
+  useEffect(() => {
+    if (!isReady || draftApplied) return;
+    if (restored) {
+      setFields(restored.fields);
+      setLayout(restored.layout);
+      setCurrentId(restored.currentId);
+    }
+    setDraftApplied(true);
+  }, [isReady, restored, draftApplied]);
+
+  // Auto-save the draft while typing
+  useEffect(() => {
+    if (!isReady || !draftApplied) return;
+    saveDraft(fields, layout, currentId);
+  }, [fields, layout, currentId, isReady, draftApplied, saveDraft]);
+
   const handleLoadSaved = (
     nextFields: LetterheadFields,
     nextLayout: LetterheadLayout,
@@ -68,16 +89,26 @@ const LetterheadPage = () => {
     setFields(nextFields);
     setLayout(nextLayout);
     setCurrentId(id);
+    dismissRestoredNotice();
   };
 
   const handleNewLetter = () => {
     setFields(EMPTY_LETTERHEAD_FIELDS);
     setLayout(DEFAULT_LETTERHEAD_LAYOUT);
     setCurrentId(null);
+    clearDraft();
+  };
+
+  const handleDiscardDraft = () => {
+    setFields(EMPTY_LETTERHEAD_FIELDS);
+    setLayout(DEFAULT_LETTERHEAD_LAYOUT);
+    setCurrentId(null);
+    clearDraft();
   };
 
   const setField = (key: keyof LetterheadFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
+
 
   const html = useMemo(
     () =>
@@ -122,6 +153,20 @@ const LetterheadPage = () => {
         </h1>
         <p className="text-muted-foreground">Letterhead Generator</p>
       </header>
+
+      {restored && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-border bg-muted/60 px-4 py-3">
+          <p className="text-sm text-foreground">
+            சேமிக்கப்படாத வரைவு மீட்கப்பட்டது{" "}
+            <span className="text-muted-foreground">/ Unsaved draft restored</span>
+          </p>
+          <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={handleDiscardDraft}>
+            வரைவை நீக்கு / Discard draft
+          </Button>
+        </div>
+      )}
+
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
@@ -339,6 +384,7 @@ const LetterheadPage = () => {
           currentId={currentId}
           onLoad={handleLoadSaved}
           onNew={handleNewLetter}
+          onSaved={clearDraft}
         />
       </div>
     </div>
