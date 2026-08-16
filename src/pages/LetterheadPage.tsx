@@ -154,6 +154,20 @@ const LetterheadPage = () => {
         <p className="text-muted-foreground">Letterhead Generator</p>
       </header>
 
+      {restored && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-border bg-muted/60 px-4 py-3">
+          <p className="text-sm text-foreground">
+            சேமிக்கப்படாத வரைவு மீட்கப்பட்டது{" "}
+            <span className="text-muted-foreground">/ Unsaved draft restored</span>
+          </p>
+          <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={handleDiscardDraft}>
+            வரைவை நீக்கு / Discard draft
+          </Button>
+        </div>
+      )}
+
+
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
         <Card>
