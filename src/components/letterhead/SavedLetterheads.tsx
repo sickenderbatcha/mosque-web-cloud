@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Save, Search, Trash2, X, FileDown, RefreshCw } from "lucide-react";
+import { Loader2, Save, Search, Trash2, X, FileDown, RefreshCw, History } from "lucide-react";
 import { format, isValid, parse } from "date-fns";
 import { toast } from "sonner";
 
@@ -11,6 +11,9 @@ import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import { supabase } from "@/integrations/supabase/client";
 import type { LetterheadFields, LetterheadLayout } from "@/lib/letterheadHtml";
 import { DEFAULT_LETTERHEAD_LAYOUT, EMPTY_LETTERHEAD_FIELDS } from "@/lib/letterheadHtml";
+import { diffLetterheadFields, logLetterheadAudit } from "@/lib/letterheadAudit";
+import LetterheadHistoryDialog from "./LetterheadHistoryDialog";
+
 
 interface SavedLetterheadRow {
   id: string;
