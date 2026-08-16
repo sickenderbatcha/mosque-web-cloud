@@ -384,6 +384,7 @@ const LetterheadPage = () => {
           currentId={currentId}
           onLoad={handleLoadSaved}
           onNew={handleNewLetter}
+          onSaved={clearDraft}
         />
       </div>
     </div>
