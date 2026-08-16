@@ -332,6 +332,15 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }:
                   </Button>
                   <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setHistoryId(row.id)}
+                  >
+                    <History className="mr-1 h-4 w-4" />
+                    வரலாறு / History
+                  </Button>
+                  <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(row.id)}
@@ -344,6 +353,12 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }:
             ))}
           </ul>
         )}
+
+        <LetterheadHistoryDialog
+          letterheadId={historyId}
+          open={!!historyId}
+          onOpenChange={(open) => !open && setHistoryId(null)}
+        />
       </CardContent>
     </Card>
   );
