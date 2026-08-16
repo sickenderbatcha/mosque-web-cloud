@@ -37,6 +37,7 @@ interface SavedLetterheadsProps {
   currentId: string | null;
   onLoad: (fields: LetterheadFields, layout: LetterheadLayout, id: string) => void;
   onNew: () => void;
+  onSaved?: () => void;
 }
 
 const displayDate = (iso: string | null) => {
