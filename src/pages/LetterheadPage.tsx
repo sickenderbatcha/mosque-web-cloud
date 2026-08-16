@@ -11,6 +11,7 @@ import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import SavedLetterheads from "@/components/letterhead/SavedLetterheads";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useLetterheadSettings } from "@/hooks/useLetterheadSettings";
+import { useLetterheadDraft } from "@/hooks/useLetterheadDraft";
 import {
   buildLetterheadHtml,
   printLetterheadHtml,
