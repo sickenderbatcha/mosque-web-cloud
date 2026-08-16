@@ -1324,6 +1324,39 @@ export type Database = {
         }
         Relationships: []
       }
+      letterhead_audit_logs: {
+        Row: {
+          action: string
+          changed_fields: string[]
+          created_at: string
+          id: string
+          letterhead_id: string
+          performed_by: string | null
+          performed_by_name: string | null
+          snapshot: Json
+        }
+        Insert: {
+          action: string
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          letterhead_id: string
+          performed_by?: string | null
+          performed_by_name?: string | null
+          snapshot?: Json
+        }
+        Update: {
+          action?: string
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          letterhead_id?: string
+          performed_by?: string | null
+          performed_by_name?: string | null
+          snapshot?: Json
+        }
+        Relationships: []
+      }
       letterheads: {
         Row: {
           body: string | null
