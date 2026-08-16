@@ -130,23 +130,52 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }:
     }
     setIsSaving(true);
     try {
+      const nextPayload = payload();
       if (mode === "update" && currentId) {
+        const previous = rows.find((r) => r.id === currentId) ?? null;
+        const previousPayload = previous
+          ? {
+              reference_number: previous.reference_number,
+              letter_date: previous.letter_date,
+              recipient_name: previous.recipient_name,
+              recipient_address: previous.recipient_address,
+              subject: previous.subject,
+              salutation: previous.salutation,
+              body: previous.body,
+              closing: previous.closing,
+              signatory_name: previous.signatory_name,
+              designation: previous.designation,
+              layout: previous.layout,
+            }
+          : null;
+
         const { error } = await supabase
           .from("letterheads")
-          .update({ ...payload(), updated_at: new Date().toISOString() })
+          .update({ ...nextPayload, updated_at: new Date().toISOString() })
           .eq("id", currentId);
         if (error) throw error;
         toast.success("கடிதம் புதுப்பிக்கப்பட்டது / Letter updated");
+        await logLetterheadAudit(
+          currentId,
+          "updated",
+          diffLetterheadFields(previousPayload, nextPayload),
+          nextPayload
+        );
+        onSaved?.();
       } else {
         const { data: userData } = await supabase.auth.getUser();
         const { data, error } = await supabase
           .from("letterheads")
-          .insert({ ...payload(), created_by: userData.user?.id ?? null })
+          .insert({ ...nextPayload, created_by: userData.user?.id ?? null })
           .select("id")
           .single();
         if (error) throw error;
         toast.success("கடிதம் சேமிக்கப்பட்டது / Letter saved");
-        if (data?.id) onLoad(fields, layout, data.id);
+        if (data?.id) {
+          onLoad(fields, layout, data.id);
+          await logLetterheadAudit(data.id, "created", [], nextPayload);
+        }
+        onSaved?.();
       }
       await fetchRows();
     } catch (error: any) {
@@ -161,9 +190,11 @@ const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }:
 
   const handleDelete = async (id: string) => {
     try {
+      const row = rows.find((r) => r.id === id) ?? null;
       const { error } = await supabase.from("letterheads").delete().eq("id", id);
       if (error) throw error;
       toast.success("கடிதம் நீக்கப்பட்டது / Letter deleted");
+      await logLetterheadAudit(id, "deleted", [], (row ?? {}) as Record<string, unknown>);
       if (currentId === id) onNew();
       await fetchRows();
     } catch (error: any) {
