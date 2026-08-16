@@ -68,13 +68,14 @@ const rowToLayout = (row: SavedLetterheadRow): LetterheadLayout => {
   };
 };
 
-const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew }: SavedLetterheadsProps) => {
+const SavedLetterheads = ({ fields, layout, currentId, onLoad, onNew, onSaved }: SavedLetterheadsProps) => {
   const [rows, setRows] = useState<SavedLetterheadRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [nameQuery, setNameQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   const fetchRows = useCallback(async () => {
     setIsLoading(true);
