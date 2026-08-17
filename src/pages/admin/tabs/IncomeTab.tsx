@@ -426,7 +426,7 @@ const IncomeTab = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredIncomes.map((income) => (
+                paginatedIncomes.map((income) => (
                   <TableRow key={income.id}>
                     <TableCell>{format(new Date(income.income_date), "dd/MM/yyyy")}</TableCell>
                     <TableCell>
