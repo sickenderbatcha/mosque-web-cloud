@@ -15,6 +15,7 @@ import { Plus, Pencil, Trash2, TrendingUp, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import TableFilter from "@/components/admin/TableFilter";
+import TablePagination from "@/components/admin/TablePagination";
 
 interface Income {
   id: string;
@@ -66,6 +67,10 @@ const IncomeTab = () => {
   // Filter states
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const fetchIncomeCategories = useCallback(async () => {
     try {
@@ -241,6 +246,24 @@ const IncomeTab = () => {
     });
   }, [incomes, searchValue, filterValues]);
 
+  // Pagination derived values
+  const totalPages = Math.max(1, Math.ceil(filteredIncomes.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedIncomes = useMemo(
+    () => filteredIncomes.slice(startIndex, endIndex),
+    [filteredIncomes, startIndex, endIndex]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue, filterValues, itemsPerPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+
   // Get unique categories and payment methods
   const categories = useMemo(() => {
     const cats = [...new Set(incomes.map(i => i.category))];
@@ -403,7 +426,7 @@ const IncomeTab = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredIncomes.map((income) => (
+                paginatedIncomes.map((income) => (
                   <TableRow key={income.id}>
                     <TableCell>{format(new Date(income.income_date), "dd/MM/yyyy")}</TableCell>
                     <TableCell>
@@ -444,6 +467,17 @@ const IncomeTab = () => {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredIncomes.length}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            itemLabel="income records"
+          />
         </CardContent>
       </Card>
     </div>
