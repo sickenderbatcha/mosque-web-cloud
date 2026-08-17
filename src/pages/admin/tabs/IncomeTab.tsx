@@ -246,6 +246,24 @@ const IncomeTab = () => {
     });
   }, [incomes, searchValue, filterValues]);
 
+  // Pagination derived values
+  const totalPages = Math.max(1, Math.ceil(filteredIncomes.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedIncomes = useMemo(
+    () => filteredIncomes.slice(startIndex, endIndex),
+    [filteredIncomes, startIndex, endIndex]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue, filterValues, itemsPerPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+
   // Get unique categories and payment methods
   const categories = useMemo(() => {
     const cats = [...new Set(incomes.map(i => i.category))];
