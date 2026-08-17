@@ -15,6 +15,7 @@ import { Plus, Pencil, Trash2, TrendingUp, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import TableFilter from "@/components/admin/TableFilter";
+import TablePagination from "@/components/admin/TablePagination";
 
 interface Income {
   id: string;
