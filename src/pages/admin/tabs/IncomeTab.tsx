@@ -68,6 +68,10 @@ const IncomeTab = () => {
   const [searchValue, setSearchValue] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+
   const fetchIncomeCategories = useCallback(async () => {
     try {
       const { data } = await supabase
