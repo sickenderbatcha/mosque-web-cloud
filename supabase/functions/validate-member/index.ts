@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { getCaller } from "../_shared/auth.ts";
 
 
 // Simple in-memory rate limiter per IP
@@ -72,14 +73,19 @@ serve(async (req) => {
       );
     }
 
+    // Only signed-in callers receive contact details; anonymous callers get
+    // just enough to validate a membership number during signup.
+    const callerIdentity = await getCaller(req);
+    const caller = callerIdentity.userId;
+
     return new Response(
       JSON.stringify({
         found: true,
         full_name: data.full_name,
-        phone: data.phone,
-        email: data.email,
-        address: data.address,
         has_account: !!data.auth_user_id,
+        ...(caller
+          ? { phone: data.phone, email: data.email, address: data.address }
+          : {}),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -749,6 +750,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const { error: authError } = await requireUser(req, corsHeaders);
+    if (authError) return authError;
+
     let { type, email, phone, recipientName, data, preferences }: NotificationRequest = await req.json();
 
     // For admin notifications, fetch admin email from settings
