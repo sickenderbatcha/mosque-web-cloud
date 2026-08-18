@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { SignedAvatarImage } from "@/components/SignedImage";
 
 interface Donor {
   id: string;
@@ -216,7 +217,7 @@ const BloodDonorFinderPage = () => {
                       <CardContent className="pt-4">
                         <div className="flex items-start gap-4">
                           <Avatar className="h-14 w-14 flex-shrink-0">
-                            <AvatarImage src={donor.photo_url || undefined} alt={donor.full_name} />
+                            <SignedAvatarImage src={donor.photo_url} alt={donor.full_name} />
                             <AvatarFallback className="bg-destructive/10 text-destructive font-semibold">
                               {getInitials(donor.full_name)}
                             </AvatarFallback>

@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Database } from "@/integrations/supabase/types";
+import { SignedAvatarImage } from "@/components/SignedImage";
 
 type Member = Database["public"]["Tables"]["gb_members"]["Row"];
 type BloodGroup = Database["public"]["Enums"]["blood_group"];
@@ -1218,8 +1219,8 @@ const MembersTab = () => {
                 <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                   <div className="relative">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage 
-                        src={editingMember ? (editingMember.photo_url || undefined) : (newMemberPhotoPreview || undefined)} 
+                      <SignedAvatarImage 
+                        src={editingMember ? editingMember.photo_url : newMemberPhotoPreview} 
                         alt={editingMember ? editingMember.full_name : "New member"} 
                       />
                       <AvatarFallback className="text-lg">
@@ -1400,7 +1401,7 @@ const MembersTab = () => {
                 <TableRow key={member.id}>
                   <TableCell>
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={member.photo_url || undefined} alt={member.full_name} />
+                      <SignedAvatarImage src={member.photo_url} alt={member.full_name} />
                       <AvatarFallback className="text-xs">
                         <User className="h-4 w-4" />
                       </AvatarFallback>
