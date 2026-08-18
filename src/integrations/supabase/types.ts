@@ -1473,12 +1473,14 @@ export type Database = {
       }
       management_committee: {
         Row: {
+          address: string | null
           created_at: string
           end_date: string | null
           father_name: string | null
           id: string
           is_current: boolean | null
           name: string
+          phone: string | null
           photo_url: string | null
           position: string
           qualification: string | null
@@ -1487,12 +1489,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
           end_date?: string | null
           father_name?: string | null
           id?: string
           is_current?: boolean | null
           name: string
+          phone?: string | null
           photo_url?: string | null
           position: string
           qualification?: string | null
@@ -1501,12 +1505,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
           created_at?: string
           end_date?: string | null
           father_name?: string | null
           id?: string
           is_current?: boolean | null
           name?: string
+          phone?: string | null
           photo_url?: string | null
           position?: string
           qualification?: string | null
