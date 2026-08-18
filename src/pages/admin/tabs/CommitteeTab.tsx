@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -306,6 +307,12 @@ const CommitteeTab = () => {
                       {member.father_name && (
                         <p className="text-xs text-muted-foreground">S/o {member.father_name}</p>
                       )}
+                      {member.phone && (
+                        <p className="text-xs text-muted-foreground">{member.phone}</p>
+                      )}
+                      {member.address && (
+                        <p className="text-xs text-muted-foreground">{member.address}</p>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -362,6 +369,24 @@ const CommitteeTab = () => {
               <Input
                 value={form.qualification}
                 onChange={(e) => setForm(prev => ({ ...prev, qualification: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Mobile Number / கைபேசி எண்</Label>
+              <Input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="9876543210"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address / முகவரி</Label>
+              <Textarea
+                rows={3}
+                value={form.address}
+                onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))}
+                placeholder="முகவரி"
               />
             </div>
             <div className="space-y-2">
