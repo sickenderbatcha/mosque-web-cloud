@@ -334,13 +334,13 @@ const CommitteeTab = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-md sm:max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 pb-4 border-b shrink-0">
             <DialogTitle>
               {editingMember ? "Edit Committee Member" : "Add Committee Member"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Name / பெயர் *</Label>
               <Input
@@ -381,6 +381,14 @@ const CommitteeTab = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label>Sort Order</Label>
+              <Input
+                type="number"
+                value={form.sort_order}
+                onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
               <Label>Address / முகவரி</Label>
               <Textarea
                 rows={3}
@@ -389,15 +397,7 @@ const CommitteeTab = () => {
                 placeholder="முகவரி"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Sort Order</Label>
-              <Input
-                type="number"
-                value={form.sort_order}
-                onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
-              />
-            </div>
-            <div className="space-y-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label>Photo / புகைப்படம்</Label>
               {form.photo_url ? (
                 <div className="relative w-24 h-24">
@@ -418,14 +418,14 @@ const CommitteeTab = () => {
                 </div>
               )}
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-            </div>
+          </div>
+          <div className="flex gap-2 justify-end p-6 pt-4 border-t shrink-0">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
