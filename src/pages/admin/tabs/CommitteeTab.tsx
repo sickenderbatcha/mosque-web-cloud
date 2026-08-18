@@ -136,7 +136,7 @@ const CommitteeTab = () => {
 
   const openAddDialog = () => {
     setEditingMember(null);
-    setForm({ name: "", position: "", father_name: "", qualification: "", photo_url: "", sort_order: members.length });
+    setForm({ name: "", position: "", father_name: "", qualification: "", photo_url: "", sort_order: members.length, phone: "", address: "" });
     setDialogOpen(true);
   };
 
@@ -149,6 +149,8 @@ const CommitteeTab = () => {
       qualification: member.qualification || "",
       photo_url: member.photo_url || "",
       sort_order: member.sort_order || 0,
+      phone: member.phone || "",
+      address: member.address || "",
     });
     setDialogOpen(true);
   };
@@ -183,6 +185,8 @@ const CommitteeTab = () => {
         qualification: form.qualification.trim() || null,
         photo_url: form.photo_url || null,
         sort_order: form.sort_order,
+        phone: form.phone.trim() || null,
+        address: form.address.trim() || null,
         is_current: true,
       };
 
