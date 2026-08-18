@@ -157,25 +157,30 @@ const DataManagementTab = () => {
 
     setDeleting(true);
     let successCount = 0;
-    let errorCount = 0;
+    const failedTables: string[] = [];
 
     for (const tableName of selectedTables) {
+      const priorCount = tables.find((t) => t.name === tableName)?.count ?? 0;
       try {
         // Delete all records from the table
-        const { error } = await supabase
+        const { error, count } = await supabase
           .from(tableName as any)
-          .delete()
+          .delete({ count: "exact" })
           .neq("id", "00000000-0000-0000-0000-000000000000"); // This condition matches all UUIDs
 
         if (error) {
           console.error(`Error deleting from ${tableName}:`, error);
-          errorCount++;
+          failedTables.push(tableName);
+        } else if (priorCount > 0 && (count ?? 0) === 0) {
+          // No error but nothing removed - blocked by access rules
+          console.error(`Delete blocked for ${tableName}: 0 records removed`);
+          failedTables.push(tableName);
         } else {
           successCount++;
         }
       } catch (error) {
         console.error(`Error deleting from ${tableName}:`, error);
-        errorCount++;
+        failedTables.push(tableName);
       }
     }
 
@@ -187,15 +192,20 @@ const DataManagementTab = () => {
     if (successCount > 0) {
       toast({
         title: "நீக்கம் வெற்றி (Deletion Successful)",
-        description: `Successfully deleted records from ${successCount} table(s).${errorCount > 0 ? ` Failed for ${errorCount} table(s).` : ""}`,
+        description: `Successfully deleted records from ${successCount} table(s).${
+          failedTables.length > 0
+            ? ` Blocked / 0 records removed for: ${failedTables.join(", ")}.`
+            : ""
+        }`,
       });
     } else {
       toast({
         title: "நீக்கம் தோல்வி (Deletion Failed)",
-        description: "Failed to delete records. Please try again.",
+        description: `Blocked / 0 records removed for: ${failedTables.join(", ")}.`,
         variant: "destructive",
       });
     }
+
 
     // Refresh counts
     fetchTableCounts();
