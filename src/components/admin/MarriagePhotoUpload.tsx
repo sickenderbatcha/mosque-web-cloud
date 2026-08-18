@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SignedImg } from "@/components/SignedImage";
 
 interface MarriagePhotoUploadProps {
   label: string;
@@ -67,7 +68,7 @@ export default function MarriagePhotoUpload({
       <Label>{label}</Label>
       {photoUrl ? (
         <div className="relative w-32 h-40 rounded-lg overflow-hidden border border-border">
-          <img
+          <SignedImg
             src={photoUrl}
             alt={label}
             className="w-full h-full object-cover"

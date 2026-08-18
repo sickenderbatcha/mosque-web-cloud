@@ -14,6 +14,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { SignedAvatarImage } from "@/components/SignedImage";
 
 interface GBMember {
   id: string;
@@ -378,7 +379,7 @@ const MembersDirectoryPage = () => {
                       <CardContent className="pt-6">
                         <div className="flex flex-col items-center text-center">
                           <Avatar className="h-20 w-20 mb-4">
-                            <AvatarImage src={member.photo_url || undefined} alt={member.full_name} />
+                            <SignedAvatarImage src={member.photo_url} alt={member.full_name} />
                             <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
                               {getInitials(member.full_name)}
                             </AvatarFallback>

@@ -80,6 +80,7 @@ import { useAppSettings } from "@/hooks/useAppSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import MarriagePhotoUpload from "@/components/admin/MarriagePhotoUpload";
+import { SignedImg } from "@/components/SignedImage";
 
 declare global {
   interface Window {
@@ -1848,7 +1849,7 @@ export default function MarriageRegisterTab() {
                     <CardContent className="flex gap-6 justify-center">
                       {viewRecord.groom_photo_url && (
                         <div className="text-center space-y-2">
-                          <img
+                          <SignedImg
                             src={viewRecord.groom_photo_url}
                             alt="மணமகன்"
                             className="w-32 h-40 object-cover rounded-lg border border-border shadow-sm"
@@ -1859,7 +1860,7 @@ export default function MarriageRegisterTab() {
                       )}
                       {viewRecord.bride_photo_url && (
                         <div className="text-center space-y-2">
-                          <img
+                          <SignedImg
                             src={viewRecord.bride_photo_url}
                             alt="மணமகள்"
                             className="w-32 h-40 object-cover rounded-lg border border-border shadow-sm"
