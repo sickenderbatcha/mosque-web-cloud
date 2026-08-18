@@ -12,15 +12,17 @@ export interface HomepageSection {
 
 const DEFAULT_SECTIONS: HomepageSection[] = [
   { id: "hero", name: "hero", label: "Hero", labelTamil: "ஹீரோ", enabled: true, order: 0 },
-  { id: "announcements", name: "announcements", label: "Announcements", labelTamil: "அறிவிப்புகள்", enabled: true, order: 1 },
-  { id: "jumuah", name: "jumuah", label: "Jumu'ah Countdown", labelTamil: "ஜுமுஆ கவுன்ட்டவுன்", enabled: true, order: 2 },
-  { id: "services", name: "services", label: "Online Services", labelTamil: "ஆன்லைன் சேவைகள்", enabled: true, order: 3 },
-  { id: "backoffice", name: "backoffice", label: "Back Office", labelTamil: "பின் அலுவலகப் பணிகள்", enabled: true, order: 4 },
-  { id: "prayer", name: "prayer", label: "Prayer Times", labelTamil: "தொழுகை நேரங்கள்", enabled: true, order: 5 },
-  { id: "calendar", name: "calendar", label: "Islamic Calendar", labelTamil: "இஸ்லாமிய நாட்காட்டி", enabled: true, order: 6 },
-  { id: "about", name: "about", label: "About Preview", labelTamil: "எங்களை பற்றி", enabled: true, order: 7 },
-  { id: "cta", name: "cta", label: "Call to Action", labelTamil: "அழைப்பு", enabled: true, order: 8 },
+  { id: "committee", name: "committee", label: "Management Committee", labelTamil: "நிர்வாகக் குழு உறுப்பினர்கள்", enabled: true, order: 1 },
+  { id: "announcements", name: "announcements", label: "Announcements", labelTamil: "அறிவிப்புகள்", enabled: true, order: 2 },
+  { id: "jumuah", name: "jumuah", label: "Jumu'ah Countdown", labelTamil: "ஜுமுஆ கவுன்ட்டவுன்", enabled: true, order: 3 },
+  { id: "services", name: "services", label: "Online Services", labelTamil: "ஆன்லைன் சேவைகள்", enabled: true, order: 4 },
+  { id: "backoffice", name: "backoffice", label: "Back Office", labelTamil: "பின் அலுவலகப் பணிகள்", enabled: true, order: 5 },
+  { id: "prayer", name: "prayer", label: "Prayer Times", labelTamil: "தொழுகை நேரங்கள்", enabled: true, order: 6 },
+  { id: "calendar", name: "calendar", label: "Islamic Calendar", labelTamil: "இஸ்லாமிய நாட்காட்டி", enabled: true, order: 7 },
+  { id: "about", name: "about", label: "About Preview", labelTamil: "எங்களை பற்றி", enabled: true, order: 8 },
+  { id: "cta", name: "cta", label: "Call to Action", labelTamil: "அழைப்பு", enabled: true, order: 9 },
 ];
+
 
 // Simple session cache (expires on page reload)
 let sessionCache: { sections: HomepageSection[]; timestamp: number } | null = null;
