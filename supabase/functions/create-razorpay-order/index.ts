@@ -28,6 +28,42 @@ interface VerifyPaymentRequest {
   type?: "booking" | "subscription" | "certificate" | "noc" | "donation";
 }
 
+
+type RefIds = {
+  type?: string;
+  bookingId?: string;
+  subscriptionId?: string;
+  certificatePaymentId?: string;
+  nocCertificateId?: string;
+  donationId?: string;
+};
+
+/** Look up the real amount owed for the referenced record. Never trust the client. */
+async function resolveExpectedAmount(
+  svc: ReturnType<typeof createClient>,
+  refs: RefIds,
+): Promise<number | null> {
+  const { type = "booking", bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId } = refs;
+
+  const fetchAmount = async (table: string, column: string, id?: string) => {
+    if (!id) return null;
+    const { data, error } = await svc.from(table).select(column).eq("id", id).maybeSingle();
+    if (error || !data) return null;
+    const value = Number((data as Record<string, unknown>)[column]);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+
+  if (type === "donation") return await fetchAmount("donations", "amount", donationId);
+  if (type === "noc") {
+    const direct = await fetchAmount("noc_certificates", "amount", nocCertificateId);
+    if (direct !== null) return direct;
+    return await fetchAmount("certificate_payments", "amount", certificatePaymentId);
+  }
+  if (type === "certificate") return await fetchAmount("certificate_payments", "amount", certificatePaymentId);
+  if (type === "subscription") return await fetchAmount("subscriptions", "total_amount", subscriptionId);
+  return await fetchAmount("mahal_bookings", "booking_amount", bookingId);
+}
+
 const handler = async (req: Request): Promise<Response> => {
   const corsHeaders = getCorsHeaders(req);
   // Handle CORS preflight requests
@@ -53,8 +89,30 @@ const handler = async (req: Request): Promise<Response> => {
     if (action === "create") {
       const { amount, bookingId, subscriptionId, certificatePaymentId, nocCertificateId, donationId, currency = "INR", receipt, notes, type = "booking" }: CreateOrderRequest = await req.json();
 
-      // Input validation
-      if (!amount || typeof amount !== "number" || amount <= 0 || amount > 10000000) {
+      // Resolve the authoritative amount server-side from the referenced record.
+      const svcUrl = Deno.env.get("SUPABASE_URL")!;
+      const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const svc = createClient(svcUrl, svcKey);
+
+      const expected = await resolveExpectedAmount(svc, {
+        type,
+        bookingId,
+        subscriptionId,
+        certificatePaymentId,
+        nocCertificateId,
+        donationId,
+      });
+
+      if (expected === null) {
+        return new Response(
+          JSON.stringify({ error: "Unable to determine amount for this request" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const authoritativeAmount = expected;
+
+      if (!authoritativeAmount || authoritativeAmount <= 0 || authoritativeAmount > 10000000) {
         return new Response(
           JSON.stringify({ error: "Invalid amount" }),
           { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -97,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
           "Authorization": `Basic ${auth}`,
         },
         body: JSON.stringify({
-          amount: Math.round(amount * 100), // Razorpay expects amount in paise
+          amount: Math.round(authoritativeAmount * 100), // Razorpay expects amount in paise (server-derived)
           currency,
           receipt: finalReceipt,
           notes: orderNotes,
@@ -159,6 +217,48 @@ const handler = async (req: Request): Promise<Response> => {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseKey);
+
+      // Confirm the amount actually captured by Razorpay matches what is owed.
+      const expectedAmount = await resolveExpectedAmount(supabase, {
+        type,
+        bookingId,
+        subscriptionId,
+        certificatePaymentId,
+        nocCertificateId,
+        donationId,
+      });
+
+      if (expectedAmount === null) {
+        console.error("Could not resolve expected amount during verification");
+        return new Response(
+          JSON.stringify({ error: "Payment verification failed", verified: false }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const orderLookup = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+        headers: { Authorization: `Basic ${btoa(`${keyId}:${keySecret}`)}` },
+      });
+
+      if (!orderLookup.ok) {
+        console.error("Failed to fetch Razorpay order for verification");
+        return new Response(
+          JSON.stringify({ error: "Payment verification failed", verified: false }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const orderData = await orderLookup.json();
+      const paidPaise = Number(orderData?.amount_paid ?? 0);
+      const expectedPaise = Math.round(expectedAmount * 100);
+
+      if (paidPaise < expectedPaise) {
+        console.error("Underpayment detected during verification");
+        return new Response(
+          JSON.stringify({ error: "Paid amount does not match the amount due", verified: false }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
 
       // Helper to send admin notification for online payments
       const notifyAdmin = async (title: string, message: string, referenceId: string, referenceType: string) => {
