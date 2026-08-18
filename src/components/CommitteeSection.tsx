@@ -10,6 +10,8 @@ interface CommitteeMember {
   position: string;
   father_name: string | null;
   photo_url: string | null;
+  phone: string | null;
+  address: string | null;
 }
 
 const CommitteeSection = () => {
@@ -21,7 +23,7 @@ const CommitteeSection = () => {
       try {
         const { data, error } = await supabase
           .from("management_committee")
-          .select("id, name, position, father_name, photo_url")
+          .select("id, name, position, father_name, photo_url, phone, address")
           .eq("is_current", true)
           .order("sort_order", { ascending: true });
 
@@ -85,6 +87,14 @@ const CommitteeSection = () => {
                     <p className="text-xs text-primary font-medium font-tamil">{member.position}</p>
                     {member.father_name && (
                       <p className="text-xs text-muted-foreground font-tamil">S/o {member.father_name}</p>
+                    )}
+                    {member.phone && (
+                      <a href={`tel:${member.phone}`} className="text-xs text-primary hover:underline block mt-1">
+                        {member.phone}
+                      </a>
+                    )}
+                    {member.address && (
+                      <p className="text-xs text-muted-foreground font-tamil mt-1">{member.address}</p>
                     )}
                   </div>
                 </CardContent>
