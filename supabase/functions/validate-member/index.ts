@@ -72,14 +72,18 @@ serve(async (req) => {
       );
     }
 
+    // Only signed-in callers receive contact details; anonymous callers get
+    // just enough to validate a membership number during signup.
+    const { caller } = await getCallerIdentity(req);
+
     return new Response(
       JSON.stringify({
         found: true,
         full_name: data.full_name,
-        phone: data.phone,
-        email: data.email,
-        address: data.address,
         has_account: !!data.auth_user_id,
+        ...(caller
+          ? { phone: data.phone, email: data.email, address: data.address }
+          : {}),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
