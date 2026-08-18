@@ -334,92 +334,99 @@ const CommitteeTab = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md sm:max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogContent className="flex h-[calc(100dvh-2rem)] max-h-[760px] min-h-0 w-[calc(100vw-2rem)] max-w-2xl flex-col gap-0 overflow-hidden p-0">
           <DialogHeader className="p-6 pb-4 border-b shrink-0">
             <DialogTitle>
               {editingMember ? "Edit Committee Member" : "Add Committee Member"}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Name / பெயர் *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="உறுப்பினர் பெயர்"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Position / பதவி *</Label>
-              <Input
-                value={form.position}
-                onChange={(e) => setForm(prev => ({ ...prev, position: e.target.value }))}
-                placeholder="e.g. தலைவர்"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Father's Name / தந்தை பெயர்</Label>
-              <Input
-                value={form.father_name}
-                onChange={(e) => setForm(prev => ({ ...prev, father_name: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Qualification / தகுதி</Label>
-              <Input
-                value={form.qualification}
-                onChange={(e) => setForm(prev => ({ ...prev, qualification: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Mobile Number / கைபேசி எண்</Label>
-              <Input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="9876543210"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Sort Order</Label>
-              <Input
-                type="number"
-                value={form.sort_order}
-                onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
-              />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Address / முகவரி</Label>
-              <Textarea
-                rows={3}
-                value={form.address}
-                onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))}
-                placeholder="முகவரி"
-              />
-            </div>
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Photo / புகைப்படம்</Label>
-              {form.photo_url ? (
-                <div className="relative w-24 h-24">
-                  <img src={form.photo_url} alt="Preview" className="w-full h-full rounded-full object-cover" />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-1 -right-1 h-6 w-6"
-                    onClick={() => setForm(prev => ({ ...prev, photo_url: "" }))}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <Input type="file" accept="image/*" onChange={handleFormPhotoUpload} disabled={saving} />
-                </div>
-              )}
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="committee-name">Name / பெயர் *</Label>
+                <Input
+                  id="committee-name"
+                  value={form.name}
+                  onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="உறுப்பினர் பெயர்"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="committee-position">Position / பதவி *</Label>
+                <Input
+                  id="committee-position"
+                  value={form.position}
+                  onChange={(e) => setForm(prev => ({ ...prev, position: e.target.value }))}
+                  placeholder="e.g. தலைவர்"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="committee-father-name">Father's Name / தந்தை பெயர்</Label>
+                <Input
+                  id="committee-father-name"
+                  value={form.father_name}
+                  onChange={(e) => setForm(prev => ({ ...prev, father_name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="committee-qualification">Qualification / தகுதி</Label>
+                <Input
+                  id="committee-qualification"
+                  value={form.qualification}
+                  onChange={(e) => setForm(prev => ({ ...prev, qualification: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="committee-phone">Mobile Number / கைபேசி எண்</Label>
+                <Input
+                  id="committee-phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="9876543210"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="committee-sort-order">Sort Order</Label>
+                <Input
+                  id="committee-sort-order"
+                  type="number"
+                  value={form.sort_order}
+                  onChange={(e) => setForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="committee-address">Address / முகவரி</Label>
+                <Textarea
+                  id="committee-address"
+                  rows={3}
+                  value={form.address}
+                  onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="முகவரி"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="committee-photo">Photo / புகைப்படம்</Label>
+                {form.photo_url ? (
+                  <div className="relative w-24 h-24">
+                    <img src={form.photo_url} alt="Preview" className="w-full h-full rounded-full object-cover" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-1 -right-1 h-6 w-6"
+                      onClick={() => setForm(prev => ({ ...prev, photo_url: "" }))}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Input id="committee-photo" type="file" accept="image/*" onChange={handleFormPhotoUpload} disabled={saving} />
+                )}
+              </div>
             </div>
           </div>
-          <div className="flex gap-2 justify-end p-6 pt-4 border-t shrink-0">
+          <div className="flex shrink-0 justify-end gap-2 border-t bg-background p-6 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
