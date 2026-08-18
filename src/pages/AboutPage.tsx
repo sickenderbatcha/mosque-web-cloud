@@ -20,7 +20,7 @@ const AboutPage = () => {
   const [loadingGallery, setLoadingGallery] = useState(true);
   const [documents, setDocuments] = useState<{ id: string; document_name: string; document_type: string; description: string | null; file_path: string; file_url: string }[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(true);
-  const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null }[]>([]);
+  const [committeeMembers, setCommitteeMembers] = useState<{ id: string; name: string; position: string; father_name: string | null; photo_url: string | null; qualification: string | null; phone: string | null; address: string | null }[]>([]);
   const [loadingCommittee, setLoadingCommittee] = useState(true);
   const [mosquePhotos, setMosquePhotos] = useState<{ mosque1: string; mosque2: string }>({ mosque1: "", mosque2: "" });
   const [belongItems, setBelongItems] = useState<{ id: string; title: string; title_tamil: string | null; description: string | null; description_tamil: string | null; image_url: string | null }[]>([]);
@@ -82,7 +82,7 @@ const AboutPage = () => {
       try {
         const { data, error } = await supabase
           .from("management_committee")
-          .select("id, name, position, father_name, photo_url, qualification")
+          .select("id, name, position, father_name, photo_url, qualification, phone, address")
           .eq("is_current", true)
           .order("sort_order", { ascending: true });
 
@@ -561,6 +561,14 @@ const AboutPage = () => {
                     <p className="text-sm text-primary font-medium">{member.position}</p>
                     {member.father_name && (
                       <p className="text-xs text-muted-foreground mt-1">S/o {member.father_name}</p>
+                    )}
+                    {member.phone && (
+                      <a href={`tel:${member.phone}`} className="text-xs text-primary hover:underline mt-1 block">
+                        {member.phone}
+                      </a>
+                    )}
+                    {member.address && (
+                      <p className="text-xs text-muted-foreground mt-1 font-tamil">{member.address}</p>
                     )}
                   </Card>
                 </motion.div>
