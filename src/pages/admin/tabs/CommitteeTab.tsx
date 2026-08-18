@@ -334,7 +334,7 @@ const CommitteeTab = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
               {editingMember ? "Edit Committee Member" : "Add Committee Member"}
