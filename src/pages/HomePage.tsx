@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import PrayerTimes from "@/components/PrayerTimes";
 import JumuahCountdown from "@/components/JumuahCountdown";
 import Announcements from "@/components/Announcements";
+import CommitteeSection from "@/components/CommitteeSection";
 import IslamicCalendar from "@/components/IslamicCalendar";
 import QuranVerseOfDay from "@/components/QuranVerseOfDay";
 
@@ -315,6 +316,9 @@ const HomePage = () => {
             </div>
           </section>
         );
+
+      case "committee":
+        return <CommitteeSection key="committee" />;
 
       case "announcements":
         return <Announcements key="announcements" />;
