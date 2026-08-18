@@ -22,6 +22,8 @@ interface CommitteeMember {
   photo_url: string | null;
   sort_order: number | null;
   is_current: boolean | null;
+  phone: string | null;
+  address: string | null;
 }
 
 const CommitteeTab = () => {
@@ -38,6 +40,8 @@ const CommitteeTab = () => {
     qualification: "",
     photo_url: "",
     sort_order: 0,
+    phone: "",
+    address: "",
   });
 
   useEffect(() => {
