@@ -199,6 +199,44 @@ const BookingsTab = () => {
   const isApprovedBooking = (booking: Booking) =>
     getNormalizedBookingStatus(booking.status) === "approved";
 
+  const isUnpaidBooking = (booking: Booking) => {
+    const paymentStatus = (booking.payment_status ?? "").trim().toLowerCase();
+    return paymentStatus !== "paid" && paymentStatus !== "completed" && paymentStatus !== "refunded";
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!markPaidBooking) return;
+    setIsMarkingPaid(true);
+
+    const { error } = await supabase
+      .from("mahal_bookings")
+      .update({ payment_status: "paid" })
+      .eq("id", markPaidBooking.id);
+
+    if (error) {
+      toast.error("பணம் பெறப்பட்டதாக பதிவு செய்ய முடியவில்லை (Failed to mark as paid)");
+      setIsMarkingPaid(false);
+      return;
+    }
+
+    logAdminAction({
+      action_type: "booking_marked_paid",
+      action_description: `Marked booking as paid for ${markPaidBooking.applicant_name} on ${markPaidBooking.event_date}`,
+      target_table: "mahal_bookings",
+      target_id: markPaidBooking.id,
+      target_details: {
+        applicant: markPaidBooking.applicant_name,
+        amount: markPaidBooking.booking_amount,
+      },
+    });
+
+    toast.success("பணம் பெறப்பட்டது பதிவு செய்யப்பட்டது. ரசீது எண் உருவாக்கப்பட்டது. (Marked as paid — receipt number generated)");
+    setMarkPaidBooking(null);
+    setIsMarkingPaid(false);
+    await fetchBookings();
+  };
+
+
   const handlePrintReceipt = (booking: Booking) => {
     if (!isApprovedBooking(booking)) {
       toast.error("Receipt can only be printed for approved bookings");
