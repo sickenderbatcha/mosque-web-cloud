@@ -201,7 +201,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = receiptNumber;
+  const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
