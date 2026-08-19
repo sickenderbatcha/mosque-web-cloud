@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Check, X, Printer, Ban } from "lucide-react";
+import { Check, X, Printer, Ban, IndianRupee } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
 // Receipt number is computed deterministically from booking UUID
