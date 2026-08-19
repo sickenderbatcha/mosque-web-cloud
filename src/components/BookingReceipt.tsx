@@ -121,7 +121,43 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
 
-  const receiptNumber = getBookingReceiptNumber(booking.bookingId);
+  const [receiptNumber, setReceiptNumber] = useState<string>("");
+  const [receiptLoading, setReceiptLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveReceiptNumber = async () => {
+      if (!booking.bookingId) {
+        setReceiptNumber("");
+        setReceiptLoading(false);
+        return;
+      }
+
+      setReceiptLoading(true);
+      try {
+        const resolved = await getLatestSequentialReceiptNumber({
+          referenceId: booking.bookingId,
+          referenceTypes: ["booking"],
+          retries: 12,
+          retryDelayMs: 800,
+        });
+        if (!cancelled) setReceiptNumber(resolved || "");
+      } catch (error) {
+        console.error("Failed to resolve booking receipt number", error);
+        if (!cancelled) setReceiptNumber("");
+      } finally {
+        if (!cancelled) setReceiptLoading(false);
+      }
+    };
+
+    void resolveReceiptNumber();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [booking.bookingId]);
+
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
