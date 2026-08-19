@@ -633,6 +633,8 @@ const UserDashboard = () => {
       end_time: booking.end_time,
     });
     setEditDialogOpen(true);
+    setBookedDatesForEdit([]);
+    setLoadingBookedDates(true);
 
     // Fetch booked dates to block in calendar
     const { data } = await supabase.rpc("get_mahal_availability", {
@@ -646,6 +648,7 @@ const UserDashboard = () => {
         .map((b) => b.event_date);
       setBookedDatesForEdit([...new Set(blocked)]);
     }
+    setLoadingBookedDates(false);
   };
 
   const saveBookingEdit = async () => {
