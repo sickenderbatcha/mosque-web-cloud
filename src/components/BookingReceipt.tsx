@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
+import { isSequentialReceiptNumber } from "@/lib/certificatePayments";
+import { supabase } from "@/integrations/supabase/client";
 
 
 // Tamil translations for event types
