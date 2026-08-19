@@ -56,6 +56,10 @@ const BookingsTab = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
 
+  // Mark as paid dialog states
+  const [markPaidBooking, setMarkPaidBooking] = useState<Booking | null>(null);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+
   useEffect(() => {
     fetchBookings();
   }, []);
