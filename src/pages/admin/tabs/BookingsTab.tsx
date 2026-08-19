@@ -390,6 +390,35 @@ const BookingsTab = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Mark as Paid Confirmation Dialog */}
+      <AlertDialog open={!!markPaidBooking} onOpenChange={() => { if (!isMarkingPaid) setMarkPaidBooking(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>பணம் பெறப்பட்டதாக பதிவு செய்யவா? (Mark payment as received?)</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  <strong>{markPaidBooking?.applicant_name}</strong> — ₹{Number(markPaidBooking?.booking_amount || 0).toLocaleString()} ({markPaidBooking?.event_type})
+                </p>
+                <p>
+                  இது ரொக்கப் பணமாக வரவில் பதிவு செய்யப்பட்டு, ரசீது எண் உருவாக்கப்படும். (This will be recorded as cash income and a running receipt number will be issued.)
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingPaid}>வேண்டாம் (No)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleMarkAsPaid(); }}
+              disabled={isMarkingPaid}
+            >
+              {isMarkingPaid ? "பதிவு செய்கிறது..." : "ஆம், பணம் பெறப்பட்டது (Yes, Mark Paid)"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
