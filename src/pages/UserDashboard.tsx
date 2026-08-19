@@ -2755,7 +2755,12 @@ const UserDashboard = () => {
             </Button>
             <Button
               onClick={saveBookingEdit}
-              disabled={savingBookingEdit || !editBookingData.event_date}
+              disabled={
+                savingBookingEdit ||
+                loadingBookedDates ||
+                !editBookingData.event_date ||
+                bookedDatesForEdit.includes(format(editBookingData.event_date, "yyyy-MM-dd"))
+              }
             >
               {savingBookingEdit ? (
                 <>
