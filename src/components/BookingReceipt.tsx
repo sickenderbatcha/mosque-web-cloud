@@ -1,4 +1,4 @@
-// BookingReceipt - uses deterministic BK-XXXXXXXX receipt number from booking UUID
+// BookingReceipt - uses the sequential receipt number issued by the database
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
@@ -7,11 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
+import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
 
-/** Compute the deterministic booking receipt number from UUID */
-const getBookingReceiptNumber = (bookingId: string): string => {
-  return "BK-" + bookingId.replace(/-/g, "").substring(0, 8).toUpperCase();
-};
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
