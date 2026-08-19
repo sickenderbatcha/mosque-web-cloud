@@ -666,8 +666,8 @@ const UserDashboard = () => {
       // Allow if same date as original booking, otherwise block
       if (conflict && conflict[0] && conflict[0].has_conflict && formattedDate !== editingBooking.event_date) {
         toast({
-          title: "தேதி ஏற்கனவே முன்பதிவு செய்யப்பட்டுள்ளது",
-          description: "இந்த தேதியில் ஏற்கனவே முன்பதிவு உள்ளது. வேறு தேதியைத் தேர்ந்தெடுக்கவும்.",
+          title: "This date is already booked",
+          description: "தேதி ஏற்கனவே முன் பதிவு செய்யப்பட்டு விட்டது",
           variant: "destructive",
         });
         setSavingBookingEdit(false);
