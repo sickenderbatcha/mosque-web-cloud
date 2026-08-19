@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
-import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
+import { isSequentialReceiptNumber } from "@/lib/certificatePayments";
+import { supabase } from "@/integrations/supabase/client";
 
 
 // Tamil translations for event types
@@ -136,12 +137,19 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
 
       setReceiptLoading(true);
       try {
-        const resolved = await getLatestSequentialReceiptNumber({
-          referenceId: booking.bookingId,
-          referenceTypes: ["booking"],
-          retries: 12,
-          retryDelayMs: 800,
-        });
+        let resolved: string | null = null;
+        for (let attempt = 0; attempt < 12; attempt++) {
+          const { data, error } = await (supabase as any).rpc("get_booking_receipt_number", {
+            _booking_id: booking.bookingId,
+          });
+          if (error) throw error;
+          if (isSequentialReceiptNumber(data as string | null)) {
+            resolved = data as string;
+            break;
+          }
+          if (cancelled) return;
+          await new Promise((r) => setTimeout(r, 800));
+        }
         if (!cancelled) setReceiptNumber(resolved || "");
       } catch (error) {
         console.error("Failed to resolve booking receipt number", error);
@@ -149,6 +157,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
       } finally {
         if (!cancelled) setReceiptLoading(false);
       }
+
     };
 
     void resolveReceiptNumber();

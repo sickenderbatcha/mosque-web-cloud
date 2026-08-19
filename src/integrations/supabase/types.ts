@@ -2559,6 +2559,10 @@ export type Database = {
           photo_url: string
         }[]
       }
+      get_booking_receipt_number: {
+        Args: { _booking_id: string }
+        Returns: string
+      }
       get_death_register: {
         Args: { _id: string }
         Returns: {
