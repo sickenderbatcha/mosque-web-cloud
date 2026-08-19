@@ -175,6 +175,7 @@ const UserDashboard = () => {
   const [savingBookingEdit, setSavingBookingEdit] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [bookedDatesForEdit, setBookedDatesForEdit] = useState<string[]>([]);
+  const [loadingBookedDates, setLoadingBookedDates] = useState(false);
   const [editDatePopoverOpen, setEditDatePopoverOpen] = useState(false);
   const [editDateDraft, setEditDateDraft] = useState<Date | undefined>(undefined);
   
