@@ -1,4 +1,4 @@
-// BookingReceipt - uses deterministic BK-XXXXXXXX receipt number from booking UUID
+// BookingReceipt - uses the sequential receipt number issued by the database
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Printer, X, Building2, Phone, Mail, Calendar, Clock, Users, IndianRupee, CheckCircle2, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
@@ -7,11 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
+import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
 
-/** Compute the deterministic booking receipt number from UUID */
-const getBookingReceiptNumber = (bookingId: string): string => {
-  return "BK-" + bookingId.replace(/-/g, "").substring(0, 8).toUpperCase();
-};
 
 // Tamil translations for event types
 const EVENT_TYPE_TAMIL: Record<string, string> = {
@@ -124,7 +121,43 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
   const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasActioned, setHasActioned] = useState(false);
 
-  const receiptNumber = getBookingReceiptNumber(booking.bookingId);
+  const [receiptNumber, setReceiptNumber] = useState<string>("");
+  const [receiptLoading, setReceiptLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveReceiptNumber = async () => {
+      if (!booking.bookingId) {
+        setReceiptNumber("");
+        setReceiptLoading(false);
+        return;
+      }
+
+      setReceiptLoading(true);
+      try {
+        const resolved = await getLatestSequentialReceiptNumber({
+          referenceId: booking.bookingId,
+          referenceTypes: ["booking"],
+          retries: 12,
+          retryDelayMs: 800,
+        });
+        if (!cancelled) setReceiptNumber(resolved || "");
+      } catch (error) {
+        console.error("Failed to resolve booking receipt number", error);
+        if (!cancelled) setReceiptNumber("");
+      } finally {
+        if (!cancelled) setReceiptLoading(false);
+      }
+    };
+
+    void resolveReceiptNumber();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [booking.bookingId]);
+
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -168,7 +201,7 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
     };
   }, [requireAction, hasActioned]);
 
-  const formattedReceiptNumber = receiptNumber;
+  const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
 
   const buildReceiptHTML = (fontCSS: string) => {
     const styles = `
@@ -386,14 +419,15 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
               </Button>
+
             </div>
           </div>
 
