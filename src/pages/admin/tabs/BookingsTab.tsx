@@ -420,7 +420,7 @@ const BookingsTab = () => {
 
 
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
@@ -461,12 +461,32 @@ const BookingsTab = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Online Payment Completed / Pending Approval</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-500">
+                {bookings.filter((b) => b.payment_status === "completed" && b.status === "pending").length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Online Payment Completed / Approved</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {bookings.filter((b) => b.payment_status === "completed" && b.status === "approved").length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">
                 ₹{bookings
-                  .filter((b) => b.payment_status === "paid")
+                  .filter((b) => b.payment_status === "paid" || b.payment_status === "completed")
                   .reduce((sum, b) => sum + Number(b.booking_amount || 0), 0)
                   .toLocaleString()}
               </div>
