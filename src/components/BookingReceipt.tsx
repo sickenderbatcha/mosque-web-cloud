@@ -419,14 +419,15 @@ const BookingReceipt = ({ booking, onClose, requireAction = false }: BookingRece
               <h2 className="font-semibold font-tamil text-sm">மஹால் முன்பதிவு ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
               </Button>
-              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload}>
+              <Button variant={requireAction && !hasActioned ? "default" : "outline"} size="sm" onClick={handleDownload} disabled={receiptLoading || !receiptNumber}>
                 <Download className="h-4 w-4 mr-2" />
                 பதிவிறக்கம்
               </Button>
+
             </div>
           </div>
 
