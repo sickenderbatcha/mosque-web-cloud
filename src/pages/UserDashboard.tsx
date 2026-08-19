@@ -855,6 +855,15 @@ const UserDashboard = () => {
 
   const initiatePayment = async (booking: Booking) => {
     if (!booking.booking_amount) return;
+
+    if (isBookingOnlinePaymentDisabled) {
+      toast({
+        title: "ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online payment disabled",
+        description: "தயவுசெய்து அலுவலகத்தில் ரொக்கமாக செலுத்தவும். Please pay in cash at the office.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setPayingBookingId(booking.id);
     
