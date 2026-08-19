@@ -420,7 +420,7 @@ const BookingsTab = () => {
 
 
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
@@ -446,6 +446,16 @@ const BookingsTab = () => {
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
                 {bookings.filter((b) => b.status === "approved").length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Paid</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600">
+                {bookings.filter((b) => b.payment_status === "paid").length}
               </div>
             </CardContent>
           </Card>
