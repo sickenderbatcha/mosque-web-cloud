@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Check, X, Printer, Ban } from "lucide-react";
+import { Check, X, Printer, Ban, IndianRupee } from "lucide-react";
 import BookingReceipt from "@/components/BookingReceipt";
 import TableFilter from "@/components/admin/TableFilter";
 // Receipt number is computed deterministically from booking UUID
@@ -55,6 +55,10 @@ const BookingsTab = () => {
   const [cancelBooking, setCancelBooking] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Mark as paid dialog states
+  const [markPaidBooking, setMarkPaidBooking] = useState<Booking | null>(null);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -194,6 +198,44 @@ const BookingsTab = () => {
 
   const isApprovedBooking = (booking: Booking) =>
     getNormalizedBookingStatus(booking.status) === "approved";
+
+  const isUnpaidBooking = (booking: Booking) => {
+    const paymentStatus = (booking.payment_status ?? "").trim().toLowerCase();
+    return paymentStatus !== "paid" && paymentStatus !== "completed" && paymentStatus !== "refunded";
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!markPaidBooking) return;
+    setIsMarkingPaid(true);
+
+    const { error } = await supabase
+      .from("mahal_bookings")
+      .update({ payment_status: "paid" })
+      .eq("id", markPaidBooking.id);
+
+    if (error) {
+      toast.error("பணம் பெறப்பட்டதாக பதிவு செய்ய முடியவில்லை (Failed to mark as paid)");
+      setIsMarkingPaid(false);
+      return;
+    }
+
+    logAdminAction({
+      action_type: "booking_marked_paid",
+      action_description: `Marked booking as paid for ${markPaidBooking.applicant_name} on ${markPaidBooking.event_date}`,
+      target_table: "mahal_bookings",
+      target_id: markPaidBooking.id,
+      target_details: {
+        applicant: markPaidBooking.applicant_name,
+        amount: markPaidBooking.booking_amount,
+      },
+    });
+
+    toast.success("பணம் பெறப்பட்டது பதிவு செய்யப்பட்டது. ரசீது எண் உருவாக்கப்பட்டது. (Marked as paid — receipt number generated)");
+    setMarkPaidBooking(null);
+    setIsMarkingPaid(false);
+    await fetchBookings();
+  };
+
 
   const handlePrintReceipt = (booking: Booking) => {
     if (!isApprovedBooking(booking)) {
@@ -348,6 +390,35 @@ const BookingsTab = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Mark as Paid Confirmation Dialog */}
+      <AlertDialog open={!!markPaidBooking} onOpenChange={() => { if (!isMarkingPaid) setMarkPaidBooking(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>பணம் பெறப்பட்டதாக பதிவு செய்யவா? (Mark payment as received?)</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  <strong>{markPaidBooking?.applicant_name}</strong> — ₹{Number(markPaidBooking?.booking_amount || 0).toLocaleString()} ({markPaidBooking?.event_type})
+                </p>
+                <p>
+                  இது ரொக்கப் பணமாக வரவில் பதிவு செய்யப்பட்டு, ரசீது எண் உருவாக்கப்படும். (This will be recorded as cash income and a running receipt number will be issued.)
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingPaid}>வேண்டாம் (No)</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleMarkAsPaid(); }}
+              disabled={isMarkingPaid}
+            >
+              {isMarkingPaid ? "பதிவு செய்கிறது..." : "ஆம், பணம் பெறப்பட்டது (Yes, Mark Paid)"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
@@ -484,6 +555,17 @@ const BookingsTab = () => {
                             title="ரத்து செய் (Cancel)"
                           >
                             <Ban className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isApprovedBooking(booking) && isUnpaidBooking(booking) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600"
+                            onClick={() => setMarkPaidBooking(booking)}
+                            title="பணம் பெறப்பட்டது (Mark as Paid)"
+                          >
+                            <IndianRupee className="h-4 w-4" />
                           </Button>
                         )}
                         {isApprovedBooking(booking) && (
