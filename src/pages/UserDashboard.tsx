@@ -240,13 +240,16 @@ const UserDashboard = () => {
   const nocFee = parseFloat(certificateFees.certificate_fee_noc) || 100;
   const heirFee = parseFloat(certificateFees.certificate_fee_heir) || 100;
 
-  // Respect the global "disable online payment for mahal booking" toggle
-  const { settings: paymentToggleSettings } = useAppSettings(["mahal_booking_online_disabled"]);
+  // Respect the global kill switch + the "disable online payment for mahal booking" toggle
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
   const canBypassOnlineDisable = isAdmin || canAccessTab("bookings");
+  const { disabled: bookingOnlineDisabled, isLoading: paymentToggleLoading } =
+    useOnlinePaymentAvailability("mahal_booking_online_disabled", canBypassOnlineDisable);
+  // Fail closed while settings are still loading
   const isBookingOnlinePaymentDisabled =
-    paymentToggleSettings.mahal_booking_online_disabled === "true" && !canBypassOnlineDisable;
+    bookingOnlineDisabled || (paymentToggleLoading && !canBypassOnlineDisable);
+
 
   const timeSlots = [
     "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
