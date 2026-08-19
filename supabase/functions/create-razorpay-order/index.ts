@@ -132,14 +132,18 @@ const handler = async (req: Request): Promise<Response> => {
       const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const svc = createClient(svcUrl, svcKey);
 
-      const expected = await resolveExpectedAmount(svc, {
-        type,
-        bookingId,
-        subscriptionId,
-        certificatePaymentId,
-        nocCertificateId,
-        donationId,
-      });
+      const expected = (type === "booking" && !bookingId)
+        ? await resolveBookingComboAmount(svc, Number(amount))
+        : await resolveExpectedAmount(svc, {
+          type,
+          bookingId,
+          subscriptionId,
+          certificatePaymentId,
+          nocCertificateId,
+          donationId,
+        });
+
+
 
       if (expected === null) {
         return new Response(
