@@ -64,6 +64,44 @@ async function resolveExpectedAmount(
   return await fetchAmount("mahal_bookings", "booking_amount", bookingId);
 }
 
+/**
+ * Mahal bookings are created only after payment succeeds, so no record exists yet at
+ * order-creation time. Validate the requested amount against the configured service
+ * rates: it must equal the sum of a non-empty subset of the three services.
+ */
+async function resolveBookingComboAmount(
+  svc: ReturnType<typeof createClient>,
+  requestedAmount: number,
+): Promise<number | null> {
+  if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) return null;
+
+  const defaults: Record<string, number> = {
+    booking_rate_nikkah_book: 3000,
+    booking_rate_hall: 15000,
+    booking_rate_food_facility: 7000,
+  };
+  const keys = Object.keys(defaults);
+
+  const { data } = await svc.from("app_settings").select("key, value").in("key", keys);
+  const rates = keys.map((key) => {
+    const row = (data as Array<{ key: string; value: string }> | null)?.find((r) => r.key === key);
+    const parsed = Number(row?.value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaults[key];
+  });
+
+  // Every non-empty subset total
+  for (let mask = 1; mask < 1 << rates.length; mask++) {
+    let total = 0;
+    for (let i = 0; i < rates.length; i++) {
+      if (mask & (1 << i)) total += rates[i];
+    }
+    if (Math.round(total * 100) === Math.round(requestedAmount * 100)) return total;
+  }
+
+  return null;
+}
+
+
 const handler = async (req: Request): Promise<Response> => {
   const corsHeaders = getCorsHeaders(req);
   // Handle CORS preflight requests
