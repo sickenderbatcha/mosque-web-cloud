@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
+import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -83,9 +84,11 @@ export default function HeirCertificatePage() {
   const { canAccessTab } = useUserTabPermissions();
   const { getSetting } = useAppSettings();
 
-  const heirCertOnlineDisabled = getSetting("heir_cert_online_disabled") === "true";
   const canBypassHeirOnlineDisable = isAdmin || canAccessTab("heir-certificates");
-  const isHeirOnlineDisabledForUser = heirCertOnlineDisabled && !canBypassHeirOnlineDisable;
+  const { disabled: isHeirOnlineDisabledForUser } = useOnlinePaymentAvailability(
+    "heir_cert_online_disabled",
+    canBypassHeirOnlineDisable
+  );
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [fetchingMember, setFetchingMember] = useState(false);
