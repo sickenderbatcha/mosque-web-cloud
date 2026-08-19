@@ -1209,19 +1209,27 @@ const UserDashboard = () => {
                                 </Button>
                               )}
                               {booking.status === "pending" && booking.payment_status === "pending" && booking.booking_amount && (
-                                <Button
-                                  size="sm"
-                                  className="h-auto py-1.5 px-2 text-xs sm:text-sm"
-                                  onClick={() => initiatePayment(booking)}
-                                  disabled={payingBookingId === booking.id}
-                                >
-                                  {payingBookingId === booking.id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1 shrink-0" />
-                                  ) : (
-                                    <CreditCard className="h-3.5 w-3.5 mr-1 shrink-0" />
-                                  )}
-                                  Pay Now
-                                </Button>
+                                isBookingOnlinePaymentDisabled ? (
+                                  <p className="text-xs text-muted-foreground w-full">
+                                    <span className="font-tamil">ஆன்லைன் பணம் செலுத்துதல் தற்போது கிடைக்கவில்லை. அலுவலகத்தில் ரொக்கமாக செலுத்தவும்.</span>
+                                    <br />
+                                    Online payment is currently unavailable. Please pay in cash at the office.
+                                  </p>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="h-auto py-1.5 px-2 text-xs sm:text-sm"
+                                    onClick={() => initiatePayment(booking)}
+                                    disabled={payingBookingId === booking.id}
+                                  >
+                                    {payingBookingId === booking.id ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-1 shrink-0" />
+                                    ) : (
+                                      <CreditCard className="h-3.5 w-3.5 mr-1 shrink-0" />
+                                    )}
+                                    Pay Now
+                                  </Button>
+                                )
                               )}
                               {/* Edit button - only for unpaid bookings */}
                               {(booking.status === "pending" || (booking.status === "approved" && booking.payment_status === "pending")) && (
