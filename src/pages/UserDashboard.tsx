@@ -2625,13 +2625,20 @@ const UserDashboard = () => {
                   setEditDatePopoverOpen(open);
                   if (open) setEditDateDraft(editBookingData.event_date);
                 }}>
-                  <PopoverTrigger asChild>
+                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className="w-full justify-start text-left font-normal"
+                      disabled={loadingBookedDates}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {editBookingData.event_date ? (
+                      {loadingBookedDates ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                      )}
+                      {loadingBookedDates ? (
+                        <span>Checking availability...</span>
+                      ) : editBookingData.event_date ? (
                         format(editBookingData.event_date, "dd/MM/yyyy")
                       ) : (
                         <span>Pick a date</span>
@@ -2645,18 +2652,21 @@ const UserDashboard = () => {
                       onSelect={(date) => {
                         if (date && bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))) {
                           toast({
-                            title: "தேதி கிடைக்கவில்லை",
-                            description: "இந்த தேதி ஏற்கனவே முன்பதிவு செய்யப்பட்டுள்ளது. வேறு தேதியைத் தேர்ந்தெடுக்கவும்.",
+                            title: "This date is already booked",
+                            description: "தேதி ஏற்கனவே முன் பதிவு செய்யப்பட்டு விட்டது",
                             variant: "destructive",
                           });
                           return;
                         }
                         setEditDateDraft(date ?? undefined);
                       }}
-                      disabled={(date) =>
-                        date < new Date() ||
-                        bookedDatesForEdit.includes(format(date, "yyyy-MM-dd"))
-                      }
+                      disabled={(date) => date < new Date()}
+                      modifiers={{
+                        booked: (date) => bookedDatesForEdit.includes(format(date, "yyyy-MM-dd")),
+                      }}
+                      modifiersClassNames={{
+                        booked: "line-through text-destructive opacity-70",
+                      }}
                       initialFocus
                       className="pointer-events-auto"
                     />
@@ -2672,6 +2682,10 @@ const UserDashboard = () => {
                       <Button
                         type="button"
                         size="sm"
+                        disabled={
+                          !!editDateDraft &&
+                          bookedDatesForEdit.includes(format(editDateDraft, "yyyy-MM-dd"))
+                        }
                         onClick={() => {
                           setEditBookingData(prev => ({ ...prev, event_date: editDateDraft }));
                           setEditDatePopoverOpen(false);
@@ -2682,6 +2696,12 @@ const UserDashboard = () => {
                     </div>
                   </PopoverContent>
                 </Popover>
+                {editBookingData.event_date &&
+                  bookedDatesForEdit.includes(format(editBookingData.event_date, "yyyy-MM-dd")) && (
+                    <p className="text-sm text-destructive">
+                      This date is already booked / தேதி ஏற்கனவே முன் பதிவு செய்யப்பட்டு விட்டது
+                    </p>
+                  )}
               </div>
               
               <div className="grid grid-cols-2 gap-4">
