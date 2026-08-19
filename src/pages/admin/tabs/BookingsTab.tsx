@@ -557,6 +557,17 @@ const BookingsTab = () => {
                             <Ban className="h-4 w-4" />
                           </Button>
                         )}
+                        {isApprovedBooking(booking) && isUnpaidBooking(booking) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600"
+                            onClick={() => setMarkPaidBooking(booking)}
+                            title="பணம் பெறப்பட்டது (Mark as Paid)"
+                          >
+                            <IndianRupee className="h-4 w-4" />
+                          </Button>
+                        )}
                         {isApprovedBooking(booking) && (
                           <Button
                             size="sm"
