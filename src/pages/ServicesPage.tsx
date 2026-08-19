@@ -18,6 +18,7 @@ import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from 
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
+import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
 import { Badge } from "@/components/ui/badge";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import CashPaymentRequestDialog from "@/components/CashPaymentRequestDialog";
@@ -62,14 +63,20 @@ const ServicesPage = () => {
 
   const canBypassCertOnlineDisable = isAdmin || canAccessTab("certificate-payments");
 
-  const bonafideCertOnlineDisabled = getSetting("bonafide_cert_online_disabled") === "true";
-  const isBonafideOnlineDisabledForUser = bonafideCertOnlineDisabled && !canBypassCertOnlineDisable;
+  const { disabled: isBonafideOnlineDisabledForUser } = useOnlinePaymentAvailability(
+    "bonafide_cert_online_disabled",
+    canBypassCertOnlineDisable
+  );
 
-  const marriageCertOnlineDisabled = getSetting("marriage_cert_online_disabled") === "true";
-  const isMarriageOnlineDisabledForUser = marriageCertOnlineDisabled && !canBypassCertOnlineDisable;
+  const { disabled: isMarriageOnlineDisabledForUser } = useOnlinePaymentAvailability(
+    "marriage_cert_online_disabled",
+    canBypassCertOnlineDisable
+  );
 
-  const deathCertOnlineDisabled = getSetting("death_cert_online_disabled") === "true";
-  const isDeathOnlineDisabledForUser = deathCertOnlineDisabled && !canBypassCertOnlineDisable;
+  const { disabled: isDeathOnlineDisabledForUser } = useOnlinePaymentAvailability(
+    "death_cert_online_disabled",
+    canBypassCertOnlineDisable
+  );
 
   // Cash payment request dialog state
   const [showCertCashDialog, setShowCertCashDialog] = useState(false);

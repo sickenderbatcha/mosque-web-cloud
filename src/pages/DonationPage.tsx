@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
+import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
 import { Heart, User, Phone, CreditCard, Loader2, Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,11 +138,14 @@ const subscriptionSchema = z.object({
 const SubscriptionForm = () => {
   const { settings, isLoading: settingsLoading } = useAppSettings();
   const forcePendingEnabled = (settings?.force_pending_subscription || "false") === "true";
-  const donationOnlineDisabled = (settings?.donation_subscription_online_disabled || "false") === "true";
+
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
   const canCashPay = isAdmin || canAccessTab('donations');
-  const isOnlineDisabledForPublic = donationOnlineDisabled && !canCashPay;
+  const { disabled: isOnlineDisabledForPublic } = useOnlinePaymentAvailability(
+    "donation_subscription_online_disabled",
+    canCashPay
+  );
   const [membershipNumber, setMembershipNumber] = useState("");
   const [memberName, setMemberName] = useState("");
   const [memberPhone, setMemberPhone] = useState("");
@@ -1245,8 +1249,11 @@ const DonationPage = () => {
   const { canAccessTab } = useUserTabPermissions();
   const canCashPay = isAdmin || canAccessTab('donations');
   const { settings, isLoading: settingsLoading } = useAppSettings();
-  const donationOnlineDisabled = (settings?.donation_subscription_online_disabled || "false") === "true";
-  const isOnlineDisabledForPublic = donationOnlineDisabled && !canCashPay;
+
+  const { disabled: isOnlineDisabledForPublic } = useOnlinePaymentAvailability(
+    "donation_subscription_online_disabled",
+    canCashPay
+  );
   const [donorName, setDonorName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");

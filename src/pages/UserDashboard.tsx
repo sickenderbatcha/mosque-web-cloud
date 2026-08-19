@@ -35,6 +35,7 @@ import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
+import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
 import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";

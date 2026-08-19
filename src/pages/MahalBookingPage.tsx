@@ -42,6 +42,7 @@ const bookingSchema = z.object({
 
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
+import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
 
 const MahalBookingPage = () => {
   const { user, loading: authLoading } = useAuth();
@@ -56,7 +57,10 @@ const MahalBookingPage = () => {
     "booking_alert_message",
     "mahal_booking_online_disabled",
   ]);
-  const isOnlineBookingDisabled = bookingSettings.mahal_booking_online_disabled === "true" && !canDoCashPayment;
+  const { disabled: isOnlineBookingDisabled } = useOnlinePaymentAvailability(
+    "mahal_booking_online_disabled",
+    canDoCashPayment
+  );
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
