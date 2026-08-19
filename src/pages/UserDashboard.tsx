@@ -33,6 +33,8 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
@@ -237,6 +239,14 @@ const UserDashboard = () => {
   const { settings: certificateFees } = useAppSettings(["certificate_fee_noc", "certificate_fee_heir", "certificate_fee_marriage", "certificate_fee_death", "certificate_fee_outside_marriage"]);
   const nocFee = parseFloat(certificateFees.certificate_fee_noc) || 100;
   const heirFee = parseFloat(certificateFees.certificate_fee_heir) || 100;
+
+  // Respect the global "disable online payment for mahal booking" toggle
+  const { settings: paymentToggleSettings } = useAppSettings(["mahal_booking_online_disabled"]);
+  const { isAdmin } = useUserRole();
+  const { canAccessTab } = useUserTabPermissions();
+  const canBypassOnlineDisable = isAdmin || canAccessTab("bookings");
+  const isBookingOnlinePaymentDisabled =
+    paymentToggleSettings.mahal_booking_online_disabled === "true" && !canBypassOnlineDisable;
 
   const timeSlots = [
     "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
@@ -845,6 +855,15 @@ const UserDashboard = () => {
 
   const initiatePayment = async (booking: Booking) => {
     if (!booking.booking_amount) return;
+
+    if (isBookingOnlinePaymentDisabled) {
+      toast({
+        title: "ஆன்லைன் பணம் செலுத்துதல் முடக்கப்பட்டுள்ளது / Online payment disabled",
+        description: "தயவுசெய்து அலுவலகத்தில் ரொக்கமாக செலுத்தவும். Please pay in cash at the office.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setPayingBookingId(booking.id);
     
@@ -1190,19 +1209,27 @@ const UserDashboard = () => {
                                 </Button>
                               )}
                               {booking.status === "pending" && booking.payment_status === "pending" && booking.booking_amount && (
-                                <Button
-                                  size="sm"
-                                  className="h-auto py-1.5 px-2 text-xs sm:text-sm"
-                                  onClick={() => initiatePayment(booking)}
-                                  disabled={payingBookingId === booking.id}
-                                >
-                                  {payingBookingId === booking.id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1 shrink-0" />
-                                  ) : (
-                                    <CreditCard className="h-3.5 w-3.5 mr-1 shrink-0" />
-                                  )}
-                                  Pay Now
-                                </Button>
+                                isBookingOnlinePaymentDisabled ? (
+                                  <p className="text-xs text-muted-foreground w-full">
+                                    <span className="font-tamil">ஆன்லைன் பணம் செலுத்துதல் தற்போது கிடைக்கவில்லை. அலுவலகத்தில் ரொக்கமாக செலுத்தவும்.</span>
+                                    <br />
+                                    Online payment is currently unavailable. Please pay in cash at the office.
+                                  </p>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="h-auto py-1.5 px-2 text-xs sm:text-sm"
+                                    onClick={() => initiatePayment(booking)}
+                                    disabled={payingBookingId === booking.id}
+                                  >
+                                    {payingBookingId === booking.id ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-1 shrink-0" />
+                                    ) : (
+                                      <CreditCard className="h-3.5 w-3.5 mr-1 shrink-0" />
+                                    )}
+                                    Pay Now
+                                  </Button>
+                                )
                               )}
                               {/* Edit button - only for unpaid bookings */}
                               {(booking.status === "pending" || (booking.status === "approved" && booking.payment_status === "pending")) && (
