@@ -33,6 +33,8 @@ import { ScrollText, FileText } from "lucide-react";
 import CertificateReceipt, { CertificateReceiptData } from "@/components/CertificateReceipt";
 import BookingReceipt from "@/components/BookingReceipt";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { getLatestSequentialReceiptMap } from "@/lib/certificatePayments";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
