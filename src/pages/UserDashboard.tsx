@@ -1611,7 +1611,8 @@ const UserDashboard = () => {
                     <CardDescription>Your payment history and receipts</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 ? (
+                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 &&
+                     certificatePayments.filter(cp => cp.payment_status === 'completed').length === 0 ? (
                       <div className="text-center py-8">
                         <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground font-tamil">பணம் செலுத்தல் இல்லை</p>
