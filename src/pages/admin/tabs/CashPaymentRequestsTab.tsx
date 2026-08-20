@@ -122,6 +122,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-gray-100 text-gray-800",
 };
 
+const isUnlinkedHeirRequest = (request: CashPaymentRequest | null): boolean =>
+  request?.service_type === "heir" && !request.reference_id;
+
+const getSettlementErrorMessage = (error: unknown): string => {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return "Error updating status";
+};
+
 const CashPaymentRequestsTab = () => {
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState<CashPaymentRequest | null>(null);
@@ -242,7 +253,7 @@ const CashPaymentRequestsTab = () => {
     },
     onError: (error) => {
       console.error("Error marking as paid:", error);
-      toast.error("நிலை புதுப்பிக்கத்தில் பிழை (Error updating status)");
+      toast.error(`நிலை புதுப்பிக்கத்தில் பிழை: ${getSettlementErrorMessage(error)}`);
     },
   });
  
@@ -701,7 +712,7 @@ const CashPaymentRequestsTab = () => {
                           <Eye className="h-4 w-4 mr-1" />
                           விவரங்கள்
                         </Button>
-                         {(request.status === "approved" || request.status === "paid") && (
+                         {(request.status === "approved" || request.status === "paid") && !isUnlinkedHeirRequest(request) && (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -824,10 +835,21 @@ const CashPaymentRequestsTab = () => {
                   )}
                 </div>
               )}
+
+              {isUnlinkedHeirRequest(selectedRequest) && (
+                <div className="border border-destructive/40 bg-destructive/10 rounded-lg p-3 text-sm text-destructive">
+                  <p className="font-medium">
+                    இந்த பழைய கோரிக்கையுடன் வாரிசு சான்றிதழ் விண்ணப்பம் இணைக்கப்படவில்லை. ரசீது வழங்கவோ பணம் பெற்றதாக குறிக்கவோ முடியாது.
+                  </p>
+                  <p className="mt-1">
+                    This legacy request has no linked heir certificate application. Cancel it and ask the member to submit a new request.
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t mt-4 shrink-0">
-             {(selectedRequest?.status === "approved" || selectedRequest?.status === "paid") && (
+             {(selectedRequest?.status === "approved" || selectedRequest?.status === "paid") && !isUnlinkedHeirRequest(selectedRequest) && (
               <Button
                 variant="outline"
                 onClick={() => {
