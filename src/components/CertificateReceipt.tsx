@@ -24,6 +24,8 @@ const CERTIFICATE_TYPE_TAMIL: Record<string, string> = {
   death: "இறப்பு சான்றிதழ்",
   noc: "ஆட்சேபனையின்மை சான்றிதழ்",
   heir: "வாரிசு சான்றிதழ்",
+  outside_marriage: "வெளியூர் திருமண சான்றிதழ்",
+  bonafide: "பொனாபைடு சான்றிதழ்",
 };
 
 const CERTIFICATE_TYPE_ENGLISH: Record<string, string> = {
@@ -31,10 +33,12 @@ const CERTIFICATE_TYPE_ENGLISH: Record<string, string> = {
   death: "Death Certificate",
   noc: "NOC Certificate",
   heir: "Heir Certificate",
+  outside_marriage: "Outside Marriage Certificate",
+  bonafide: "Bonafide Certificate",
 };
 
 export interface CertificateReceiptData {
-  certificateType: "marriage" | "death" | "noc" | "heir" | "outside_marriage";
+  certificateType: "marriage" | "death" | "noc" | "heir" | "outside_marriage" | "bonafide";
   applicantName: string;
   applicantPhone?: string;
   applicantEmail?: string;
