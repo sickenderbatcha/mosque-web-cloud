@@ -887,7 +887,7 @@ const CashPaymentRequestsTab = () => {
               disabled={markAsPaidMutation.isPending}
               onClick={() => {
                 if (!confirmPrintRequest) return;
-                if (confirmPrintRequest.status === "approved" && confirmPrintRequest.service_type === "heir") {
+                if (confirmPrintRequest.service_type === "heir") {
                   markAsPaidMutation.mutate(confirmPrintRequest.id);
                 } else {
                   setReceiptRequest(confirmPrintRequest);
