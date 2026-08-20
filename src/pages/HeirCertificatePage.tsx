@@ -943,6 +943,37 @@ export default function HeirCertificatePage() {
               applicantRelationship: form.getValues("applicant_relationship"),
               heirsCount: heirs.filter(h => h.name.trim() !== "").length,
             }}
+            onBeforeSubmit={
+              !cashRequestData.referenceId
+                ? async () => {
+                    const formData = form.getValues();
+                    const filledHeirs = heirs.filter(h => h.name.trim() !== "");
+                    const { data: heirData, error: heirError } = await supabase
+                      .from("heir_certificates")
+                      .insert([{
+                        applicant_name: formData.applicant_name,
+                        applicant_phone: formData.applicant_phone,
+                        applicant_email: formData.applicant_email || null,
+                        applicant_relationship: formData.applicant_relationship,
+                        deceased_member_id: formData.deceased_member_id || null,
+                        deceased_name: formData.deceased_name,
+                        deceased_father_name: formData.deceased_father_name,
+                        deceased_address: formData.deceased_address,
+                        heirs: (formData.heirs?.length ? formData.heirs : filledHeirs) as any,
+                        status: "payment_pending",
+                        payment_status: "pending",
+                        user_id: user?.id || null,
+                      }])
+                      .select()
+                      .single();
+
+                    if (heirError) throw heirError;
+                    setHeirRecordId(heirData.id);
+                    return heirData.id;
+                  }
+                : undefined
+            }
+
             onSuccess={() => {
               setCashRequestData(null);
               form.reset();
