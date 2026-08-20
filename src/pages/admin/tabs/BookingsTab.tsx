@@ -420,23 +420,13 @@ const BookingsTab = () => {
 
 
       <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{bookings.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                {bookings.filter((b) => b.status === "pending").length}
-              </div>
             </CardContent>
           </Card>
           <Card>
@@ -451,31 +441,21 @@ const BookingsTab = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Paid</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">
-                {bookings.filter((b) => b.payment_status === "paid").length}
+              <div className="text-2xl font-bold text-yellow-600">
+                {bookings.filter((b) => b.status === "pending").length}
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Online Payment Completed / Pending Approval</CardTitle>
+              <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-500">
-                {bookings.filter((b) => b.payment_status === "completed" && b.status === "pending").length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Online Payment Completed / Approved</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {bookings.filter((b) => b.payment_status === "completed" && b.status === "approved").length}
+              <div className="text-2xl font-bold text-destructive">
+                {bookings.filter((b) => b.status === "cancelled").length}
               </div>
             </CardContent>
           </Card>
