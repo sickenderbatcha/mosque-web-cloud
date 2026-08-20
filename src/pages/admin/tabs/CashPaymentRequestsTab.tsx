@@ -375,13 +375,25 @@ const CashPaymentRequestsTab = () => {
 
         case "certificate":
           if (reference_id) {
-            const { error } = await supabase
+            // Existing certificate_payments row may be referenced directly by id
+            const { data: byId } = await supabase
               .from("certificate_payments")
-              .update({ payment_status: "completed", payment_method: "cash" })
-              .eq("id", reference_id);
-            if (error) throw error;
+              .select("id")
+              .eq("id", reference_id)
+              .maybeSingle();
+
+            if (byId?.id) {
+              const { error } = await supabase
+                .from("certificate_payments")
+                .update({ payment_status: "completed", payment_method: "cash" })
+                .eq("id", byId.id);
+              if (error) throw error;
+            } else {
+              await ensureCompletedCertificatePayment(request);
+            }
           }
           break;
+
 
         case "noc":
           if (reference_id) {
