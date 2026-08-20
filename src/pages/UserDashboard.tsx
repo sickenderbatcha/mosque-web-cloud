@@ -400,7 +400,7 @@ const UserDashboard = () => {
           .from("certificate_payments")
           .select("id, certificate_type, reference_id, applicant_name, applicant_phone, applicant_email, amount, payment_status, payment_method, transaction_id, razorpay_payment_id, created_at")
           .eq("user_id", user.id)
-          .in("certificate_type", ["marriage", "death", "outside_marriage"])
+          .in("certificate_type", ["marriage", "death", "outside_marriage", "bonafide"])
           .order("created_at", { ascending: false }),
       ]);
 
@@ -2213,7 +2213,7 @@ const UserDashboard = () => {
                   <CardHeader>
                     <div className="min-w-0">
                       <CardTitle className="font-tamil break-words">சான்றிதழ் பணம் செலுத்தல்கள்</CardTitle>
-                      <CardDescription>Your marriage, death & outside marriage certificate payments</CardDescription>
+                      <CardDescription>Your marriage, death, outside marriage & bonafide certificate payments</CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -2227,10 +2227,13 @@ const UserDashboard = () => {
                       <div className="space-y-4">
                         {certificatePayments.map((cp) => {
                           const isPaid = cp.payment_status === "completed";
+                          const isBonafide = cp.certificate_type === "bonafide";
                           const certTypeLabel = cp.certificate_type === "marriage" 
                             ? "திருமணச்சான்றிதழ் (Marriage)" 
                             : cp.certificate_type === "death" 
                             ? "இறப்புச்சான்றிதழ் (Death)" 
+                            : isBonafide
+                            ? "பொனாபைடு சான்றிதழ் (Bonafide)"
                             : "வெளியூர் திருமணச்சான்றிதழ் (Outside Marriage)";
                           
                           return (
