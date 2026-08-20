@@ -168,72 +168,10 @@ const CashPaymentRequestsTab = () => {
 
   const ensureCompletedCertificatePayment = async (
     request: CashPaymentRequest,
-    certificateType: "noc" | "heir"
-  ): Promise<string | null> => {
-    if (!request.reference_id) return null;
+    certificateType?: string
+  ): Promise<string | null> =>
+    ensureCompletedCashCertificatePayment(request as any, certificateType);
 
-    const { data: existingPayments, error: existingError } = await supabase
-      .from("certificate_payments")
-      .select("id, payment_status, payment_method")
-      .eq("reference_id", request.reference_id)
-      .eq("certificate_type", certificateType)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    if (existingError) throw existingError;
-
-    const existingPayment = existingPayments?.[0];
-
-    if (existingPayment) {
-      if (existingPayment.payment_status !== "completed" || existingPayment.payment_method !== "cash") {
-        const { error: updateError } = await supabase
-          .from("certificate_payments")
-          .update({
-            payment_status: "completed",
-            payment_method: "cash",
-            amount: request.amount,
-            applicant_name: request.applicant_name,
-            applicant_phone: request.applicant_phone,
-            applicant_email: request.applicant_email,
-            user_id: request.user_id,
-            transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
-          })
-          .eq("id", existingPayment.id);
-
-        if (updateError) throw updateError;
-      }
-
-      return existingPayment.id;
-    }
-
-    const { data: createdPayment, error: createError } = await supabase
-      .from("certificate_payments")
-      .insert({
-        reference_id: request.reference_id,
-        certificate_type: certificateType,
-        applicant_name: request.applicant_name,
-        applicant_phone: request.applicant_phone,
-        applicant_email: request.applicant_email,
-        user_id: request.user_id,
-        amount: request.amount,
-        payment_status: "pending",
-        payment_method: "cash",
-        transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
-      })
-      .select("id")
-      .single();
-
-    if (createError) throw createError;
-
-    const { error: finalizeError } = await supabase
-      .from("certificate_payments")
-      .update({ payment_status: "completed", payment_method: "cash" })
-      .eq("id", createdPayment.id);
-
-    if (finalizeError) throw finalizeError;
-
-    return createdPayment.id;
-  };
 
   const markAsPaidMutation = useMutation({
     mutationFn: async (id: string) => {
