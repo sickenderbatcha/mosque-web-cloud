@@ -2618,6 +2618,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_donation_receipt_number: {
+        Args: { _donation_id: string }
+        Returns: string
+      }
       get_mahal_availability: {
         Args: { _end: string; _start: string }
         Returns: {
