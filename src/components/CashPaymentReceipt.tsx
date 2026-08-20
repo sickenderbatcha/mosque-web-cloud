@@ -509,8 +509,16 @@ import { useRef, useState, useEffect } from "react";
              {/* Receipt Number */}
              <div className="bg-muted rounded-lg p-3 text-center">
                <p className="text-xs text-muted-foreground">ரசீது எண் / Receipt Number</p>
-                <p className="font-mono font-bold text-lg">{receiptLoading ? "Loading..." : receiptNumber || "Pending sync"}</p>
+                <p className="font-mono font-bold text-lg">{receiptLoading ? "Loading..." : receiptNumber || (missingReference ? "—" : "Pending sync")}</p>
+                {!receiptLoading && missingReference && (
+                  <p className="text-xs text-destructive mt-1">
+                    இந்த கோரிக்கையுடன் பதிவு இணைக்கப்படவில்லை — ரசீது வழங்க முடியாது.
+                    <br />
+                    No service record linked to this request — a receipt cannot be issued.
+                  </p>
+                )}
              </div>
+
  
              {/* Footer */}
              <div className="text-center mt-6 pt-4 border-t-2 border-dashed border-primary/30">
