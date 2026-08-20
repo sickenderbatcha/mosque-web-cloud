@@ -400,7 +400,7 @@ const UserDashboard = () => {
           .from("certificate_payments")
           .select("id, certificate_type, reference_id, applicant_name, applicant_phone, applicant_email, amount, payment_status, payment_method, transaction_id, razorpay_payment_id, created_at")
           .eq("user_id", user.id)
-          .in("certificate_type", ["marriage", "death", "outside_marriage"])
+          .in("certificate_type", ["marriage", "death", "outside_marriage", "bonafide"])
           .order("created_at", { ascending: false }),
       ]);
 
@@ -1611,7 +1611,8 @@ const UserDashboard = () => {
                     <CardDescription>Your payment history and receipts</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 ? (
+                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 &&
+                     certificatePayments.filter(cp => cp.payment_status === 'completed').length === 0 ? (
                       <div className="text-center py-8">
                         <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground font-tamil">பணம் செலுத்தல் இல்லை</p>
@@ -1675,6 +1676,85 @@ const UserDashboard = () => {
                               </div>
                             </div>
                           ))}
+
+                        {certificatePayments
+                          .filter((cp) => cp.payment_status === "completed")
+                          .map((cp) => {
+                            const typeLabel = cp.certificate_type === "marriage"
+                              ? "திருமணச்சான்றிதழ் (Marriage)"
+                              : cp.certificate_type === "death"
+                              ? "இறப்புச்சான்றிதழ் (Death)"
+                              : cp.certificate_type === "bonafide"
+                              ? "பொனாபைடு சான்றிதழ் (Bonafide)"
+                              : "வெளியூர் திருமணச்சான்றிதழ் (Outside Marriage)";
+                            const method = (cp.payment_method || (cp.razorpay_payment_id ? "online" : "cash")).toLowerCase();
+
+                            return (
+                              <div
+                                key={`cert-payment-${cp.id}`}
+                                className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                              >
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="p-2 rounded-full bg-green-500/10">
+                                      <FileText className="h-4 w-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold font-tamil">{typeLabel}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {method === "online" ? "Online Payment" : "Cash Payment"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
+                                </div>
+
+                                <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Amount</span>
+                                    <span className="font-semibold text-primary">₹{cp.amount?.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Paid On</span>
+                                    <span>{formatDate(cp.created_at)}</span>
+                                  </div>
+                                  {certReceiptNumberMap[cp.id] && (
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-muted-foreground">Receipt No.</span>
+                                      <span className="font-mono font-semibold text-primary">
+                                        {certReceiptNumberMap[cp.id]}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-3 pt-3 border-t flex items-center justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="gap-1"
+                                    onClick={() => setShowCertReceipt({
+                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage" | "bonafide",
+                                      applicantName: cp.applicant_name,
+                                      applicantPhone: cp.applicant_phone || undefined,
+                                      applicantEmail: cp.applicant_email || undefined,
+                                      subjectName: cp.applicant_name,
+                                      amount: cp.amount,
+                                      receiptNumber: certReceiptNumberMap[cp.id] || "",
+                                      referenceId: cp.id,
+                                      referenceType: "certificate_payment",
+                                      paymentMethod: method,
+                                      transactionId: cp.razorpay_payment_id || cp.transaction_id || undefined,
+                                      createdAt: cp.created_at,
+                                    })}
+                                  >
+                                    <Eye className="h-3.5 w-3.5" />
+                                    View Receipt
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
                       </div>
                     )}
                   </CardContent>
@@ -2213,7 +2293,7 @@ const UserDashboard = () => {
                   <CardHeader>
                     <div className="min-w-0">
                       <CardTitle className="font-tamil break-words">சான்றிதழ் பணம் செலுத்தல்கள்</CardTitle>
-                      <CardDescription>Your marriage, death & outside marriage certificate payments</CardDescription>
+                      <CardDescription>Your marriage, death, outside marriage & bonafide certificate payments</CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -2227,10 +2307,13 @@ const UserDashboard = () => {
                       <div className="space-y-4">
                         {certificatePayments.map((cp) => {
                           const isPaid = cp.payment_status === "completed";
+                          const isBonafide = cp.certificate_type === "bonafide";
                           const certTypeLabel = cp.certificate_type === "marriage" 
                             ? "திருமணச்சான்றிதழ் (Marriage)" 
                             : cp.certificate_type === "death" 
                             ? "இறப்புச்சான்றிதழ் (Death)" 
+                            : isBonafide
+                            ? "பொனாபைடு சான்றிதழ் (Bonafide)"
                             : "வெளியூர் திருமணச்சான்றிதழ் (Outside Marriage)";
                           
                           return (
@@ -2273,7 +2356,7 @@ const UserDashboard = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setShowCertReceipt({
-                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage",
+                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage" | "bonafide",
                                       applicantName: cp.applicant_name,
                                       applicantPhone: cp.applicant_phone || undefined,
                                       applicantEmail: cp.applicant_email || undefined,
@@ -2291,7 +2374,7 @@ const UserDashboard = () => {
                                     Receipt
                                   </Button>
                                 )}
-                                {isPaid && (
+                                {isPaid && !isBonafide && (
                                   <>
                                     <Button
                                       variant="outline"
