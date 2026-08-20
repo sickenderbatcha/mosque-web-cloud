@@ -527,7 +527,7 @@ const CashPaymentRequestsTab = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -553,6 +553,19 @@ const CashPaymentRequestsTab = () => {
           </CardContent>
         </Card>
         <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">பணம் பெறப்பட்டது (Cash Paid)</p>
+                <p className="text-2xl font-bold">{stats?.paidCount || 0}</p>
+                <p className="text-sm text-muted-foreground">₹{stats?.paidAmount?.toLocaleString() || 0}</p>
+              </div>
+              <IndianRupee className="h-8 w-8 text-emerald-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
