@@ -57,7 +57,7 @@ export async function ensureCompletedCashCertificatePayment(
 
   const { data: existingPayments, error: existingError } = await supabase
     .from("certificate_payments")
-    .select("id, payment_status, payment_method")
+    .select("id, payment_status, payment_method, user_id")
     .eq("reference_id", request.reference_id)
     .eq("certificate_type", certificateType)
     .order("created_at", { ascending: false })
@@ -68,9 +68,12 @@ export async function ensureCompletedCashCertificatePayment(
   const existingPayment = existingPayments?.[0];
 
   if (existingPayment) {
+    const needsOwner = !existingPayment.user_id && !!request.user_id;
+
     if (
       existingPayment.payment_status !== "completed" ||
-      existingPayment.payment_method !== "cash"
+      existingPayment.payment_method !== "cash" ||
+      needsOwner
     ) {
       const { error: updateError } = await supabase
         .from("certificate_payments")
@@ -81,7 +84,7 @@ export async function ensureCompletedCashCertificatePayment(
           applicant_name: request.applicant_name,
           applicant_phone: request.applicant_phone,
           applicant_email: request.applicant_email,
-          user_id: request.user_id ?? null,
+          user_id: existingPayment.user_id ?? request.user_id ?? null,
           transaction_id: transactionId,
         })
         .eq("id", existingPayment.id);
