@@ -55,6 +55,7 @@ import { useRef, useState, useEffect } from "react";
       admin_notes: string | null;
       user_id?: string | null;
       status?: string;
+       generated_receipt_number?: string;
    };
    onClose: () => void;
    onPrinted?: (requestId: string) => void;
@@ -64,14 +65,21 @@ import { useRef, useState, useEffect } from "react";
    const receiptRef = useRef<HTMLDivElement>(null);
    const { settings: headerSettings } = useReceiptHeaderSettings();
   const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
-  const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
-  const [receiptLoading, setReceiptLoading] = useState(true);
+  const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(
+    request.generated_receipt_number || null
+  );
+  const [receiptLoading, setReceiptLoading] = useState(!request.generated_receipt_number);
   const [missingReference, setMissingReference] = useState(false);
 
   // Try to fetch the actual sequential receipt number from the income table
     // Uses retries to handle the case where DB trigger hasn't fired yet
    useEffect(() => {
       const fetchSequentialReceipt = async () => {
+        if (isSequentialReceiptNumber(request.generated_receipt_number)) {
+          setSequentialReceiptNumber(request.generated_receipt_number);
+          return;
+        }
+
         let refId = request.reference_id;
         let ownerId = request.user_id ?? null;
         if (!refId || !ownerId) {
@@ -149,7 +157,7 @@ import { useRef, useState, useEffect } from "react";
            setSequentialReceiptNumber(null);
          })
          .finally(() => setReceiptLoading(false));
-     }, [request.id, request.reference_id, request.service_type]);
+     }, [request.generated_receipt_number, request.id, request.reference_id, request.service_type]);
 
 
    const receiptNumber = sequentialReceiptNumber;

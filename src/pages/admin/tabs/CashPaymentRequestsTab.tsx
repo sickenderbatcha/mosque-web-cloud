@@ -101,6 +101,7 @@ interface CashPaymentRequest {
   admin_notes: string | null;
   created_at: string;
   processed_at: string | null;
+  generated_receipt_number?: string;
 }
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
@@ -187,13 +188,17 @@ const CashPaymentRequestsTab = () => {
       if (!request) throw new Error("Cash payment request not found");
 
       if (request.service_type === "heir") {
-        const { error: settlementError } = await (supabase.rpc as any)(
+        const { data: settlementData, error: settlementError } = await (supabase.rpc as any)(
           "settle_heir_cash_payment_request",
           { _request_id: id }
         );
 
         if (settlementError) throw settlementError;
-        return request as CashPaymentRequest;
+        const settlement = Array.isArray(settlementData) ? settlementData[0] : settlementData;
+        return {
+          ...request,
+          generated_receipt_number: settlement?.receipt_number,
+        } as CashPaymentRequest;
       }
 
       await updateServicePaymentStatus(request as CashPaymentRequest);
