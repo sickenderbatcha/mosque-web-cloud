@@ -66,6 +66,7 @@ import { useRef, useState, useEffect } from "react";
   const [hasTriggeredCallback, setHasTriggeredCallback] = useState(false);
   const [sequentialReceiptNumber, setSequentialReceiptNumber] = useState<string | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(true);
+  const [missingReference, setMissingReference] = useState(false);
 
   // Try to fetch the actual sequential receipt number from the income table
     // Uses retries to handle the case where DB trigger hasn't fired yet
@@ -87,7 +88,11 @@ import { useRef, useState, useEffect } from "react";
           }
         }
 
-        if (!refId) return;
+        if (!refId) {
+          setMissingReference(true);
+          return;
+        }
+
 
         // Bookings: resolve the running number issued into the income ledger
         if (request.service_type === "booking") {
