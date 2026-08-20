@@ -5,7 +5,8 @@ import { useRef, useState, useEffect } from "react";
  import { Card } from "@/components/ui/card";
  import { format } from "date-fns";
  import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
- import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
+ import { getLatestSequentialReceiptNumber, isSequentialReceiptNumber } from "@/lib/certificatePayments";
+ import { CERTIFICATE_SERVICE_TYPES, ensureCompletedCashCertificatePayment } from "@/lib/cashPaymentReceipts";
  import { supabase } from "@/integrations/supabase/client";
  
  const SERVICE_TYPE_LABELS_TAMIL: Record<string, string> = {
