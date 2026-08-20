@@ -161,6 +161,8 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
   }, [requireAction, hasActioned]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchReceiptNumber = async () => {
       const existingSequential = isSequentialReceiptNumber(donation.receiptNumber)
         ? donation.receiptNumber
@@ -180,25 +182,38 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
 
       setReceiptLoading(true);
       try {
-        const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
-          referenceId: donation.referenceId,
-          referenceTypes: ["donation"],
-          retries: 12,
-          retryDelayMs: 800,
-        });
-
-        setReceiptNumber(resolvedReceiptNumber || "");
+        let resolved: string | null = null;
+        for (let attempt = 0; attempt < 12; attempt++) {
+          const { data, error } = await (supabase as any).rpc("get_donation_receipt_number", {
+            _donation_id: donation.referenceId,
+          });
+          if (error) throw error;
+          if (isSequentialReceiptNumber(data as string | null)) {
+            resolved = data as string;
+            break;
+          }
+          if (cancelled) return;
+          await new Promise((r) => setTimeout(r, 800));
+        }
+        if (!cancelled) setReceiptNumber(resolved || "");
       } finally {
-        setReceiptLoading(false);
+        if (!cancelled) setReceiptLoading(false);
       }
     };
 
     fetchReceiptNumber().catch((error) => {
       console.error("Failed to resolve donation receipt number", error);
-      setReceiptNumber("");
-      setReceiptLoading(false);
+      if (!cancelled) {
+        setReceiptNumber("");
+        setReceiptLoading(false);
+      }
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [donation.receiptNumber, donation.referenceId]);
+
 
   const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
 
