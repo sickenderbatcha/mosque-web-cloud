@@ -1072,7 +1072,12 @@ const UserDashboard = () => {
                       <IndianRupee className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{bookings.filter(b => b.payment_status === 'paid').length}</p>
+                      <p className="text-2xl font-bold">{
+                        bookings.filter(b => b.payment_status === 'paid').length
+                        + certificatePayments.filter(c => c.payment_status === 'completed').length
+                        + nocRequests.filter(n => n.payment_status === 'completed' || n.payment_status === 'paid').length
+                        + heirRequests.filter(h => h.payment_status === 'completed' || h.payment_status === 'paid').length
+                      }</p>
                       <p className="text-sm text-muted-foreground font-tamil">பணம் செலுத்தியது</p>
                     </div>
                   </div>
