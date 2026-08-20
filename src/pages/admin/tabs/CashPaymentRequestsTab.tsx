@@ -186,6 +186,16 @@ const CashPaymentRequestsTab = () => {
       if (fetchError) throw fetchError;
       if (!request) throw new Error("Cash payment request not found");
 
+      if (request.service_type === "heir") {
+        const { error: settlementError } = await (supabase.rpc as any)(
+          "settle_heir_cash_payment_request",
+          { _request_id: id }
+        );
+
+        if (settlementError) throw settlementError;
+        return request as CashPaymentRequest;
+      }
+
       await updateServicePaymentStatus(request as CashPaymentRequest);
 
       const { error } = await supabase
@@ -209,12 +219,21 @@ const CashPaymentRequestsTab = () => {
 
         if (bookingError) throw bookingError;
       }
+
+      return request as CashPaymentRequest;
     },
-    onSuccess: () => {
+    onSuccess: (request) => {
       logAdminAction({ action_type: "cash_payment_paid", action_description: `Marked cash payment as paid`, target_table: "cash_payment_requests" });
-      toast.success("ரசீது அச்சிடப்பட்டது, நிலை புதுப்பிக்கப்பட்டது (Receipt printed, status updated to paid)");
+      toast.success("பணம் பெறப்பட்டது, ரசீது எண் உருவாக்கப்பட்டது (Payment received and receipt number generated)");
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests"] });
       queryClient.invalidateQueries({ queryKey: ["cash-payment-requests-stats"] });
+      if (request.service_type === "heir") {
+        setReceiptRequest({
+          ...request,
+          status: "paid",
+          processed_at: new Date().toISOString(),
+        });
+      }
     },
     onError: (error) => {
       console.error("Error marking as paid:", error);
@@ -859,12 +878,20 @@ const CashPaymentRequestsTab = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>ரத்து (Cancel)</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              setReceiptRequest(confirmPrintRequest);
-              setConfirmPrintRequest(null);
-            }}>
+            <AlertDialogAction
+              disabled={markAsPaidMutation.isPending}
+              onClick={() => {
+                if (!confirmPrintRequest) return;
+                if (confirmPrintRequest.status === "approved" && confirmPrintRequest.service_type === "heir") {
+                  markAsPaidMutation.mutate(confirmPrintRequest.id);
+                } else {
+                  setReceiptRequest(confirmPrintRequest);
+                }
+                setConfirmPrintRequest(null);
+              }}
+            >
               <Printer className="h-4 w-4 mr-2" />
-              தொடர் (Continue)
+              {markAsPaidMutation.isPending ? "செயலாக்குகிறது..." : "தொடர் (Continue)"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
