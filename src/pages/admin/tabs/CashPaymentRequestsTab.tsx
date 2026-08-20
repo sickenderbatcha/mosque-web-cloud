@@ -257,16 +257,20 @@ const CashPaymentRequestsTab = () => {
 
       const pending = data.filter((r) => r.status === "pending");
       const approved = data.filter((r) => r.status === "approved");
-      
+      const paid = data.filter((r) => r.status === "paid");
+
       return {
         pendingCount: pending.length,
         pendingAmount: pending.reduce((sum, r) => sum + Number(r.amount), 0),
         approvedCount: approved.length,
         approvedAmount: approved.reduce((sum, r) => sum + Number(r.amount), 0),
+        paidCount: paid.length,
+        paidAmount: paid.reduce((sum, r) => sum + Number(r.amount), 0),
         totalCount: data.length,
       };
     },
   });
+
 
   const processMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes: string }) => {
@@ -281,11 +285,9 @@ const CashPaymentRequestsTab = () => {
 
       if (error) throw error;
 
-      // If approved, update the related service payment status
-      if (status === "approved" && selectedRequest) {
-        await updateServicePaymentStatus(selectedRequest);
-      }
+      // Payment settlement happens only when the request is marked as paid.
     },
+
     onSuccess: (_, variables) => {
       logAdminAction({ action_type: `cash_payment_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} cash payment request`, target_table: "cash_payment_requests", target_id: variables.id });
       toast.success(
@@ -527,7 +529,7 @@ const CashPaymentRequestsTab = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -553,6 +555,19 @@ const CashPaymentRequestsTab = () => {
           </CardContent>
         </Card>
         <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">பணம் பெறப்பட்டது (Cash Paid)</p>
+                <p className="text-2xl font-bold">{stats?.paidCount || 0}</p>
+                <p className="text-sm text-muted-foreground">₹{stats?.paidAmount?.toLocaleString() || 0}</p>
+              </div>
+              <IndianRupee className="h-8 w-8 text-emerald-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
