@@ -2749,6 +2749,13 @@ export type Database = {
           id: string
         }[]
       }
+      settle_heir_cash_payment_request: {
+        Args: { _request_id: string }
+        Returns: {
+          payment_id: string
+          receipt_number: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "member" | "user" | "superadmin"
