@@ -2276,7 +2276,7 @@ const UserDashboard = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setShowCertReceipt({
-                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage",
+                                      certificateType: cp.certificate_type as "marriage" | "death" | "outside_marriage" | "bonafide",
                                       applicantName: cp.applicant_name,
                                       applicantPhone: cp.applicant_phone || undefined,
                                       applicantEmail: cp.applicant_email || undefined,
@@ -2294,7 +2294,7 @@ const UserDashboard = () => {
                                     Receipt
                                   </Button>
                                 )}
-                                {isPaid && (
+                                {isPaid && !isBonafide && (
                                   <>
                                     <Button
                                       variant="outline"
