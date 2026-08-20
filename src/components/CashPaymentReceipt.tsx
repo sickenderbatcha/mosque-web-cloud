@@ -49,11 +49,12 @@ import { useRef, useState, useEffect } from "react";
      applicant_name: string;
      applicant_phone: string;
      applicant_email: string | null;
-     service_details: Record<string, any> | null;
-     created_at: string;
-     processed_at: string | null;
-     admin_notes: string | null;
-     status?: string;
+      service_details: Record<string, any> | null;
+      created_at: string;
+      processed_at: string | null;
+      admin_notes: string | null;
+      user_id?: string | null;
+      status?: string;
    };
    onClose: () => void;
    onPrinted?: (requestId: string) => void;
@@ -71,14 +72,18 @@ import { useRef, useState, useEffect } from "react";
    useEffect(() => {
       const fetchSequentialReceipt = async () => {
         let refId = request.reference_id;
-        if (!refId) {
+        let ownerId = request.user_id ?? null;
+        if (!refId || !ownerId) {
           const { data: freshReq } = await supabase
             .from("cash_payment_requests")
-            .select("reference_id")
+            .select("reference_id, user_id")
             .eq("id", request.id)
             .maybeSingle();
-          if (freshReq?.reference_id) {
+          if (freshReq?.reference_id && !refId) {
             refId = freshReq.reference_id;
+          }
+          if (freshReq?.user_id && !ownerId) {
+            ownerId = freshReq.user_id;
           }
         }
 
@@ -112,6 +117,7 @@ import { useRef, useState, useEffect } from "react";
             applicant_name: request.applicant_name,
             applicant_phone: request.applicant_phone,
             applicant_email: request.applicant_email,
+            user_id: ownerId,
             service_details: request.service_details,
           });
           if (paymentId) {
