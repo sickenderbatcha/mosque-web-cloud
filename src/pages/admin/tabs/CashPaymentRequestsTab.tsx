@@ -257,16 +257,20 @@ const CashPaymentRequestsTab = () => {
 
       const pending = data.filter((r) => r.status === "pending");
       const approved = data.filter((r) => r.status === "approved");
-      
+      const paid = data.filter((r) => r.status === "paid");
+
       return {
         pendingCount: pending.length,
         pendingAmount: pending.reduce((sum, r) => sum + Number(r.amount), 0),
         approvedCount: approved.length,
         approvedAmount: approved.reduce((sum, r) => sum + Number(r.amount), 0),
+        paidCount: paid.length,
+        paidAmount: paid.reduce((sum, r) => sum + Number(r.amount), 0),
         totalCount: data.length,
       };
     },
   });
+
 
   const processMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes: string }) => {
