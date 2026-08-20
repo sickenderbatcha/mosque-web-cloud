@@ -42,6 +42,8 @@ import {
 import { format } from "date-fns";
 import { Check, X, Eye, Clock, IndianRupee, AlertCircle, Printer, Ban } from "lucide-react";
 import CashPaymentReceipt from "@/components/CashPaymentReceipt";
+import { ensureCompletedCashCertificatePayment } from "@/lib/cashPaymentReceipts";
+
 
 // Helper to format service details labels
 const SERVICE_DETAIL_LABELS: Record<string, string> = {
