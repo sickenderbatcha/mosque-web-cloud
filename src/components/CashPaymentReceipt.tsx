@@ -5,7 +5,8 @@ import { useRef, useState, useEffect } from "react";
  import { Card } from "@/components/ui/card";
  import { format } from "date-fns";
  import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
- import { getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
+ import { getLatestSequentialReceiptNumber, isSequentialReceiptNumber } from "@/lib/certificatePayments";
+ import { CERTIFICATE_SERVICE_TYPES, ensureCompletedCashCertificatePayment } from "@/lib/cashPaymentReceipts";
  import { supabase } from "@/integrations/supabase/client";
  
  const SERVICE_TYPE_LABELS_TAMIL: Record<string, string> = {
@@ -67,30 +68,8 @@ import { useRef, useState, useEffect } from "react";
 
   // Try to fetch the actual sequential receipt number from the income table
     // Uses retries to handle the case where DB trigger hasn't fired yet
-    useEffect(() => {
+   useEffect(() => {
       const fetchSequentialReceipt = async () => {
-        // For bookings, use deterministic BK-XXXXXXXX receipt number directly
-        // (no need to poll – the income trigger uses this same format)
-        if (request.service_type === "booking") {
-          let refId = request.reference_id;
-          if (!refId) {
-            const { data: freshReq } = await supabase
-              .from("cash_payment_requests")
-              .select("reference_id")
-              .eq("id", request.id)
-              .maybeSingle();
-            if (freshReq?.reference_id) {
-              refId = freshReq.reference_id;
-            }
-          }
-          if (refId) {
-            const deterministicReceipt = "BK-" + refId.replace(/-/g, "").substring(0, 8).toUpperCase();
-            setSequentialReceiptNumber(deterministicReceipt);
-          }
-          return;
-        }
-
-        // For other service types, resolve via income table polling
         let refId = request.reference_id;
         if (!refId) {
           const { data: freshReq } = await supabase
@@ -105,75 +84,36 @@ import { useRef, useState, useEffect } from "react";
 
         if (!refId) return;
 
-        // For NOC/Heir: ensure a completed certificate payment exists,
-        // because income tracking uses certificate_payments.id as reference_id.
+        // Bookings: resolve the running number issued into the income ledger
+        if (request.service_type === "booking") {
+          for (let attempt = 0; attempt < 12; attempt++) {
+            const { data } = await supabase.rpc("get_booking_receipt_number", {
+              _booking_id: refId,
+            });
+            if (isSequentialReceiptNumber(data as string | null)) {
+              setSequentialReceiptNumber(data as string);
+              return;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 800));
+          }
+          return;
+        }
+
+        // Certificate-style services: income is keyed by certificate_payments.id
         let lookupId = refId;
         let refTypes = SERVICE_TO_INCOME_REF_TYPE[request.service_type] || [];
 
-        const ensureCashCertificatePayment = async (certificateType: "noc" | "heir") => {
-          const { data: existingPayments, error: existingError } = await supabase
-            .from("certificate_payments")
-            .select("id, payment_status, payment_method")
-            .eq("reference_id", refId)
-            .eq("certificate_type", certificateType)
-            .order("created_at", { ascending: false })
-            .limit(1);
-
-          if (existingError) throw existingError;
-
-          const existingPayment = existingPayments?.[0];
-
-          if (existingPayment) {
-            if (existingPayment.payment_status !== "completed" || existingPayment.payment_method !== "cash") {
-              const { error: updateError } = await supabase
-                .from("certificate_payments")
-                .update({
-                  payment_status: "completed",
-                  payment_method: "cash",
-                  amount: request.amount,
-                  applicant_name: request.applicant_name,
-                  applicant_phone: request.applicant_phone,
-                  applicant_email: request.applicant_email,
-                  transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
-                })
-                .eq("id", existingPayment.id);
-
-              if (updateError) throw updateError;
-            }
-
-            return existingPayment.id;
-          }
-
-          const { data: createdPayment, error: createError } = await supabase
-            .from("certificate_payments")
-            .insert({
-              reference_id: refId,
-              certificate_type: certificateType,
-              applicant_name: request.applicant_name,
-              applicant_phone: request.applicant_phone,
-              applicant_email: request.applicant_email,
-              amount: request.amount,
-              payment_status: "pending",
-              payment_method: "cash",
-              transaction_id: `CASH-${request.id.slice(0, 8).toUpperCase()}`,
-            })
-            .select("id")
-            .single();
-
-          if (createError) throw createError;
-
-          const { error: finalizeError } = await supabase
-            .from("certificate_payments")
-            .update({ payment_status: "completed", payment_method: "cash" })
-            .eq("id", createdPayment.id);
-
-          if (finalizeError) throw finalizeError;
-
-          return createdPayment.id;
-        };
-
-        if (request.service_type === "noc" || request.service_type === "heir") {
-          const paymentId = await ensureCashCertificatePayment(request.service_type as "noc" | "heir");
+        if (CERTIFICATE_SERVICE_TYPES.includes(request.service_type)) {
+          const paymentId = await ensureCompletedCashCertificatePayment({
+            id: request.id,
+            service_type: request.service_type,
+            reference_id: refId,
+            amount: request.amount,
+            applicant_name: request.applicant_name,
+            applicant_phone: request.applicant_phone,
+            applicant_email: request.applicant_email,
+            service_details: request.service_details,
+          });
           if (paymentId) {
             lookupId = paymentId;
             refTypes = ["certificate_payment"];
@@ -182,7 +122,7 @@ import { useRef, useState, useEffect } from "react";
 
         if (refTypes.length === 0) return;
 
-        // Retry up to 12 times (income record may be created by DB trigger with slight delay)
+        // Retry (income record is created by DB trigger with slight delay)
         const resolvedReceiptNumber = await getLatestSequentialReceiptNumber({
           referenceId: lookupId,
           referenceTypes: refTypes,
@@ -199,6 +139,7 @@ import { useRef, useState, useEffect } from "react";
          })
          .finally(() => setReceiptLoading(false));
      }, [request.id, request.reference_id, request.service_type]);
+
 
    const receiptNumber = sequentialReceiptNumber;
    const serviceTypeTamil = SERVICE_TYPE_LABELS_TAMIL[request.service_type] || request.service_type;
