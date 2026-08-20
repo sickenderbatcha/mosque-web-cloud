@@ -285,11 +285,9 @@ const CashPaymentRequestsTab = () => {
 
       if (error) throw error;
 
-      // If approved, update the related service payment status
-      if (status === "approved" && selectedRequest) {
-        await updateServicePaymentStatus(selectedRequest);
-      }
+      // Payment settlement happens only when the request is marked as paid.
     },
+
     onSuccess: (_, variables) => {
       logAdminAction({ action_type: `cash_payment_${variables.status}`, action_description: `${variables.status === "approved" ? "Approved" : "Rejected"} cash payment request`, target_table: "cash_payment_requests", target_id: variables.id });
       toast.success(
