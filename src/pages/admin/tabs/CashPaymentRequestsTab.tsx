@@ -293,6 +293,7 @@ const CashPaymentRequestsTab = () => {
       const pending = data.filter((r) => r.status === "pending");
       const approved = data.filter((r) => r.status === "approved");
       const paid = data.filter((r) => r.status === "paid");
+      const expired = data.filter((r) => r.status === "expired");
 
       return {
         pendingCount: pending.length,
@@ -301,6 +302,8 @@ const CashPaymentRequestsTab = () => {
         approvedAmount: approved.reduce((sum, r) => sum + Number(r.amount), 0),
         paidCount: paid.length,
         paidAmount: paid.reduce((sum, r) => sum + Number(r.amount), 0),
+        expiredCount: expired.length,
+        expiredAmount: expired.reduce((sum, r) => sum + Number(r.amount), 0),
         totalCount: data.length,
       };
     },
@@ -564,7 +567,7 @@ const CashPaymentRequestsTab = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -598,6 +601,18 @@ const CashPaymentRequestsTab = () => {
                 <p className="text-sm text-muted-foreground">₹{stats?.paidAmount?.toLocaleString() || 0}</p>
               </div>
               <IndianRupee className="h-8 w-8 text-emerald-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">காலாவதி பணம் செலுத்தல் (Expired)</p>
+                <p className="text-2xl font-bold">{stats?.expiredCount || 0}</p>
+                <p className="text-sm text-muted-foreground">₹{stats?.expiredAmount?.toLocaleString() || 0}</p>
+              </div>
+              <Ban className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
