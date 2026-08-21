@@ -169,7 +169,7 @@ const getDayNameEn = (dayNameTamil: string, dayNameEn: string | null): string =>
 export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarriageRecord) => {
   await document.fonts.load("16px 'Noto Sans Tamil'");
 
-  const [trusteeInfo, certificateImages, headerSettings] = await Promise.all([
+  const [trusteeInfo, certificateImages, headerSettings, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     getCertificateImages(),
     getCertificateHeaderSettings(),
@@ -442,7 +442,7 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
 };
 
 export const printOutsideMarriageCertificate = async (record: OutsideMarriageRecord) => {
-  const [trusteeInfo, outsideMarriageCertNumber] = await Promise.all([
+  const [trusteeInfo, outsideMarriageCertNumber, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     generateOutsideMarriageCertificateNumber(),
     getCertificateSignatureSettings(),

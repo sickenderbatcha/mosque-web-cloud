@@ -250,7 +250,7 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   await document.fonts.load("16px 'Noto Sans Tamil'");
   
   // Fetch trustee settings, serial number, certificate images, and header settings
-  const [trusteeInfo, serialNumber, certificateImages, headerSettings] = await Promise.all([
+  const [trusteeInfo, serialNumber, certificateImages, headerSettings, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     getNextCertificateSerial(record),
     getCertificateImages(),
@@ -589,7 +589,7 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
 // Print-friendly version that opens in a new window - English Only
 export const printMarriageCertificate = async (record: MarriageRecord) => {
   // Fetch trustee settings and certificate number (match PDF numbering logic)
-  const [trusteeInfo, marriageCertNumber] = await Promise.all([
+  const [trusteeInfo, marriageCertNumber, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     generateMarriageCertificateNumber(),
     getCertificateSignatureSettings(),
