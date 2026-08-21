@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { DeathRecord } from "@/utils/deathCertificatePdf";
 import { format, parseISO } from "date-fns";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
+import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 
 interface Props {
@@ -36,9 +37,11 @@ export default function DeathCertificatePreview({ record }: Props) {
     sealUrl: DEFAULT_SEAL,
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
+  const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
+    getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
 
@@ -143,7 +146,10 @@ export default function DeathCertificatePreview({ record }: Props) {
               (e.target as HTMLImageElement).src = DEFAULT_SIGNATURE;
             }}
           />
-          <p className="font-bold text-sm">மேனேஜிங் டிரஸ்ட்டி</p>
+          <p className="font-bold text-sm">{signatureSettings.designationTa}</p>
+          {signatureSettings.linesTa.map((line, i) => (
+            <p key={i} className="text-[11px]">{line}</p>
+          ))}
         </div>
       </div>
 

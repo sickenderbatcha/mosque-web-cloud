@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { OutsideMarriageRecord } from "@/utils/outsideMarriageCertificatePdf";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
+import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 import { generateOutsideMarriageCertificateNumber } from "@/components/admin/OutsideMarriageCertificateNumberSettings";
 
@@ -60,6 +61,7 @@ export default function OutsideMarriageCertificatePreview({ record }: Props) {
     sealUrl: "/images/mosque-stamp.jpg",
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
+  const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -86,6 +88,7 @@ export default function OutsideMarriageCertificatePreview({ record }: Props) {
     fetchSettings();
     fetchCertificateNumber();
     getCertificateImages().then(setImages);
+    getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, [record]);
 
@@ -201,7 +204,10 @@ export default function OutsideMarriageCertificatePreview({ record }: Props) {
             className="h-12 ml-auto mb-1 object-contain"
             loading="lazy"
           />
-          <p className="font-bold text-xs">Managing Trustee.</p>
+          <p className="font-bold text-xs">{signatureSettings.designationEn}</p>
+          {signatureSettings.linesEn.map((line, i) => (
+            <p key={i} className="text-[10px]">{line}</p>
+          ))}
         </div>
       </div>
 
