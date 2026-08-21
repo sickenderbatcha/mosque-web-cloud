@@ -2,6 +2,14 @@ import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
+import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 import { generateMarriageCertificateNumber } from "@/components/admin/MarriageCertificateNumberSettings";
 
 export interface MarriageRecord {
@@ -242,11 +250,12 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   await document.fonts.load("16px 'Noto Sans Tamil'");
   
   // Fetch trustee settings, serial number, certificate images, and header settings
-  const [trusteeInfo, serialNumber, certificateImages, headerSettings] = await Promise.all([
+  const [trusteeInfo, serialNumber, certificateImages, headerSettings, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     getNextCertificateSerial(record),
     getCertificateImages(),
-    getCertificateHeaderSettings()
+    getCertificateHeaderSettings(),
+    getCertificateSignatureSettings()
   ]);
   
   const { signatureUrl, sealUrl } = certificateImages;
@@ -334,7 +343,11 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Managing Trustee.", margin, y);
+  doc.text(signSettings.designationEn, margin, y);
+  signSettings.linesEn.forEach((line) => {
+    y += 4;
+    doc.text(line, margin, y);
+  });
   y += 12;
 
   // ============ CERTIFICATE TITLE ============
@@ -517,7 +530,11 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   }
   
   doc.setFont("helvetica", "bold");
-  doc.text("Managing Trustee.", pageWidth - margin, signatureY + 6, { align: "right" });
+  doc.text(signSettings.designationEn, pageWidth - margin, signatureY + 6, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  signSettings.linesEn.forEach((line, idx) => {
+    doc.text(line, pageWidth - margin, signatureY + 11 + idx * 4.5, { align: "right" });
+  });
 
   // ============ STAMP SECTION ============
   const stampX = margin + 25;
@@ -572,9 +589,10 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
 // Print-friendly version that opens in a new window - English Only
 export const printMarriageCertificate = async (record: MarriageRecord) => {
   // Fetch trustee settings and certificate number (match PDF numbering logic)
-  const [trusteeInfo, marriageCertNumber] = await Promise.all([
+  const [trusteeInfo, marriageCertNumber, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     generateMarriageCertificateNumber(),
+    getCertificateSignatureSettings(),
   ]);
   
   // Use English fields for certificate
@@ -794,7 +812,8 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
         <div class="trustee-row">
           <div>
             <p class="trustee-info">${trusteeText}</p>
-            <p class="trustee-title">Managing Trustee.</p>
+            <p class="trustee-title">${escapeHtml(signSettings.designationEn)}</p>
+            ${signSettings.linesEn.map((line) => `<p class="trustee-title">${escapeHtml(line)}</p>`).join("")}
           </div>
         </div>
         
@@ -821,7 +840,8 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
           <img src="/images/mosque-stamp.jpg" alt="Official Seal" class="stamp-image" />
           <div class="signature-area">
             <img src="/images/trustee-signature.jpg" alt="Trustee Signature" class="signature-image" />
-            <p><strong>Managing Trustee.</strong></p>
+            <p><strong>${escapeHtml(signSettings.designationEn)}</strong></p>
+            ${signSettings.linesEn.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
           </div>
         </div>
         

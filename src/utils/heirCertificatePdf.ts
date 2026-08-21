@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
+import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import type { Json } from "@/integrations/supabase/types";
 import { addTamilText, loadTamilFont, getAutoShrinkFontSize } from "@/utils/pdf/tamilCanvasText";
 import { getHeirCertificateFontSizes } from "@/components/admin/HeirCertificateFontSettings";
@@ -66,6 +67,7 @@ export const generateHeirCertificatePdf = async (record: HeirRecord): Promise<vo
   // Fetch configurable font sizes and header settings from app_settings
   const FS = await getHeirCertificateFontSizes();
   const headerSettings = await getCertificateHeaderSettings();
+  const signSettings = await getCertificateSignatureSettings();
   
   // Get certificate images
   const images = await getCertificateImages();
@@ -239,13 +241,11 @@ export const generateHeirCertificatePdf = async (record: HeirRecord): Promise<vo
   }
   
   y += 16;
-  addTamilText(doc, "மேனேஜிங் டிரஸ்ட்டி", signatureX, y, FS.signature, "bold");
-  y += 4.2;
-  addTamilText(doc, "இளையான்குடி நெசவுப் பட்டடை", signatureX, y, FS.signature);
-  y += 4.2;
-  addTamilText(doc, "தொழுகை மேடைப் பள்ளிவாசல்", signatureX, y, FS.signature);
-  y += 4.2;
-  addTamilText(doc, "இளையான்குடி", signatureX, y, FS.signature);
+  addTamilText(doc, signSettings.designationTa, signatureX, y, FS.signature, "bold");
+  signSettings.linesTa.forEach((line) => {
+    y += 4.2;
+    addTamilText(doc, line, signatureX, y, FS.signature);
+  });
   
   // Save PDF
   const deceasedName = record.deceased_name.replace(/\s+/g, "_");
@@ -267,6 +267,7 @@ export const printHeirCertificate = async (record: HeirRecord): Promise<void> =>
 
   const FS = await getHeirCertificateFontSizes();
   const headerSettings = await getCertificateHeaderSettings();
+  const signSettings = await getCertificateSignatureSettings();
   const images = await getCertificateImages();
   
   addTamilText(doc, headerSettings.bismillah, pageWidth / 2, y, FS.bismillah, "normal", "center");
@@ -420,13 +421,11 @@ export const printHeirCertificate = async (record: HeirRecord): Promise<void> =>
   }
   
   y += 16;
-  addTamilText(doc, "மேனேஜிங் டிரஸ்ட்டி", signatureX, y, FS.signature, "bold");
-  y += 4.2;
-  addTamilText(doc, "இளையான்குடி நெசவுப் பட்டடை", signatureX, y, FS.signature);
-  y += 4.2;
-  addTamilText(doc, "தொழுகை மேடைப் பள்ளிவாசல்", signatureX, y, FS.signature);
-  y += 4.2;
-  addTamilText(doc, "இளையான்குடி", signatureX, y, FS.signature);
+  addTamilText(doc, signSettings.designationTa, signatureX, y, FS.signature, "bold");
+  signSettings.linesTa.forEach((line) => {
+    y += 4.2;
+    addTamilText(doc, line, signatureX, y, FS.signature);
+  });
   
   // Open PDF in new window for printing
   const pdfBlob = doc.output("blob");

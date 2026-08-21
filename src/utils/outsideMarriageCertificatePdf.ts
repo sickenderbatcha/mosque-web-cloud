@@ -2,6 +2,14 @@ import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
+import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 import { generateOutsideMarriageCertificateNumber } from "@/components/admin/OutsideMarriageCertificateNumberSettings";
 
 export interface OutsideMarriageRecord {
@@ -161,10 +169,11 @@ const getDayNameEn = (dayNameTamil: string, dayNameEn: string | null): string =>
 export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarriageRecord) => {
   await document.fonts.load("16px 'Noto Sans Tamil'");
 
-  const [trusteeInfo, certificateImages, headerSettings] = await Promise.all([
+  const [trusteeInfo, certificateImages, headerSettings, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     getCertificateImages(),
-    getCertificateHeaderSettings()
+    getCertificateHeaderSettings(),
+    getCertificateSignatureSettings()
   ]);
 
   const { signatureUrl, sealUrl } = certificateImages;
@@ -232,7 +241,11 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
   y += 5;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Managing Trustee.", margin, y);
+  doc.text(signSettings.designationEn, margin, y);
+  signSettings.linesEn.forEach((line) => {
+    y += 4;
+    doc.text(line, margin, y);
+  });
   y += 12;
 
   doc.setFontSize(16);
@@ -376,7 +389,11 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
   }
 
   doc.setFont("helvetica", "bold");
-  doc.text("Managing Trustee.", pageWidth - margin, signatureY + 6, { align: "right" });
+  doc.text(signSettings.designationEn, pageWidth - margin, signatureY + 6, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  signSettings.linesEn.forEach((line, idx) => {
+    doc.text(line, pageWidth - margin, signatureY + 11 + idx * 4.5, { align: "right" });
+  });
 
   const stampX = margin + 25;
   const stampY = signatureY - 5;
@@ -425,9 +442,10 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
 };
 
 export const printOutsideMarriageCertificate = async (record: OutsideMarriageRecord) => {
-  const [trusteeInfo, outsideMarriageCertNumber] = await Promise.all([
+  const [trusteeInfo, outsideMarriageCertNumber, signSettings] = await Promise.all([
     fetchTrusteeSettings(),
     generateOutsideMarriageCertificateNumber(),
+    getCertificateSignatureSettings(),
   ]);
 
   const groomName = record.groom_name_en || record.groom_name;
@@ -525,7 +543,8 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
         <div class="trustee-row">
           <div>
             <p class="trustee-info">${trusteeText}</p>
-            <p class="trustee-title">Managing Trustee.</p>
+            <p class="trustee-title">${escapeHtml(signSettings.designationEn)}</p>
+            ${signSettings.linesEn.map((line) => `<p class="trustee-title">${escapeHtml(line)}</p>`).join("")}
           </div>
         </div>
         <div class="certificate-title">
@@ -548,7 +567,8 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
           <img src="/images/mosque-stamp.jpg" alt="Official Seal" class="stamp-image" />
           <div class="signature-area">
             <img src="/images/trustee-signature.jpg" alt="Trustee Signature" class="signature-image" />
-            <p><strong>Managing Trustee.</strong></p>
+            <p><strong>${escapeHtml(signSettings.designationEn)}</strong></p>
+            ${signSettings.linesEn.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
           </div>
         </div>
         <div class="footer">

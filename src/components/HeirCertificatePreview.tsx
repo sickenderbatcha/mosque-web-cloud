@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { HeirRecord, Heir } from "@/utils/heirCertificatePdf";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
+import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 
 interface HeirCertificatePreviewProps {
@@ -16,9 +17,11 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
     sealUrl: DEFAULT_SEAL,
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
+  const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
+    getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
 
@@ -146,10 +149,10 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
             className="h-12 ml-auto mb-1 object-contain"
             loading="lazy"
           />
-          <p className="font-bold">மேனேஜிங் டிரஸ்ட்டி</p>
-          <p>{headerSettings.titleTa.split(' ')[0]} நெசவுப் பட்டடை</p>
-          <p>தொழுகை மேடைப் பள்ளிவாசல்</p>
-          <p>{headerSettings.titleTa.split(' ')[0]}</p>
+          <p className="font-bold">{signatureSettings.designationTa}</p>
+          {signatureSettings.linesTa.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
         </div>
       </div>
     </div>

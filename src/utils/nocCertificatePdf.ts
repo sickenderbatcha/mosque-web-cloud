@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
+import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import { generateNocCertificateNumber } from "@/components/admin/NocCertificateNumberSettings";
 
 export interface NocRecord {
@@ -225,6 +226,7 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   // Get certificate images and header settings from storage
   const { signatureUrl, sealUrl } = await getCertificateImages();
   const headerSettings = await getCertificateHeaderSettings();
+  const signSettings = await getCertificateSignatureSettings();
 
   // Helper for English text
   const addEnglishText = (
@@ -305,7 +307,7 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   const lineHeight = 8;
   const contentLeft = 25;
 
-  addTamilText(doc, `மேனேஜிங் டிரஸ்ட்டி,`, contentLeft, yPos, 10);
+  addTamilText(doc, `${signSettings.designationTa},`, contentLeft, yPos, 10);
   yPos += lineHeight;
 
   addTamilText(doc, `${record.mosque_to_submit},`, contentLeft, yPos, 10);
@@ -358,21 +360,15 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   }
 
   // Signature text
-  addTamilText(doc, "மேனேஜிங் டிரஸ்ட்டி", signatureX, signatureY + 6, 10, {
+  addTamilText(doc, signSettings.designationTa, signatureX, signatureY + 6, 10, {
     fontWeight: "bold",
     align: "right",
   });
 
-  addTamilText(doc, "இளையான்குடி நெசவுப் பட்டடை", signatureX, signatureY + 14, 9, {
-    align: "right",
-  });
-
-  addTamilText(doc, "தொழுகை மேடைப் பள்ளிவாசல்", signatureX, signatureY + 22, 9, {
-    align: "right",
-  });
-
-  addTamilText(doc, "இளையான்குடி", signatureX, signatureY + 30, 9, {
-    align: "right",
+  signSettings.linesTa.forEach((line, idx) => {
+    addTamilText(doc, line, signatureX, signatureY + 14 + idx * 8, 9, {
+      align: "right",
+    });
   });
 
   // ==================== STAMP SECTION (Left Side) ====================
