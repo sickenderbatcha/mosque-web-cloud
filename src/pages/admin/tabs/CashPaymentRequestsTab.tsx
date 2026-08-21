@@ -608,7 +608,7 @@ const CashPaymentRequestsTab = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">காலாவதி பணம் செலுத்தல் (Expired)</p>
+                <p className="text-sm text-muted-foreground">காலாவதியானது (Expired)</p>
                 <p className="text-2xl font-bold">{stats?.expiredCount || 0}</p>
                 <p className="text-sm text-muted-foreground">₹{stats?.expiredAmount?.toLocaleString() || 0}</p>
               </div>
