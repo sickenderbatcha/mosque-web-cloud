@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
-import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
+import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER, CERTIFICATE_HEADER_SETTING_KEYS } from "@/lib/certificateHeaderSettings";
 import { generateMarriageCertificateNumber } from "@/components/admin/MarriageCertificateNumberSettings";
 
 interface TrusteeInfo {
@@ -152,6 +152,23 @@ export default function MarriageCertificatePreview({ record }: Props) {
 
       {/* Divider */}
       <div className="border-t-2 border-black my-3" />
+
+      {/* Header Source — preview only */}
+      <div className="print:hidden bg-muted/30 rounded p-2 mb-3 text-[10px] text-muted-foreground">
+        <p className="font-semibold mb-1">Header source — app_settings keys</p>
+        <div className="grid grid-cols-1 gap-1">
+          <p>
+            <span className="font-mono">{CERTIFICATE_HEADER_SETTING_KEYS.officeAddressTa}</span>
+            <span className="mx-1">(Tamil):</span>
+            {headerSettings.officeAddressTa.join(" | ")}
+          </p>
+          <p>
+            <span className="font-mono">{CERTIFICATE_HEADER_SETTING_KEYS.officeAddressEn}</span>
+            <span className="mx-1">(English):</span>
+            {headerSettings.officeAddressEn.join(" | ")}
+          </p>
+        </div>
+      </div>
 
       {/* Certificate Number and Date Row */}
       <div className="flex justify-between items-start mb-3 text-xs font-bold">
