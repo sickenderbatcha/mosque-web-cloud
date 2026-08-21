@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
+import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import { generateDeathCertificateNumber } from "@/components/admin/DeathCertificateNumberSettings";
 import { getDeathCertificateFontSizes } from "@/components/admin/DeathCertificateFontSettings";
 import { addTamilText as addTamilTextCanvas, loadTamilFont } from "@/utils/pdf/tamilCanvasText";
@@ -110,6 +111,7 @@ const generateCertificateContent = async (doc: jsPDF, record: DeathRecord) => {
   // Get certificate images, header settings, and font sizes
   const { signatureUrl, sealUrl } = await getCertificateImages();
   const headerSettings = await getCertificateHeaderSettings();
+  const signSettings = await getCertificateSignatureSettings();
   const fontSizes = await getDeathCertificateFontSizes();
 
   // Helper for English text
@@ -266,13 +268,11 @@ const generateCertificateContent = async (doc: jsPDF, record: DeathRecord) => {
 
   // Signature labels - multi-line like heir certificate
   let sigLabelY = signatureY + 6;
-  addTamilTextCanvas(doc, "மேனேஜிங் டிரஸ்ட்டி", signatureX, sigLabelY, fontSizes.signature, "bold", "left");
-  sigLabelY += 4.2;
-  addTamilTextCanvas(doc, "இளையான்குடி நெசவுப் பட்டடை", signatureX, sigLabelY, fontSizes.signature, "normal", "left");
-  sigLabelY += 4.2;
-  addTamilTextCanvas(doc, "தொழுகை மேடைப் பள்ளிவாசல்", signatureX, sigLabelY, fontSizes.signature, "normal", "left");
-  sigLabelY += 4.2;
-  addTamilTextCanvas(doc, "இளையான்குடி", signatureX, sigLabelY, fontSizes.signature, "normal", "left");
+  addTamilTextCanvas(doc, signSettings.designationTa, signatureX, sigLabelY, fontSizes.signature, "bold", "left");
+  signSettings.linesTa.forEach((line) => {
+    sigLabelY += 4.2;
+    addTamilTextCanvas(doc, line, signatureX, sigLabelY, fontSizes.signature, "normal", "left");
+  });
 
   // ==================== STAMP SECTION (Left Side) ====================
   const stampX = margin + 22;

@@ -360,21 +360,15 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   }
 
   // Signature text
-  addTamilText(doc, "மேனேஜிங் டிரஸ்ட்டி", signatureX, signatureY + 6, 10, {
+  addTamilText(doc, signSettings.designationTa, signatureX, signatureY + 6, 10, {
     fontWeight: "bold",
     align: "right",
   });
 
-  addTamilText(doc, "இளையான்குடி நெசவுப் பட்டடை", signatureX, signatureY + 14, 9, {
-    align: "right",
-  });
-
-  addTamilText(doc, "தொழுகை மேடைப் பள்ளிவாசல்", signatureX, signatureY + 22, 9, {
-    align: "right",
-  });
-
-  addTamilText(doc, "இளையான்குடி", signatureX, signatureY + 30, 9, {
-    align: "right",
+  signSettings.linesTa.forEach((line, idx) => {
+    addTamilText(doc, line, signatureX, signatureY + 14 + idx * 8, 9, {
+      align: "right",
+    });
   });
 
   // ==================== STAMP SECTION (Left Side) ====================
