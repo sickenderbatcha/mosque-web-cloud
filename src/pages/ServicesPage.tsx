@@ -847,9 +847,9 @@ const ServicesPage = () => {
                                 <div className="flex items-center gap-2 text-green-600">
                                   <Check className="h-5 w-5" />
                                   <span className="font-tamil font-medium">கட்டணம் செலுத்தப்பட்டது</span>
-                                  {certificatePayment?.transaction_id && (
+                                  {receiptNumber && (
                                     <Badge variant="outline" className="ml-2">
-                                      {certificatePayment.transaction_id}
+                                      {receiptNumber}
                                     </Badge>
                                   )}
                                 </div>
@@ -1044,9 +1044,9 @@ const ServicesPage = () => {
                                 <div className="flex items-center gap-2 text-green-600">
                                   <Check className="h-5 w-5" />
                                   <span className="font-tamil font-medium">கட்டணம் செலுத்தப்பட்டது</span>
-                                  {certificatePayment?.transaction_id && (
+                                  {receiptNumber && (
                                     <Badge variant="outline" className="ml-2">
-                                      {certificatePayment.transaction_id}
+                                      {receiptNumber}
                                     </Badge>
                                   )}
                                 </div>
