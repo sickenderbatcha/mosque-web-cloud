@@ -364,6 +364,7 @@ const ServicesPage = () => {
     const syncPaymentStatus = async () => {
       if (!currentReferenceId) {
         setCertificatePayment(null);
+        setReceiptNumber(null);
         return;
       }
 
@@ -380,13 +381,27 @@ const ServicesPage = () => {
             payment_status: "completed",
             transaction_id: access.completedPayment.transaction_id ?? null,
           });
+
+          try {
+            const seq = await getLatestSequentialReceiptNumber({
+              referenceId: access.completedPayment.id,
+              referenceTypes: ["certificate_payment"],
+              retries: 3,
+              retryDelayMs: 1000,
+            });
+            setReceiptNumber(seq);
+          } catch {
+            setReceiptNumber(null);
+          }
         } else {
           setCertificatePayment(null);
+          setReceiptNumber(null);
         }
       } finally {
         setPaymentStatusLoading(false);
       }
     };
+
 
     syncPaymentStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
