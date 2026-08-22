@@ -101,6 +101,7 @@ const ServicesPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
 
   const [certificatePayment, setCertificatePayment] = useState<CertificatePayment | null>(null);
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
   const [paymentStatusLoading, setPaymentStatusLoading] = useState(false);
 
   const [applicantName, setApplicantName] = useState("");
