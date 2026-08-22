@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { getCertificateAccessStatus } from "@/lib/certificatePayments";
+import { getCertificateAccessStatus, getLatestSequentialReceiptNumber } from "@/lib/certificatePayments";
 import { generateMarriageCertificatePdf, printMarriageCertificate, MarriageRecord } from "@/utils/marriageCertificatePdf";
 import { generateDeathCertificatePdf, printDeathCertificate, DeathRecord } from "@/utils/deathCertificatePdf";
 import { useAuth } from "@/hooks/useAuth";
@@ -101,6 +101,7 @@ const ServicesPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
 
   const [certificatePayment, setCertificatePayment] = useState<CertificatePayment | null>(null);
+  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
   const [paymentStatusLoading, setPaymentStatusLoading] = useState(false);
 
   const [applicantName, setApplicantName] = useState("");
@@ -364,6 +365,7 @@ const ServicesPage = () => {
     const syncPaymentStatus = async () => {
       if (!currentReferenceId) {
         setCertificatePayment(null);
+        setReceiptNumber(null);
         return;
       }
 
@@ -380,13 +382,27 @@ const ServicesPage = () => {
             payment_status: "completed",
             transaction_id: access.completedPayment.transaction_id ?? null,
           });
+
+          try {
+            const seq = await getLatestSequentialReceiptNumber({
+              referenceId: access.completedPayment.id,
+              referenceTypes: ["certificate_payment"],
+              retries: 3,
+              retryDelayMs: 1000,
+            });
+            setReceiptNumber(seq);
+          } catch {
+            setReceiptNumber(null);
+          }
         } else {
           setCertificatePayment(null);
+          setReceiptNumber(null);
         }
       } finally {
         setPaymentStatusLoading(false);
       }
     };
+
 
     syncPaymentStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -831,9 +847,9 @@ const ServicesPage = () => {
                                 <div className="flex items-center gap-2 text-green-600">
                                   <Check className="h-5 w-5" />
                                   <span className="font-tamil font-medium">கட்டணம் செலுத்தப்பட்டது</span>
-                                  {certificatePayment?.transaction_id && (
+                                  {receiptNumber && (
                                     <Badge variant="outline" className="ml-2">
-                                      {certificatePayment.transaction_id}
+                                      {receiptNumber}
                                     </Badge>
                                   )}
                                 </div>
@@ -1028,9 +1044,9 @@ const ServicesPage = () => {
                                 <div className="flex items-center gap-2 text-green-600">
                                   <Check className="h-5 w-5" />
                                   <span className="font-tamil font-medium">கட்டணம் செலுத்தப்பட்டது</span>
-                                  {certificatePayment?.transaction_id && (
+                                  {receiptNumber && (
                                     <Badge variant="outline" className="ml-2">
-                                      {certificatePayment.transaction_id}
+                                      {receiptNumber}
                                     </Badge>
                                   )}
                                 </div>
