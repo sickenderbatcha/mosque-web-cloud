@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X, Pencil } from "lucide-react";
 import MahalPhotoManager from "@/components/admin/MahalPhotoManager";
+import MahalServiceSettings from "@/components/admin/MahalServiceSettings";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import { Slider } from "@/components/ui/slider";
@@ -31,21 +32,12 @@ const MONTHS_FULL = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const BOOKING_RATE_KEYS = {
-  nikkah_book: { key: "booking_rate_nikkah_book", label: "Nikkah Book", labelTamil: "நிக்காஹ் புத்தகம்", default: "3000" },
-  hall: { key: "booking_rate_hall", label: "Hall", labelTamil: "மண்டபம்", default: "15000" },
-  food_facility: { key: "booking_rate_food_facility", label: "Dining Hall", labelTamil: "உணவு இட வசதி", default: "7000" },
-};
-
 const SettingsTab = () => {
   const [settings, setSettings] = useState<AppSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [subscriptionType, setSubscriptionType] = useState<"monthly" | "yearly">("monthly");
   const [subscriptionAmount, setSubscriptionAmount] = useState("");
-  const [bookingRateDialogOpen, setBookingRateDialogOpen] = useState(false);
-  const [bookingRateType, setBookingRateType] = useState<"nikkah_book" | "hall" | "food_facility">("nikkah_book");
-  const [bookingRateAmount, setBookingRateAmount] = useState("");
   const [certificateFeeDialogOpen, setCertificateFeeDialogOpen] = useState(false);
   const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage">("regular");
   const [certificateFeeAmount, setCertificateFeeAmount] = useState("");
