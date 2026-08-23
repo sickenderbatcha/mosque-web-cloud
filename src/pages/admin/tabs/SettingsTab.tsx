@@ -852,58 +852,8 @@ const SettingsTab = () => {
     }
   };
 
-  // Booking rate settings helpers
-  const getBookingRateSetting = (type: "nikkah_book" | "hall" | "food_facility") => {
-    const key = BOOKING_RATE_KEYS[type].key;
-    return settings.find((s) => s.key === key);
-  };
 
-  const openBookingRateDialog = (type: "nikkah_book" | "hall" | "food_facility") => {
-    setBookingRateType(type);
-    const setting = getBookingRateSetting(type);
-    setBookingRateAmount(setting?.value || BOOKING_RATE_KEYS[type].default);
-    setBookingRateDialogOpen(true);
-  };
 
-  const saveBookingRate = async () => {
-    const config = BOOKING_RATE_KEYS[bookingRateType];
-    const existingSetting = getBookingRateSetting(bookingRateType);
-
-    setSaving(true);
-    try {
-      if (existingSetting) {
-        const { error } = await supabase
-          .from("app_settings")
-          .update({ value: bookingRateAmount })
-          .eq("id", existingSetting.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("app_settings")
-          .insert({
-            key: config.key,
-            value: bookingRateAmount,
-            description: `Booking rate for ${config.label} (${config.labelTamil})`,
-          });
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Rate Updated",
-        description: `${config.label} rate updated to ₹${bookingRateAmount}`,
-      });
-      setBookingRateDialogOpen(false);
-      fetchSettings();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update booking rate.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // Certificate fee helpers
   const getCertificateFeeSetting = () => {
