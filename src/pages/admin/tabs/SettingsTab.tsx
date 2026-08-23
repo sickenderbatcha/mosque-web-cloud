@@ -1719,39 +1719,8 @@ const SettingsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Booking Rate Edit Dialog */}
-      <Dialog open={bookingRateDialogOpen} onOpenChange={setBookingRateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Edit {BOOKING_RATE_KEYS[bookingRateType].label} Rate
-            </DialogTitle>
-            <DialogDescription>
-              Set the rate for {BOOKING_RATE_KEYS[bookingRateType].label} ({BOOKING_RATE_KEYS[bookingRateType].labelTamil})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="bookingRateAmount">Amount (₹)</Label>
-              <Input
-                id="bookingRateAmount"
-                type="number"
-                value={bookingRateAmount}
-                onChange={(e) => setBookingRateAmount(e.target.value)}
-                placeholder="Enter amount"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBookingRateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={saveBookingRate} disabled={saving}>
-              {saving ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+
 
       {/* Certificate Fee Edit Dialog */}
       <Dialog open={certificateFeeDialogOpen} onOpenChange={setCertificateFeeDialogOpen}>
