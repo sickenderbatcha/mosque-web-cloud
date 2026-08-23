@@ -1307,58 +1307,22 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Booking Rates Settings Card */}
+      {/* Booking Services & Rates */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Mahal Booking Rates (மண்டப கட்டணம்)
+            Mahal Booking Services & Rates (மண்டப சேவைகள் & கட்டணம்)
           </CardTitle>
           <CardDescription>
-            Configure booking rates for hall, food facility, and nikkah book
+            Add, edit, reorder or remove the services and rates shown on the Mahal booking page
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Nikkah Book (நிக்காஹ் புத்தகம்)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("nikkah_book")?.value || "3000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("nikkah_book")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Hall (மண்டபம்)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("hall")?.value || "15000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("hall")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Dining Hall (உணவு இட வசதி)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("food_facility")?.value || "7000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("food_facility")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-          </div>
+          <MahalServiceSettings />
         </CardContent>
       </Card>
+
 
       {/* Mahal Photos */}
       <Card>
