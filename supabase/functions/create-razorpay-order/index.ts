@@ -67,7 +67,7 @@ async function resolveExpectedAmount(
 /**
  * Mahal bookings are created only after payment succeeds, so no record exists yet at
  * order-creation time. Validate the requested amount against the configured service
- * rates: it must equal the sum of a non-empty subset of the three services.
+ * rates: it must equal the sum of a non-empty subset of the configured services.
  */
 async function resolveBookingComboAmount(
   svc: ReturnType<typeof createClient>,
@@ -75,31 +75,76 @@ async function resolveBookingComboAmount(
 ): Promise<number | null> {
   if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) return null;
 
-  const defaults: Record<string, number> = {
+  const legacyDefaults: Record<string, number> = {
     booking_rate_nikkah_book: 3000,
     booking_rate_hall: 15000,
     booking_rate_food_facility: 7000,
   };
-  const keys = Object.keys(defaults);
+  const legacyKeys = Object.keys(legacyDefaults);
+  const SERVICES_KEY = "mahal_booking_services";
 
-  const { data } = await svc.from("app_settings").select("key, value").in("key", keys);
-  const rates = keys.map((key) => {
-    const row = (data as Array<{ key: string; value: string }> | null)?.find((r) => r.key === key);
-    const parsed = Number(row?.value);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaults[key];
-  });
+  const { data } = await svc
+    .from("app_settings")
+    .select("key, value")
+    .in("key", [SERVICES_KEY, ...legacyKeys]);
+  const rows = (data as Array<{ key: string; value: string }> | null) || [];
+  const valueOf = (key: string) => rows.find((r) => r.key === key)?.value;
 
-  // Every non-empty subset total
-  for (let mask = 1; mask < 1 << rates.length; mask++) {
-    let total = 0;
-    for (let i = 0; i < rates.length; i++) {
-      if (mask & (1 << i)) total += rates[i];
+  let rates: number[] = [];
+
+  const rawServices = valueOf(SERVICES_KEY);
+  if (rawServices) {
+    try {
+      const parsed = JSON.parse(rawServices);
+      if (Array.isArray(parsed)) {
+        rates = parsed
+          .map((item: any) => Number(item?.rate))
+          .filter((rate: number) => Number.isFinite(rate) && rate > 0);
+      }
+    } catch (_error) {
+      rates = [];
     }
-    if (Math.round(total * 100) === Math.round(requestedAmount * 100)) return total;
   }
 
-  return null;
+  if (rates.length === 0) {
+    rates = legacyKeys.map((key) => {
+      const parsed = Number(valueOf(key));
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : legacyDefaults[key];
+    });
+  }
+
+  if (rates.length === 0) return null;
+
+  const target = Math.round(requestedAmount * 100);
+
+  if (rates.length <= 20) {
+    // Enumerate every non-empty subset total
+    for (let mask = 1; mask < 1 << rates.length; mask++) {
+      let total = 0;
+      for (let i = 0; i < rates.length; i++) {
+        if (mask & (1 << i)) total += rates[i];
+      }
+      if (Math.round(total * 100) === target) return total;
+    }
+    return null;
+  }
+
+  // Bounded subset-sum over cent totals for larger service lists
+  const cents = rates.map((rate) => Math.round(rate * 100));
+  let reachable = new Set<number>([0]);
+  for (const cent of cents) {
+    const next = new Set<number>(reachable);
+    for (const sum of reachable) {
+      const candidate = sum + cent;
+      if (candidate <= target) next.add(candidate);
+    }
+    reachable = next;
+    if (reachable.size > 200000) break;
+  }
+
+  return reachable.has(target) && target > 0 ? requestedAmount : null;
 }
+
 
 
 const handler = async (req: Request): Promise<Response> => {

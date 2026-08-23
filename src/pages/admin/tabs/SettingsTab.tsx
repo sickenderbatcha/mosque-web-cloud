@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { Edit, IndianRupee, Building2, FileText, Upload, Image, ShieldCheck, List, Plus, X, Pencil } from "lucide-react";
 import MahalPhotoManager from "@/components/admin/MahalPhotoManager";
+import MahalServiceSettings from "@/components/admin/MahalServiceSettings";
 import { Clock } from "lucide-react";
 import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import { Slider } from "@/components/ui/slider";
@@ -31,21 +32,12 @@ const MONTHS_FULL = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const BOOKING_RATE_KEYS = {
-  nikkah_book: { key: "booking_rate_nikkah_book", label: "Nikkah Book", labelTamil: "நிக்காஹ் புத்தகம்", default: "3000" },
-  hall: { key: "booking_rate_hall", label: "Hall", labelTamil: "மண்டபம்", default: "15000" },
-  food_facility: { key: "booking_rate_food_facility", label: "Dining Hall", labelTamil: "உணவு இட வசதி", default: "7000" },
-};
-
 const SettingsTab = () => {
   const [settings, setSettings] = useState<AppSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [subscriptionType, setSubscriptionType] = useState<"monthly" | "yearly">("monthly");
   const [subscriptionAmount, setSubscriptionAmount] = useState("");
-  const [bookingRateDialogOpen, setBookingRateDialogOpen] = useState(false);
-  const [bookingRateType, setBookingRateType] = useState<"nikkah_book" | "hall" | "food_facility">("nikkah_book");
-  const [bookingRateAmount, setBookingRateAmount] = useState("");
   const [certificateFeeDialogOpen, setCertificateFeeDialogOpen] = useState(false);
   const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage">("regular");
   const [certificateFeeAmount, setCertificateFeeAmount] = useState("");
@@ -852,58 +844,8 @@ const SettingsTab = () => {
     }
   };
 
-  // Booking rate settings helpers
-  const getBookingRateSetting = (type: "nikkah_book" | "hall" | "food_facility") => {
-    const key = BOOKING_RATE_KEYS[type].key;
-    return settings.find((s) => s.key === key);
-  };
 
-  const openBookingRateDialog = (type: "nikkah_book" | "hall" | "food_facility") => {
-    setBookingRateType(type);
-    const setting = getBookingRateSetting(type);
-    setBookingRateAmount(setting?.value || BOOKING_RATE_KEYS[type].default);
-    setBookingRateDialogOpen(true);
-  };
 
-  const saveBookingRate = async () => {
-    const config = BOOKING_RATE_KEYS[bookingRateType];
-    const existingSetting = getBookingRateSetting(bookingRateType);
-
-    setSaving(true);
-    try {
-      if (existingSetting) {
-        const { error } = await supabase
-          .from("app_settings")
-          .update({ value: bookingRateAmount })
-          .eq("id", existingSetting.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("app_settings")
-          .insert({
-            key: config.key,
-            value: bookingRateAmount,
-            description: `Booking rate for ${config.label} (${config.labelTamil})`,
-          });
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Rate Updated",
-        description: `${config.label} rate updated to ₹${bookingRateAmount}`,
-      });
-      setBookingRateDialogOpen(false);
-      fetchSettings();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update booking rate.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // Certificate fee helpers
   const getCertificateFeeSetting = () => {
@@ -1307,58 +1249,22 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Booking Rates Settings Card */}
+      {/* Booking Services & Rates */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Mahal Booking Rates (மண்டப கட்டணம்)
+            Mahal Booking Services & Rates (மண்டப சேவைகள் & கட்டணம்)
           </CardTitle>
           <CardDescription>
-            Configure booking rates for hall, food facility, and nikkah book
+            Add, edit, reorder or remove the services and rates shown on the Mahal booking page
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Nikkah Book (நிக்காஹ் புத்தகம்)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("nikkah_book")?.value || "3000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("nikkah_book")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Hall (மண்டபம்)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("hall")?.value || "15000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("hall")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Dining Hall (உணவு இட வசதி)</p>
-                <p className="text-2xl font-bold">
-                  ₹{getBookingRateSetting("food_facility")?.value || "7000"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openBookingRateDialog("food_facility")}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </div>
-          </div>
+          <MahalServiceSettings />
         </CardContent>
       </Card>
+
 
       {/* Mahal Photos */}
       <Card>
@@ -1719,39 +1625,8 @@ const SettingsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Booking Rate Edit Dialog */}
-      <Dialog open={bookingRateDialogOpen} onOpenChange={setBookingRateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Edit {BOOKING_RATE_KEYS[bookingRateType].label} Rate
-            </DialogTitle>
-            <DialogDescription>
-              Set the rate for {BOOKING_RATE_KEYS[bookingRateType].label} ({BOOKING_RATE_KEYS[bookingRateType].labelTamil})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="bookingRateAmount">Amount (₹)</Label>
-              <Input
-                id="bookingRateAmount"
-                type="number"
-                value={bookingRateAmount}
-                onChange={(e) => setBookingRateAmount(e.target.value)}
-                placeholder="Enter amount"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBookingRateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={saveBookingRate} disabled={saving}>
-              {saving ? "Saving..." : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+
 
       {/* Certificate Fee Edit Dialog */}
       <Dialog open={certificateFeeDialogOpen} onOpenChange={setCertificateFeeDialogOpen}>

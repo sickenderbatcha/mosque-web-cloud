@@ -40,6 +40,7 @@ const bookingSchema = z.object({
   endTime: z.string().min(1, "End time is required"),
 });
 
+import { resolveMahalServices } from "@/lib/mahalServiceSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
@@ -50,6 +51,7 @@ const MahalBookingPage = () => {
   const { canAccessTab } = useUserTabPermissions();
   const canDoCashPayment = isAdmin || canAccessTab("bookings");
   const { settings: bookingSettings, isLoading: settingsLoading } = useAppSettings([
+    "mahal_booking_services",
     "booking_rate_nikkah_book",
     "booking_rate_hall",
     "booking_rate_food_facility",
@@ -112,11 +114,7 @@ const MahalBookingPage = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [isAdminOverride, setIsAdminOverride] = useState(false);
 
-  const [selectedServices, setSelectedServices] = useState({
-    nikkahBook: false,
-    hall: false,
-    food: false,
-  });
+  const [selectedServices, setSelectedServices] = useState<Record<string, boolean>>({});
 
   const validateField = (field: string, value: string) => {
     let error = "";
@@ -172,26 +170,16 @@ const MahalBookingPage = () => {
   }, []);
 
   // Dynamic services with rates from settings
-  const services = useMemo(() => [
-    { 
-      id: "nikkahBook", 
-      labelTamil: "நிக்காஹ் புத்தகம்", 
-      labelEnglish: "Nikkah Book", 
-      rate: parseInt(bookingSettings.booking_rate_nikkah_book) || 3000 
-    },
-    { 
-      id: "hall", 
-      labelTamil: "மண்டபம்", 
-      labelEnglish: "Hall", 
-      rate: parseInt(bookingSettings.booking_rate_hall) || 15000 
-    },
-    { 
-      id: "food", 
-      labelTamil: "உணவு இட வசதி", 
-      labelEnglish: "Dining Hall", 
-      rate: parseInt(bookingSettings.booking_rate_food_facility) || 7000 
-    },
-  ], [bookingSettings]);
+  const services = useMemo(
+    () =>
+      resolveMahalServices(bookingSettings.mahal_booking_services, bookingSettings).map((service) => ({
+        id: service.id,
+        labelTamil: service.nameTamil || service.nameEnglish,
+        labelEnglish: service.nameEnglish || service.nameTamil,
+        rate: service.rate,
+      })),
+    [bookingSettings]
+  );
 
   const eventTypes = [
     { value: "Wedding", labelTamil: "திருமணம்" },
@@ -203,16 +191,14 @@ const MahalBookingPage = () => {
 
   const calculateTotal = () => {
     return services.reduce((total, service) => {
-      return selectedServices[service.id as keyof typeof selectedServices] 
-        ? total + service.rate 
-        : total;
+      return selectedServices[service.id] ? total + service.rate : total;
     }, 0);
   };
 
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices(prev => ({
       ...prev,
-      [serviceId]: !prev[serviceId as keyof typeof selectedServices]
+      [serviceId]: !prev[serviceId]
     }));
   };
 
@@ -310,7 +296,7 @@ const MahalBookingPage = () => {
 
             // Prepare selected services for notification
             const selectedServicesList = services
-              .filter(s => capturedServices[s.id as keyof typeof capturedServices])
+              .filter(s => capturedServices[s.id])
               .map(s => ({ name: `${s.labelTamil} (${s.labelEnglish})`, rate: s.rate }));
 
             // Send payment success notification
@@ -597,7 +583,7 @@ const MahalBookingPage = () => {
           .eq("id", bookingId);
 
         const selectedServicesList = services
-          .filter(s => selectedServices[s.id as keyof typeof selectedServices])
+          .filter(s => selectedServices[s.id])
           .map(s => ({ name: `${s.labelTamil} (${s.labelEnglish})`, rate: s.rate }));
 
         toast({
@@ -809,7 +795,7 @@ const MahalBookingPage = () => {
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4" role="group" aria-labelledby="services-label">
                         {services.map((service, index) => {
-                          const isChecked = selectedServices[service.id as keyof typeof selectedServices];
+                          const isChecked = selectedServices[service.id];
                           return (
                             <motion.label
                               key={service.id}
@@ -1389,9 +1375,9 @@ const MahalBookingPage = () => {
                       {/* Selected Services */}
                       <div>
                         <h4 className="font-semibold text-sm text-muted-foreground mb-2">தேர்ந்தெடுக்கப்பட்ட சேவைகள் / Selected Services</h4>
-                        {services.filter(s => selectedServices[s.id as keyof typeof selectedServices]).length > 0 ? (
+                        {services.filter(s => selectedServices[s.id]).length > 0 ? (
                           <div className="space-y-2">
-                            {services.filter(s => selectedServices[s.id as keyof typeof selectedServices]).map(service => (
+                            {services.filter(s => selectedServices[s.id]).map(service => (
                               <div key={service.id} className="flex justify-between items-center py-2 border-b border-dashed last:border-0">
                                 <div>
                                   <p className="font-tamil text-sm">{service.labelTamil}</p>
@@ -1601,16 +1587,16 @@ const MahalBookingPage = () => {
             endTime: cashRequestData.pendingFormData?.endTime || formData.endTime,
             expectedGuests: cashRequestData.pendingFormData?.expectedGuests || formData.expectedGuests,
             specialRequirements: cashRequestData.pendingFormData?.specialRequirements || formData.specialRequirements,
-            selectedServices: Object.entries(cashRequestData.pendingServices || selectedServices)
-              .filter(([_, v]) => v)
-              .map(([k]) => k),
+            selectedServices: services
+              .filter((s) => (cashRequestData.pendingServices || selectedServices)[s.id])
+              .map((s) => `${s.labelTamil} (${s.labelEnglish})`),
           }}
           onBeforeSubmit={async () => {
             // Create booking only when user actually submits the cash request
             const fd = cashRequestData.pendingFormData || formData;
             const ss = cashRequestData.pendingServices || selectedServices;
             const totalAmount = services.reduce((total, service) => {
-              return ss[service.id as keyof typeof ss] ? total + service.rate : total;
+              return ss[service.id] ? total + service.rate : total;
             }, 0);
             
             const rpcName = isAdminOverride ? "create_mahal_booking_admin_override" : "create_mahal_booking";
