@@ -40,6 +40,7 @@ const bookingSchema = z.object({
   endTime: z.string().min(1, "End time is required"),
 });
 
+import { resolveMahalServices } from "@/lib/mahalServiceSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
