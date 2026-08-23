@@ -246,13 +246,13 @@ const MahalServiceSettings = () => {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="serviceNameTamil">Tamil Name (தமிழ் பெயர்)</Label>
+              <Label>Tamil Name (தமிழ் பெயர்)</Label>
               <TamilInput
-                id="serviceNameTamil"
                 value={formTamil}
                 onChange={(value) => setFormTamil(value)}
                 placeholder="மண்டபம்"
               />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="serviceNameEnglish">English Name</Label>
