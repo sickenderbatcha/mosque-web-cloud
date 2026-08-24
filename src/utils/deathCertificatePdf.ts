@@ -308,6 +308,8 @@ const generateCertificateContent = async (doc: jsPDF, record: DeathRecord) => {
     doc.text("(OFFICIAL SEAL)", stampX, stampY + 2, { align: "center" });
     doc.setTextColor(0, 0, 0);
   }
+
+  await drawCertificateFooter(doc, "death");
 };
 
 export const generateDeathCertificatePdf = async (record: DeathRecord): Promise<void> => {
