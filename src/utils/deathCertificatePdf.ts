@@ -5,6 +5,7 @@ import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSetti
 import { generateDeathCertificateNumber } from "@/components/admin/DeathCertificateNumberSettings";
 import { getDeathCertificateFontSizes } from "@/components/admin/DeathCertificateFontSettings";
 import { addTamilText as addTamilTextCanvas, loadTamilFont } from "@/utils/pdf/tamilCanvasText";
+import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
 
 export interface DeathRecord {
   id: string;
