@@ -1951,6 +1951,11 @@ const SuperAdminSettingsTab = () => {
 
       <CertificateSignatureSettings />
 
+      {/* Certificate Footer Settings - configurable per certificate */}
+      <CertificateFooterSettings />
+
+
+
       {/* Receipt Header Settings - applies to all receipts */}
       <ReceiptHeaderSettings />
 
