@@ -620,6 +620,9 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
     ? `${trusteeInfo.name}${trusteeInfo.qualification ? `, ${trusteeInfo.qualification}` : ""}`
     : "Managing Trustee";
 
+  const marriageFooter = await getCertificateFooter("marriage");
+  const marriageFooterHtml = certificateFooterHtml(marriageFooter.ta, marriageFooter.en);
+
   const printContent = `
     <!DOCTYPE html>
     <html>

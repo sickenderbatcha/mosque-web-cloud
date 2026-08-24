@@ -470,6 +470,9 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
     ? `${trusteeInfo.name}${trusteeInfo.qualification ? `, ${trusteeInfo.qualification}` : ""}`
     : "Managing Trustee";
 
+  const outsideMarriageFooter = await getCertificateFooter("outside_marriage");
+  const outsideMarriageFooterHtml = certificateFooterHtml(outsideMarriageFooter.ta, outsideMarriageFooter.en);
+
   const printContent = `
     <!DOCTYPE html>
     <html>
