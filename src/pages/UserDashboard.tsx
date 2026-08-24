@@ -44,6 +44,25 @@ import DeathCertificatePreview from "@/components/DeathCertificatePreview";
 import MarriageCertificatePreview from "@/components/MarriageCertificatePreview";
 import OutsideMarriageCertificatePreview from "@/components/OutsideMarriageCertificatePreview";
 
+// Death registers are admin-only at the table level; members read them through the
+// security-definer function instead.
+const fetchCertificateRecord = async (
+  certificateType: string,
+  referenceId: string
+): Promise<any | null> => {
+  if (certificateType === "death") {
+    const { data, error } = await supabase.rpc("get_death_register", { _id: referenceId });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] ?? null : data ?? null;
+  }
+  const table = certificateType === "marriage" ? "marriage_registers" : "outside_marriage_registers";
+  const { data, error } = await supabase.from(table).select("*").eq("id", referenceId).maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+
+
 interface Booking {
   id: string;
   event_type: string;
