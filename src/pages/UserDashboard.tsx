@@ -1087,20 +1087,21 @@ const UserDashboard = () => {
               </Card>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-green-500/10">
-                      <IndianRupee className="h-6 w-6 text-green-600" />
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2 sm:p-3 rounded-full bg-green-500/10 shrink-0">
+                      <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-2xl font-bold">{
                         bookings.filter(b => b.payment_status === 'paid').length
                         + certificatePayments.filter(c => c.payment_status === 'completed').length
                         + nocRequests.filter(n => n.payment_status === 'completed' || n.payment_status === 'paid').length
                         + heirRequests.filter(h => h.payment_status === 'completed' || h.payment_status === 'paid').length
                       }</p>
-                      <p className="text-sm text-muted-foreground font-tamil">பணம் செலுத்தியது</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground font-tamil break-words leading-snug">பணம் செலுத்தியது</p>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
               <Card>
