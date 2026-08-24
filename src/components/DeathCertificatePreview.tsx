@@ -4,6 +4,7 @@ import { format, parseISO } from "date-fns";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
+import CertificateFooterBlock from "@/components/CertificateFooterBlock";
 
 interface Props {
   record: DeathRecord;
@@ -157,6 +158,7 @@ export default function DeathCertificatePreview({ record }: Props) {
       <div className="text-center mt-8 text-[8px] text-gray-400">
         <p>Preview - இது முன்னோட்டம் மட்டுமே</p>
       </div>
+    <CertificateFooterBlock type="death" />
     </div>
   );
 }

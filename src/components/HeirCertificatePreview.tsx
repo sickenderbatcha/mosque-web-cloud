@@ -3,6 +3,7 @@ import { HeirRecord, Heir } from "@/utils/heirCertificatePdf";
 import { getCertificateImages, CertificateImages } from "@/lib/certificateImages";
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
+import CertificateFooterBlock from "@/components/CertificateFooterBlock";
 
 interface HeirCertificatePreviewProps {
   record: HeirRecord;
@@ -155,6 +156,7 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
           ))}
         </div>
       </div>
+    <CertificateFooterBlock type="heir" />
     </div>
   );
 }
