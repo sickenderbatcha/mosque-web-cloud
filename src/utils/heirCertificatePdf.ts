@@ -6,6 +6,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { addTamilText, loadTamilFont, getAutoShrinkFontSize } from "@/utils/pdf/tamilCanvasText";
 import { getHeirCertificateFontSizes } from "@/components/admin/HeirCertificateFontSettings";
 import { generateHeirCertificateNumber } from "@/components/admin/HeirCertificateNumberSettings";
+import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
 
 export interface Heir {
   name: string;
@@ -247,6 +248,8 @@ export const generateHeirCertificatePdf = async (record: HeirRecord): Promise<vo
     addTamilText(doc, line, signatureX, y, FS.signature);
   });
   
+  await drawCertificateFooter(doc, "heir");
+
   // Save PDF
   const deceasedName = record.deceased_name.replace(/\s+/g, "_");
   doc.save(`வாரிசு_சான்றிதழ்_${deceasedName}.pdf`);
@@ -427,6 +430,8 @@ export const printHeirCertificate = async (record: HeirRecord): Promise<void> =>
     addTamilText(doc, line, signatureX, y, FS.signature);
   });
   
+  await drawCertificateFooter(doc, "heir");
+
   // Open PDF in new window for printing
   const pdfBlob = doc.output("blob");
   const pdfUrl = URL.createObjectURL(pdfBlob);
