@@ -3,6 +3,7 @@ import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
 import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import { generateNocCertificateNumber } from "@/components/admin/NocCertificateNumberSettings";
+import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
 
 export interface NocRecord {
   id: string;
