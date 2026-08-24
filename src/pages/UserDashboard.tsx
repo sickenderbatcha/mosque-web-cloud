@@ -1073,15 +1073,16 @@ const UserDashboard = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 relative z-20 isolate">
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Building2 className="h-6 w-6 text-primary" />
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2 sm:p-3 rounded-full bg-primary/10 shrink-0">
+                      <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-2xl font-bold">{bookings.length}</p>
-                      <p className="text-sm text-muted-foreground font-tamil">முன்பதிவுகள்</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground font-tamil break-words leading-snug">முன்பதிவுகள்</p>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
               <Card>
