@@ -5,6 +5,7 @@ import { getCertificateImages, CertificateImages } from "@/lib/certificateImages
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER, CERTIFICATE_HEADER_SETTING_KEYS } from "@/lib/certificateHeaderSettings";
 import { generateMarriageCertificateNumber } from "@/components/admin/MarriageCertificateNumberSettings";
+import CertificateFooterBlock from "@/components/CertificateFooterBlock";
 
 interface TrusteeInfo {
   name: string;
@@ -241,6 +242,7 @@ export default function MarriageCertificatePreview({ record }: Props) {
       <div className="text-center mt-6 text-[8px] text-muted-foreground print:hidden">
         <p>Preview - முன்னோட்டம்</p>
       </div>
+    <CertificateFooterBlock type="marriage" />
     </div>
   );
 }

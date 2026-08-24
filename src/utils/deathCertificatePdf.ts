@@ -5,6 +5,7 @@ import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSetti
 import { generateDeathCertificateNumber } from "@/components/admin/DeathCertificateNumberSettings";
 import { getDeathCertificateFontSizes } from "@/components/admin/DeathCertificateFontSettings";
 import { addTamilText as addTamilTextCanvas, loadTamilFont } from "@/utils/pdf/tamilCanvasText";
+import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
 
 export interface DeathRecord {
   id: string;
@@ -307,6 +308,8 @@ const generateCertificateContent = async (doc: jsPDF, record: DeathRecord) => {
     doc.text("(OFFICIAL SEAL)", stampX, stampY + 2, { align: "center" });
     doc.setTextColor(0, 0, 0);
   }
+
+  await drawCertificateFooter(doc, "death");
 };
 
 export const generateDeathCertificatePdf = async (record: DeathRecord): Promise<void> => {

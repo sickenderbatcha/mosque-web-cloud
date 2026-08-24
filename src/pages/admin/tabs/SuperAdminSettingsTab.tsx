@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import HomepageSectionOrderManager from "@/components/admin/HomepageSectionOrderManager";
 import CertificateHeaderSettings from "@/components/admin/CertificateHeaderSettings";
 import CertificateSignatureSettings from "@/components/admin/CertificateSignatureSettings";
+import CertificateFooterSettings from "@/components/admin/CertificateFooterSettings";
 import ReceiptHeaderSettings from "@/components/admin/ReceiptHeaderSettings";
 import LetterheadFooterSettings from "@/components/admin/LetterheadFooterSettings";
 import HeaderTextsSettings from "@/components/admin/HeaderTextsSettings";
@@ -1949,6 +1950,11 @@ const SuperAdminSettingsTab = () => {
       <CertificateHeaderSettings />
 
       <CertificateSignatureSettings />
+
+      {/* Certificate Footer Settings - configurable per certificate */}
+      <CertificateFooterSettings />
+
+
 
       {/* Receipt Header Settings - applies to all receipts */}
       <ReceiptHeaderSettings />

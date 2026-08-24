@@ -11,7 +11,7 @@ Add a per-certificate footer setting (Tamil + English) stored in app settings, f
 - Keys per type: `cert_footer_<type>_ta` / `cert_footer_<type>_en` for `death`, `marriage`, `outside_marriage`, `noc`, `heir`.
 - New "சான்றிதழ் அடிக்குறிப்பு (Certificate Footer Settings)" card in Superadmin Dashboard → Settings, with one Tamil and one English field per certificate type, save and reset-to-defaults.
 - Both the on-screen previews and the print/PDF output render the configured footer at the bottom. Empty fields render nothing.
-- The existing "Certificate No: ..." line on marriage / outside-marriage stays and prints above the configured footer.
+- The existing "Certificate No: ..." line on marriage / outside-marriage, remove this. Dont print this line in the footer.
 
 ## 2. Missing records in admin tabs
 

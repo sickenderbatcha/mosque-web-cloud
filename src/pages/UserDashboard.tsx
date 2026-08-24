@@ -44,6 +44,25 @@ import DeathCertificatePreview from "@/components/DeathCertificatePreview";
 import MarriageCertificatePreview from "@/components/MarriageCertificatePreview";
 import OutsideMarriageCertificatePreview from "@/components/OutsideMarriageCertificatePreview";
 
+// Death registers are admin-only at the table level; members read them through the
+// security-definer function instead.
+const fetchCertificateRecord = async (
+  certificateType: string,
+  referenceId: string
+): Promise<any | null> => {
+  if (certificateType === "death") {
+    const { data, error } = await supabase.rpc("get_death_register", { _id: referenceId });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] ?? null : data ?? null;
+  }
+  const table = certificateType === "marriage" ? "marriage_registers" : "outside_marriage_registers";
+  const { data, error } = await supabase.from(table).select("*").eq("id", referenceId).maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+
+
 interface Booking {
   id: string;
   event_type: string;
@@ -1054,33 +1073,35 @@ const UserDashboard = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 relative z-20 isolate">
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Building2 className="h-6 w-6 text-primary" />
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2 sm:p-3 rounded-full bg-primary/10 shrink-0">
+                      <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-2xl font-bold">{bookings.length}</p>
-                      <p className="text-sm text-muted-foreground font-tamil">முன்பதிவுகள்</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground font-tamil break-words leading-snug">முன்பதிவுகள்</p>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-green-500/10">
-                      <IndianRupee className="h-6 w-6 text-green-600" />
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="p-2 sm:p-3 rounded-full bg-green-500/10 shrink-0">
+                      <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-2xl font-bold">{
                         bookings.filter(b => b.payment_status === 'paid').length
                         + certificatePayments.filter(c => c.payment_status === 'completed').length
                         + nocRequests.filter(n => n.payment_status === 'completed' || n.payment_status === 'paid').length
                         + heirRequests.filter(h => h.payment_status === 'completed' || h.payment_status === 'paid').length
                       }</p>
-                      <p className="text-sm text-muted-foreground font-tamil">பணம் செலுத்தியது</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground font-tamil break-words leading-snug">பணம் செலுத்தியது</p>
                     </div>
                   </div>
+
                 </CardContent>
               </Card>
               <Card>
@@ -2388,16 +2409,7 @@ const UserDashboard = () => {
                                       onClick={async () => {
                                         setCertPreviewLoading(cp.id);
                                         try {
-                                          const table = cp.certificate_type === "marriage" 
-                                            ? "marriage_registers" 
-                                            : cp.certificate_type === "death" 
-                                            ? "death_registers" 
-                                            : "outside_marriage_registers";
-                                          const { data } = await supabase
-                                            .from(table)
-                                            .select("*")
-                                            .eq("id", cp.reference_id)
-                                            .single();
+                                          const data = await fetchCertificateRecord(cp.certificate_type, cp.reference_id);
                                           if (data) {
                                             setCertPreviewData({
                                               type: cp.certificate_type as "death" | "marriage" | "outside_marriage",
@@ -2425,20 +2437,17 @@ const UserDashboard = () => {
                                       variant="outline"
                                       size="sm"
                                       onClick={async () => {
-                                        const table = cp.certificate_type === "marriage" 
-                                          ? "marriage_registers" 
-                                          : cp.certificate_type === "death" 
-                                          ? "death_registers" 
-                                          : "outside_marriage_registers";
-                                        const { data } = await supabase
-                                          .from(table)
-                                          .select("*")
-                                          .eq("id", cp.reference_id)
-                                          .single();
-                                        if (data) {
+                                        try {
+                                          const data = await fetchCertificateRecord(cp.certificate_type, cp.reference_id);
+                                          if (!data) {
+                                            toast({ title: "Error", description: "Certificate record not found", variant: "destructive" });
+                                            return;
+                                          }
                                           if (cp.certificate_type === "death") await printDeathCertificate(data as DeathRecord);
                                           else if (cp.certificate_type === "marriage") await printMarriageCertificate(data as MarriageRecord);
                                           else await printOutsideMarriageCertificate(data as OutsideMarriageRecord);
+                                        } catch {
+                                          toast({ title: "Error", description: "Failed to load certificate", variant: "destructive" });
                                         }
                                       }}
                                     >
@@ -2449,23 +2458,21 @@ const UserDashboard = () => {
                                       variant="outline"
                                       size="sm"
                                       onClick={async () => {
-                                        const table = cp.certificate_type === "marriage" 
-                                          ? "marriage_registers" 
-                                          : cp.certificate_type === "death" 
-                                          ? "death_registers" 
-                                          : "outside_marriage_registers";
-                                        const { data } = await supabase
-                                          .from(table)
-                                          .select("*")
-                                          .eq("id", cp.reference_id)
-                                          .single();
-                                        if (data) {
+                                        try {
+                                          const data = await fetchCertificateRecord(cp.certificate_type, cp.reference_id);
+                                          if (!data) {
+                                            toast({ title: "Error", description: "Certificate record not found", variant: "destructive" });
+                                            return;
+                                          }
                                           if (cp.certificate_type === "death") await generateDeathCertificatePdf(data as DeathRecord);
                                           else if (cp.certificate_type === "marriage") await generateMarriageCertificatePdf(data as MarriageRecord);
                                           else await generateOutsideMarriageCertificatePdf(data as OutsideMarriageRecord);
+                                        } catch {
+                                          toast({ title: "Error", description: "Failed to load certificate", variant: "destructive" });
                                         }
                                       }}
                                     >
+
                                       <Download className="h-4 w-4 mr-1" />
                                       Download
                                     </Button>

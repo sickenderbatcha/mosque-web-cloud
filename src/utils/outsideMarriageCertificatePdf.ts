@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
 import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
+import { drawCertificateFooter, certificateFooterHtml } from "@/utils/pdf/certificateFooter";
+import { getCertificateFooter } from "@/lib/certificateFooterSettings";
 
 const escapeHtml = (value: string): string =>
   value
@@ -428,13 +430,7 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
     doc.setTextColor(0, 0, 0);
   }
 
-  const serialNumber = outsideMarriageCertNumber;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Certificate No: ${serialNumber}`, pageWidth / 2, pageHeight - 15, { align: "center" });
-  doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB")}`, pageWidth / 2, pageHeight - 10, { align: "center" });
-  doc.setTextColor(0, 0, 0);
+  await drawCertificateFooter(doc, "outside_marriage");
 
   const groomNameForFile = (record.groom_name_en || record.groom_name).replace(/\s+/g, '-');
   const brideNameForFile = (record.bride_name_en || record.bride_name).replace(/\s+/g, '-');
@@ -473,6 +469,9 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
   const trusteeText = trusteeInfo.name
     ? `${trusteeInfo.name}${trusteeInfo.qualification ? `, ${trusteeInfo.qualification}` : ""}`
     : "Managing Trustee";
+
+  const outsideMarriageFooter = await getCertificateFooter("outside_marriage");
+  const outsideMarriageFooterHtml = certificateFooterHtml(outsideMarriageFooter.ta, outsideMarriageFooter.en);
 
   const printContent = `
     <!DOCTYPE html>
@@ -571,9 +570,7 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
             ${signSettings.linesEn.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
           </div>
         </div>
-        <div class="footer">
-          <p>Certificate No: ${outsideMarriageCertNumber}</p>
-        </div>
+        ${outsideMarriageFooterHtml}
       </div>
       <script>
         window.onload = function() { window.print(); }

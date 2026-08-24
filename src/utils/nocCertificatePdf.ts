@@ -3,6 +3,7 @@ import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
 import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import { generateNocCertificateNumber } from "@/components/admin/NocCertificateNumberSettings";
+import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
 
 export interface NocRecord {
   id: string;
@@ -405,6 +406,8 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
     doc.text("(OFFICIAL SEAL)", stampX, stampY + 2, { align: "center" });
     doc.setTextColor(0, 0, 0);
   }
+
+  await drawCertificateFooter(doc, "noc");
 };
 
 export const generateNocCertificatePdf = async (record: NocRecord): Promise<void> => {

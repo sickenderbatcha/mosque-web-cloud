@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCertificateImages } from "@/lib/certificateImages";
 import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
 import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
+import { drawCertificateFooter, certificateFooterHtml } from "@/utils/pdf/certificateFooter";
+import { getCertificateFooter } from "@/lib/certificateFooterSettings";
 
 const escapeHtml = (value: string): string =>
   value
@@ -572,13 +574,8 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
     doc.setTextColor(0, 0, 0);
   }
 
-  // ============ FOOTER ============
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Certificate No: ${serialNumber}`, pageWidth / 2, pageHeight - 15, { align: "center" });
-  doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB")}`, pageWidth / 2, pageHeight - 10, { align: "center" });
-  doc.setTextColor(0, 0, 0);
+  // ============ FOOTER (configurable in Superadmin settings) ============
+  await drawCertificateFooter(doc, "marriage");
 
   // Save the PDF
   const groomNameForFile = (record.groom_name_en || record.groom_name).replace(/\s+/g, '-');
@@ -622,6 +619,9 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
   const trusteeText = trusteeInfo.name
     ? `${trusteeInfo.name}${trusteeInfo.qualification ? `, ${trusteeInfo.qualification}` : ""}`
     : "Managing Trustee";
+
+  const marriageFooter = await getCertificateFooter("marriage");
+  const marriageFooterHtml = certificateFooterHtml(marriageFooter.ta, marriageFooter.en);
 
   const printContent = `
     <!DOCTYPE html>
@@ -845,9 +845,7 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
           </div>
         </div>
         
-        <div class="footer">
-           <p>Certificate No: ${marriageCertNumber}</p>
-        </div>
+        ${marriageFooterHtml}
       </div>
       
       <script>
