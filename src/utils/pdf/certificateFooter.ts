@@ -55,7 +55,7 @@ export const certificateFooterHtml = (ta: string, en: string): string => {
   if (!taText && !enText) return "";
   return `
         <div class="footer">
-          ${taText ? `<p class="tamil">${esc(taText)}</p>` : ""}
+          ${taText ? `<p style="font-family:'Noto Sans Tamil',sans-serif;">${esc(taText)}</p>` : ""}
           ${enText ? `<p>${esc(enText)}</p>` : ""}
         </div>`;
 };
