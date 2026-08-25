@@ -114,11 +114,12 @@ const LetterheadPage = () => {
     () =>
       buildLetterheadHtml(
         {
-          organizationNameTa: settings.organizationNameTa,
-          organizationNameEn: settings.organizationNameEn,
-          addressLine1: settings.addressLine1,
-          addressLine2: settings.addressLine2,
-          phone: settings.phone,
+          organizationNameTa: letterheadSettings.orgNameTa,
+          organizationNameEn: letterheadSettings.orgNameEn,
+          addressLine1: letterheadSettings.addressLine1,
+          addressLine2: letterheadSettings.addressLine2,
+          phone: letterheadSettings.phone,
+
           footerTagline: letterheadSettings.footerTa,
           footerTaglineEn: letterheadSettings.footerEn,
         },
