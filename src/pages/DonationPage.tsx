@@ -337,23 +337,38 @@ const SubscriptionForm = () => {
 
       if (allMonths.length === 0) {
         setPendingMonths([]);
+        setPendingMonthsChecked(true);
         return;
       }
 
       // Fetch paid slots for the member
-      const { data: paidSlots } = await supabase.rpc("get_paid_subscription_months", {
-        _member_id: memberId,
-      });
-
-      const paidSet = new Set(
-        (paidSlots || []).map((s) => `${Number(s.year)}-${Number(s.month)}`)
+      const { data: paidSlots, error: paidSlotsError } = await supabase.rpc(
+        "get_paid_subscription_months",
+        { _member_id: memberId }
       );
+
+      if (paidSlotsError) {
+        // Do NOT assume "nothing paid" when the lookup fails — that would wrongly
+        // lock the form with every month listed as pending.
+        console.error("Error fetching paid subscription months:", paidSlotsError);
+        setPendingMonths([]);
+        setPendingMonthsError(true);
+        setPendingMonthsChecked(false);
+        return;
+      }
+
+      const paidList = (paidSlots || []).map((s) => ({
+        year: Number(s.year),
+        month: Number(s.month),
+      }));
+      const paidSet = new Set(paidList.map((s) => `${s.year}-${s.month}`));
 
       const unpaid = allMonths.filter(
         (m) => !paidSet.has(`${m.year}-${m.month}`)
       );
 
       setPendingMonths(unpaid);
+      setPendingMonthsChecked(true);
 
       // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
       if (unpaid.length > 0) {
@@ -377,14 +392,32 @@ const SubscriptionForm = () => {
             setSubscriptionType("monthly");
           }
         }
+      } else if (paidList.length > 0) {
+        // Nothing pending — offer the first month after the last paid month
+        const last = paidList.reduce((a, b) =>
+          b.year > a.year || (b.year === a.year && b.month > a.month) ? b : a
+        );
+        let nextMonth = last.month + 1;
+        let nextYear = last.year;
+        if (nextMonth > 12) {
+          nextMonth = 1;
+          nextYear += 1;
+        }
+        setFromMonth(String(nextMonth).padStart(2, "0"));
+        setFromYear(String(nextYear));
+        setNumberOfMonths(1);
+        setSubscriptionType("monthly");
       }
     } catch (error) {
       console.error("Error checking pending months:", error);
       setPendingMonths([]);
+      setPendingMonthsError(true);
+      setPendingMonthsChecked(false);
     } finally {
       setPendingMonthsLoading(false);
     }
   };
+
 
   // Lookup member by membership number
   const handleMemberLookup = async () => {
