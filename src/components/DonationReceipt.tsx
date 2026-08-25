@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Printer, ArrowLeft, Building2, Phone, User, Heart, IndianRupee, CheckCircle2, Mail, AlertCircle } from "lucide-react";
+import { Download, Printer, ArrowLeft, Building2, Phone, User, Heart, IndianRupee, CheckCircle2, Mail, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -118,6 +118,8 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
   const [hasActioned, setHasActioned] = useState(false);
   const [receiptNumber, setReceiptNumber] = useState<string>("");
   const [receiptLoading, setReceiptLoading] = useState(true);
+  const [retryToken, setRetryToken] = useState(0);
+
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
@@ -184,17 +186,21 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
       setReceiptLoading(true);
       try {
         let resolved: string | null = null;
-        for (let attempt = 0; attempt < 12; attempt++) {
+        // Poll for up to ~60s: the ledger entry is written by a database trigger
+        // right after payment verification and can lag behind this dialog.
+        for (let attempt = 0; attempt < 40; attempt++) {
           const { data, error } = await (supabase as any).rpc("get_donation_receipt_number", {
             _donation_id: donation.referenceId,
           });
-          if (error) throw error;
-          if (isSequentialReceiptNumber(data as string | null)) {
+          if (cancelled) return;
+          if (error) {
+            console.error("Donation receipt number lookup failed", error);
+          } else if (isSequentialReceiptNumber(data as string | null)) {
             resolved = data as string;
             break;
           }
+          await new Promise((r) => setTimeout(r, 1500));
           if (cancelled) return;
-          await new Promise((r) => setTimeout(r, 800));
         }
         if (!cancelled) setReceiptNumber(resolved || "");
       } finally {
@@ -213,10 +219,11 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
     return () => {
       cancelled = true;
     };
-  }, [donation.receiptNumber, donation.referenceId]);
+  }, [donation.receiptNumber, donation.referenceId, retryToken]);
 
 
   const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
+
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
@@ -460,6 +467,13 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
               <h2 className="font-semibold font-tamil">நன்கொடை ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {!receiptLoading && !receiptNumber && (
+                <Button variant="outline" size="sm" onClick={() => setRetryToken((t) => t + 1)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  மீண்டும் முயற்சி / Retry
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
