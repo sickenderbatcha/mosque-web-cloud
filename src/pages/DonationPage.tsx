@@ -572,24 +572,25 @@ const SubscriptionForm = () => {
       
       // For cash payments (admin only), record directly without Razorpay
       if (canCashPay && paymentMethod === "cash") {
-        const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
-          member_id: memberId,
-          member_name: memberName,
-          member_phone: normalizedMemberPhone,
-          member_address: memberAddress || null,
-          subscription_type: subscriptionType,
-          amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
-          total_amount: payableAmount,
-          from_month: subscriptionType === "monthly" ? fromMonthNum : null,
-          from_year: subscriptionType === "monthly" ? fromYearNum : null,
-          to_month: subscriptionType === "monthly" ? toMonthNum : null,
-          to_year: subscriptionType === "monthly" ? toYearNum : null,
-          number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
-          subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
-          payment_status: "completed",
-          payment_method: "Cash",
-          transaction_id: `CASH-${Date.now()}`,
-        }).select().single();
+        const { data: subscriptionData, error: insertError } = await supabase
+        .rpc("create_subscription", {
+          _member_id: memberId,
+          _member_name: memberName,
+          _member_phone: normalizedMemberPhone,
+          _member_address: memberAddress || null,
+          _subscription_type: subscriptionType,
+          _amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
+          _total_amount: payableAmount,
+          _from_month: subscriptionType === "monthly" ? fromMonthNum : null,
+          _from_year: subscriptionType === "monthly" ? fromYearNum : null,
+          _to_month: subscriptionType === "monthly" ? toMonthNum : null,
+          _to_year: subscriptionType === "monthly" ? toYearNum : null,
+          _number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
+          _subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
+          _payment_status: "completed",
+          _payment_method: "Cash",
+          _transaction_id: `CASH-${Date.now()}`,
+        });
 
         if (insertError) throw insertError;
 
@@ -624,26 +625,29 @@ const SubscriptionForm = () => {
       }
       // When online payment is disabled for public users, create pending subscription and show cash request dialog
       if (isOnlineDisabledForPublic) {
-        const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
-          member_id: memberId,
-          member_name: memberName,
-          member_phone: normalizedMemberPhone,
-          member_address: memberAddress || null,
-          subscription_type: subscriptionType,
-          amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
-          total_amount: payableAmount,
-          from_month: subscriptionType === "monthly" ? fromMonthNum : null,
-          from_year: subscriptionType === "monthly" ? fromYearNum : null,
-          to_month: subscriptionType === "monthly" ? toMonthNum : null,
-          to_year: subscriptionType === "monthly" ? toYearNum : null,
-          number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
-          subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
-          payment_status: "pending",
-          payment_method: "Cash",
-        }).select().single();
+        const { data: subscriptionData, error: insertError } = await supabase
+        .rpc("create_subscription", {
+          _member_id: memberId,
+          _member_name: memberName,
+          _member_phone: normalizedMemberPhone,
+          _member_address: memberAddress || null,
+          _subscription_type: subscriptionType,
+          _amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
+          _total_amount: payableAmount,
+          _from_month: subscriptionType === "monthly" ? fromMonthNum : null,
+          _from_year: subscriptionType === "monthly" ? fromYearNum : null,
+          _to_month: subscriptionType === "monthly" ? toMonthNum : null,
+          _to_year: subscriptionType === "monthly" ? toYearNum : null,
+          _number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
+          _subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
+          _payment_status: "pending",
+          _payment_method: "Cash",
+          _transaction_id: null,
+        });
 
         if (insertError) throw insertError;
 
+        if (!subscriptionData) throw new Error("Subscription could not be created");
         setCashRequestData({
           subscriptionId: subscriptionData.id,
           amount: payableAmount,
@@ -655,25 +659,28 @@ const SubscriptionForm = () => {
       }
 
       // First, create subscription record with pending status
-      const { data: subscriptionData, error: insertError } = await supabase.from("subscriptions").insert({
-        member_id: memberId,
-        member_name: memberName,
-        member_phone: normalizedMemberPhone,
-        member_address: memberAddress || null,
-        subscription_type: subscriptionType,
-        amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
-        total_amount: payableAmount,
-        from_month: subscriptionType === "monthly" ? fromMonthNum : null,
-        from_year: subscriptionType === "monthly" ? fromYearNum : null,
-        to_month: subscriptionType === "monthly" ? toMonthNum : null,
-        to_year: subscriptionType === "monthly" ? toYearNum : null,
-        number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
-        subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
-        payment_status: "pending",
-        payment_method: "Online",
-      }).select().single();
+      const { data: subscriptionData, error: insertError } = await supabase
+        .rpc("create_subscription", {
+          _member_id: memberId,
+          _member_name: memberName,
+          _member_phone: normalizedMemberPhone,
+          _member_address: memberAddress || null,
+          _subscription_type: subscriptionType,
+          _amount: subscriptionType === "monthly" ? monthlyAmount : yearlyAmount,
+          _total_amount: payableAmount,
+          _from_month: subscriptionType === "monthly" ? fromMonthNum : null,
+          _from_year: subscriptionType === "monthly" ? fromYearNum : null,
+          _to_month: subscriptionType === "monthly" ? toMonthNum : null,
+          _to_year: subscriptionType === "monthly" ? toYearNum : null,
+          _number_of_months: subscriptionType === "monthly" ? effectiveMonths : null,
+          _subscription_year: subscriptionType === "yearly" ? parseInt(subscriptionYear) : null,
+          _payment_status: "pending",
+          _payment_method: "Online",
+          _transaction_id: null,
+        });
 
       if (insertError) throw insertError;
+      if (!subscriptionData) throw new Error("Subscription could not be created");
       createdSubscriptionId = subscriptionData.id;
 
       // Create Razorpay order

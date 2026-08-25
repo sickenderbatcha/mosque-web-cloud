@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -9,8 +10,19 @@ import { FileSignature, Save, RotateCcw } from "lucide-react";
 import {
   DEFAULT_LETTERHEAD_SETTINGS,
   LETTERHEAD_SETTING_KEYS,
+  LETTERHEAD_KEY_TO_FIELD,
   type LetterheadSettings,
 } from "@/lib/letterheadSettings";
+
+const DESCRIPTIONS: Record<keyof LetterheadSettings, string> = {
+  orgNameTa: "Letterhead - Organization name (Tamil)",
+  orgNameEn: "Letterhead - Organization name (English)",
+  addressLine1: "Letterhead - Address line 1",
+  addressLine2: "Letterhead - Address line 2",
+  phone: "Letterhead - Phone number",
+  footerTa: "Letterhead - Footer text (Tamil)",
+  footerEn: "Letterhead - Footer text (English)",
+};
 
 const LetterheadFooterSettings = () => {
   const [formData, setFormData] = useState<LetterheadSettings>(DEFAULT_LETTERHEAD_SETTINGS);
@@ -31,8 +43,8 @@ const LetterheadFooterSettings = () => {
 
         const next: LetterheadSettings = { ...DEFAULT_LETTERHEAD_SETTINGS };
         data?.forEach((item) => {
-          if (item.key === LETTERHEAD_SETTING_KEYS.footerTa && item.value) next.footerTa = item.value;
-          if (item.key === LETTERHEAD_SETTING_KEYS.footerEn && item.value) next.footerEn = item.value;
+          const field = LETTERHEAD_KEY_TO_FIELD[item.key];
+          if (field && item.value) next[field] = item.value;
         });
         setFormData(next);
       } catch (error: any) {
@@ -50,18 +62,13 @@ const LetterheadFooterSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const rows = [
-        {
-          key: LETTERHEAD_SETTING_KEYS.footerTa,
-          value: formData.footerTa,
-          description: "Letterhead - Footer text (Tamil)",
-        },
-        {
-          key: LETTERHEAD_SETTING_KEYS.footerEn,
-          value: formData.footerEn,
-          description: "Letterhead - Footer text (English)",
-        },
-      ];
+      const rows = (Object.keys(LETTERHEAD_SETTING_KEYS) as (keyof LetterheadSettings)[]).map(
+        (field) => ({
+          key: LETTERHEAD_SETTING_KEYS[field],
+          value: formData[field] ?? "",
+          description: DESCRIPTIONS[field],
+        })
+      );
 
       const { error } = await supabase
         .from("app_settings")
@@ -71,7 +78,7 @@ const LetterheadFooterSettings = () => {
 
       toast({
         title: "Settings Saved",
-        description: "Letterhead footer has been updated.",
+        description: "Letterhead header and footer have been updated.",
       });
     } catch (error: any) {
       toast({
@@ -90,7 +97,7 @@ const LetterheadFooterSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSignature className="h-5 w-5" />
-            Letterhead Footer Settings
+            Letterhead Header &amp; Footer Settings
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -105,13 +112,68 @@ const LetterheadFooterSettings = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileSignature className="h-5 w-5" />
-          கடித அடிக்குறிப்பு அமைப்புகள் (Letterhead Footer Settings)
+          கடிதத் தலைப்பு &amp; அடிக்குறிப்பு அமைப்புகள் (Letterhead Header &amp; Footer)
         </CardTitle>
         <CardDescription>
-          Configure the footer text printed at the bottom of the letterhead. Independent of receipt settings.
+          Configure the header and footer printed on the letterhead. Independent of receipt settings.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="lhOrgTa" className="text-sm font-medium">
+            நிறுவனப் பெயர் - தமிழ் (Organization Name - Tamil)
+          </Label>
+          <Input
+            id="lhOrgTa"
+            value={formData.orgNameTa}
+            onChange={(e) => handleChange("orgNameTa", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lhOrgEn" className="text-sm font-medium">
+            நிறுவனப் பெயர் - ஆங்கிலம் (Organization Name - English)
+          </Label>
+          <Input
+            id="lhOrgEn"
+            value={formData.orgNameEn}
+            onChange={(e) => handleChange("orgNameEn", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lhAddr1" className="text-sm font-medium">
+            முகவரி வரி 1 (Address Line 1)
+          </Label>
+          <Input
+            id="lhAddr1"
+            value={formData.addressLine1}
+            onChange={(e) => handleChange("addressLine1", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lhAddr2" className="text-sm font-medium">
+            முகவரி வரி 2 (Address Line 2)
+          </Label>
+          <Input
+            id="lhAddr2"
+            value={formData.addressLine2}
+            onChange={(e) => handleChange("addressLine2", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lhPhone" className="text-sm font-medium">
+            தொலைபேசி எண் (Phone Number)
+          </Label>
+          <Input
+            id="lhPhone"
+            value={formData.phone}
+            onChange={(e) => handleChange("phone", e.target.value)}
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="letterheadFooterTa" className="text-sm font-medium">
             அடிக்குறிப்பு - தமிழ் (Footer - Tamil)
@@ -139,7 +201,7 @@ const LetterheadFooterSettings = () => {
         <div className="flex gap-2 pt-2">
           <Button onClick={handleSave} disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : "Save Letterhead Footer"}
+            {saving ? "Saving..." : "Save Letterhead Settings"}
           </Button>
           <Button variant="outline" onClick={() => setFormData(DEFAULT_LETTERHEAD_SETTINGS)}>
             <RotateCcw className="h-4 w-4 mr-2" />

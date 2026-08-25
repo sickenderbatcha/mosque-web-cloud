@@ -2542,6 +2542,55 @@ export type Database = {
         }
         Returns: string
       }
+      create_subscription: {
+        Args: {
+          _amount: number
+          _from_month: number
+          _from_year: number
+          _member_address: string
+          _member_id: string
+          _member_name: string
+          _member_phone: string
+          _number_of_months: number
+          _payment_method: string
+          _payment_status: string
+          _subscription_type: string
+          _subscription_year: number
+          _to_month: number
+          _to_year: number
+          _total_amount: number
+          _transaction_id?: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          from_month: number | null
+          from_year: number | null
+          id: string
+          member_address: string | null
+          member_id: string
+          member_name: string
+          member_phone: string
+          number_of_months: number | null
+          payment_method: string | null
+          payment_status: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          subscription_type: string
+          subscription_year: number | null
+          to_month: number | null
+          to_year: number | null
+          total_amount: number
+          transaction_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "subscriptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_document_number_for_type: {
         Args: { p_document_type: string }
         Returns: string
@@ -2651,6 +2700,46 @@ export type Database = {
           id: string
           member_id: string
           phone: string
+        }[]
+      }
+      get_my_donations: {
+        Args: never
+        Returns: {
+          amount: number
+          created_at: string
+          donor_email: string
+          donor_name: string
+          donor_phone: string
+          id: string
+          is_anonymous: boolean
+          payment_method: string
+          payment_status: string
+          purpose: string
+          razorpay_payment_id: string
+          receipt_number: string
+          transaction_id: string
+        }[]
+      }
+      get_my_subscriptions: {
+        Args: never
+        Returns: {
+          amount: number
+          created_at: string
+          from_month: number
+          from_year: number
+          id: string
+          member_id: string
+          member_name: string
+          number_of_months: number
+          payment_method: string
+          payment_status: string
+          razorpay_payment_id: string
+          subscription_type: string
+          subscription_year: number
+          to_month: number
+          to_year: number
+          total_amount: number
+          transaction_id: string
         }[]
       }
       get_next_receipt_number: {
