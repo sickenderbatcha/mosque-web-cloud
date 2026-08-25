@@ -301,6 +301,7 @@ const SubscriptionForm = () => {
   // Check for pending (unpaid) months for a member
   const checkPendingMonths = async (memberId: string) => {
     setPendingMonthsLoading(true);
+    setPendingMonthsError(false);
     try {
       const now = new Date();
       const curMonth = now.getMonth() + 1;
