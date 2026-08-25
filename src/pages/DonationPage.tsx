@@ -649,6 +649,7 @@ const SubscriptionForm = () => {
 
         if (insertError) throw insertError;
 
+        if (!subscriptionData) throw new Error("Subscription could not be created");
         setCashRequestData({
           subscriptionId: subscriptionData.id,
           amount: payableAmount,
@@ -682,6 +683,7 @@ const SubscriptionForm = () => {
         .single();
 
       if (insertError) throw insertError;
+      if (!subscriptionData) throw new Error("Subscription could not be created");
       createdSubscriptionId = subscriptionData.id;
 
       // Create Razorpay order
