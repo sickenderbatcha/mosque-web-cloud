@@ -9,14 +9,15 @@ export interface LetterheadSettings {
 }
 
 export const DEFAULT_LETTERHEAD_SETTINGS: LetterheadSettings = {
-  orgNameTa: "இளையான்குடி நெசவு பட்டடை ஜமாஅத் பள்ளிவாசல்",
-  orgNameEn: "Ilayangudi Nesavu Pattadai Jamaath Masjid",
-  addressLine1: "இளையான்குடி, சிவகங்கை மாவட்டம்",
-  addressLine2: "தமிழ்நாடு - 630702",
-  phone: "",
+  orgNameTa: "இளையான்குடி நெசவுப்பட்டடை தொழுகை மேடை பள்ளிவாசல்",
+  orgNameEn: "Ilayangudi Nesavupattadai Thozhugai Medai Pallivasal",
+  addressLine1: "எண்: 115, காமராசர் சாலை, இளையான்குடி - 630702",
+  addressLine2: "சிவகங்கை மாவட்டம், தமிழ்நாடு",
+  phone: "04564 - 265720",
   footerTa: "ஏதேனும் கேள்விகளுக்கு, பள்ளிவாசல் நிர்வாகத்தை தொடர்பு கொள்ளவும்.",
   footerEn: "For any queries, please contact the mosque administration.",
 };
+
 
 export const LETTERHEAD_SETTING_KEYS = {
   orgNameTa: "letterhead_org_name_ta",
