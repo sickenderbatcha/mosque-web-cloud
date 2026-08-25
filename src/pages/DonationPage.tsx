@@ -644,8 +644,7 @@ const SubscriptionForm = () => {
           _payment_status: "pending",
           _payment_method: "Cash",
           _transaction_id: null,
-        })
-        .single();
+        });
 
         if (insertError) throw insertError;
 
@@ -679,8 +678,7 @@ const SubscriptionForm = () => {
           _payment_status: "pending",
           _payment_method: "Online",
           _transaction_id: null,
-        })
-        .single();
+        });
 
       if (insertError) throw insertError;
       if (!subscriptionData) throw new Error("Subscription could not be created");
