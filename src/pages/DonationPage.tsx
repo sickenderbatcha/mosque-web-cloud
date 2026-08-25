@@ -164,8 +164,11 @@ const SubscriptionForm = () => {
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
   const [pendingMonths, setPendingMonths] = useState<{ year: number; month: number }[]>([]);
   const [pendingMonthsLoading, setPendingMonthsLoading] = useState(false);
+  const [pendingMonthsError, setPendingMonthsError] = useState(false);
+  const [pendingMonthsChecked, setPendingMonthsChecked] = useState(false);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
+
   const [cashRequestData, setCashRequestData] = useState<{
     subscriptionId?: string;
     amount: number;
