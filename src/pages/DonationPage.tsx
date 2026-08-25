@@ -164,8 +164,11 @@ const SubscriptionForm = () => {
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
   const [pendingMonths, setPendingMonths] = useState<{ year: number; month: number }[]>([]);
   const [pendingMonthsLoading, setPendingMonthsLoading] = useState(false);
+  const [pendingMonthsError, setPendingMonthsError] = useState(false);
+  const [pendingMonthsChecked, setPendingMonthsChecked] = useState(false);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
+
   const [cashRequestData, setCashRequestData] = useState<{
     subscriptionId?: string;
     amount: number;
@@ -298,6 +301,7 @@ const SubscriptionForm = () => {
   // Check for pending (unpaid) months for a member
   const checkPendingMonths = async (memberId: string) => {
     setPendingMonthsLoading(true);
+    setPendingMonthsError(false);
     try {
       const now = new Date();
       const curMonth = now.getMonth() + 1;
@@ -333,23 +337,38 @@ const SubscriptionForm = () => {
 
       if (allMonths.length === 0) {
         setPendingMonths([]);
+        setPendingMonthsChecked(true);
         return;
       }
 
       // Fetch paid slots for the member
-      const { data: paidSlots } = await supabase.rpc("get_paid_subscription_months", {
-        _member_id: memberId,
-      });
-
-      const paidSet = new Set(
-        (paidSlots || []).map((s) => `${Number(s.year)}-${Number(s.month)}`)
+      const { data: paidSlots, error: paidSlotsError } = await supabase.rpc(
+        "get_paid_subscription_months",
+        { _member_id: memberId }
       );
+
+      if (paidSlotsError) {
+        // Do NOT assume "nothing paid" when the lookup fails — that would wrongly
+        // lock the form with every month listed as pending.
+        console.error("Error fetching paid subscription months:", paidSlotsError);
+        setPendingMonths([]);
+        setPendingMonthsError(true);
+        setPendingMonthsChecked(false);
+        return;
+      }
+
+      const paidList = (paidSlots || []).map((s) => ({
+        year: Number(s.year),
+        month: Number(s.month),
+      }));
+      const paidSet = new Set(paidList.map((s) => `${s.year}-${s.month}`));
 
       const unpaid = allMonths.filter(
         (m) => !paidSet.has(`${m.year}-${m.month}`)
       );
 
       setPendingMonths(unpaid);
+      setPendingMonthsChecked(true);
 
       // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
       if (unpaid.length > 0) {
@@ -373,14 +392,32 @@ const SubscriptionForm = () => {
             setSubscriptionType("monthly");
           }
         }
+      } else if (paidList.length > 0) {
+        // Nothing pending — offer the first month after the last paid month
+        const last = paidList.reduce((a, b) =>
+          b.year > a.year || (b.year === a.year && b.month > a.month) ? b : a
+        );
+        let nextMonth = last.month + 1;
+        let nextYear = last.year;
+        if (nextMonth > 12) {
+          nextMonth = 1;
+          nextYear += 1;
+        }
+        setFromMonth(String(nextMonth).padStart(2, "0"));
+        setFromYear(String(nextYear));
+        setNumberOfMonths(1);
+        setSubscriptionType("monthly");
       }
     } catch (error) {
       console.error("Error checking pending months:", error);
       setPendingMonths([]);
+      setPendingMonthsError(true);
+      setPendingMonthsChecked(false);
     } finally {
       setPendingMonthsLoading(false);
     }
   };
+
 
   // Lookup member by membership number
   const handleMemberLookup = async () => {
@@ -399,6 +436,8 @@ const SubscriptionForm = () => {
     setMemberPhone("");
     setMemberAddress("");
     setPendingMonths([]);
+    setPendingMonthsChecked(false);
+    setPendingMonthsError(false);
 
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke("validate-member", {
@@ -614,6 +653,8 @@ const SubscriptionForm = () => {
         setMemberAddress("");
         setMemberFound(false);
         setPendingMonths([]);
+        setPendingMonthsChecked(false);
+        setPendingMonthsError(false);
         setSubscriptionType("monthly");
         setNumberOfMonths(1);
         setFromMonth(currentMonth);
@@ -767,6 +808,8 @@ const SubscriptionForm = () => {
             setMemberAddress("");
             setMemberFound(false);
             setPendingMonths([]);
+            setPendingMonthsChecked(false);
+            setPendingMonthsError(false);
             setSubscriptionType("monthly");
             setNumberOfMonths(1);
             setFromMonth(currentMonth);
@@ -887,6 +930,8 @@ const SubscriptionForm = () => {
                       setMemberPhone("");
                       setMemberAddress("");
                       setPendingMonths([]);
+                      setPendingMonthsChecked(false);
+                      setPendingMonthsError(false);
                     }}
                     required
                   />
@@ -958,6 +1003,29 @@ const SubscriptionForm = () => {
                 </div>
               </div>
             )}
+            {memberFound && !pendingMonthsLoading && pendingMonthsError && (
+              <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start justify-between gap-3">
+                <p className="text-sm text-destructive font-tamil">
+                  நிலுவை மாதங்களை சரிபார்க்க முடியவில்லை. மீண்டும் முயற்சிக்கவும். / Could not check pending months. Please retry.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => checkPendingMonths(membershipNumber.trim())}
+                >
+                  மீண்டும் / Retry
+                </Button>
+              </div>
+            )}
+            {memberFound && !pendingMonthsLoading && !pendingMonthsError && pendingMonthsChecked && pendingMonths.length === 0 && (
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 rounded-lg">
+                <p className="text-sm text-emerald-800 dark:text-emerald-300 font-tamil">
+                  ✅ நிலுவை மாதங்கள் இல்லை — வரும் மாதங்களுக்கு செலுத்தலாம். / No pending months — you can pay for upcoming months.
+                </p>
+              </div>
+            )}
+
 
             {/* Subscription Type Selection */}
             <div className="space-y-3">
@@ -1209,6 +1277,8 @@ const SubscriptionForm = () => {
                 setMemberAddress("");
                 setMemberFound(false);
                 setPendingMonths([]);
+                setPendingMonthsChecked(false);
+                setPendingMonthsError(false);
               }}>
                 <span className="font-tamil">ரத்துசெய் / Cancel</span>
               </Button>
