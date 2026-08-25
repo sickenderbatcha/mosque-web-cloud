@@ -186,17 +186,21 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
       setReceiptLoading(true);
       try {
         let resolved: string | null = null;
-        for (let attempt = 0; attempt < 12; attempt++) {
+        // Poll for up to ~60s: the ledger entry is written by a database trigger
+        // right after payment verification and can lag behind this dialog.
+        for (let attempt = 0; attempt < 40; attempt++) {
           const { data, error } = await (supabase as any).rpc("get_donation_receipt_number", {
             _donation_id: donation.referenceId,
           });
-          if (error) throw error;
-          if (isSequentialReceiptNumber(data as string | null)) {
+          if (cancelled) return;
+          if (error) {
+            console.error("Donation receipt number lookup failed", error);
+          } else if (isSequentialReceiptNumber(data as string | null)) {
             resolved = data as string;
             break;
           }
+          await new Promise((r) => setTimeout(r, 1500));
           if (cancelled) return;
-          await new Promise((r) => setTimeout(r, 800));
         }
         if (!cancelled) setReceiptNumber(resolved || "");
       } finally {
@@ -215,10 +219,11 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
     return () => {
       cancelled = true;
     };
-  }, [donation.receiptNumber, donation.referenceId]);
+  }, [donation.receiptNumber, donation.referenceId, retryToken]);
 
 
   const formattedReceiptNumber = receiptLoading ? "Loading..." : receiptNumber || "Pending sync";
+
 
   const getPaymentMethodTamil = (method: string) => {
     if (method.toLowerCase() === 'cash') return 'ரொக்கம்';
