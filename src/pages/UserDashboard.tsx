@@ -174,6 +174,11 @@ const UserDashboard = () => {
   const [nocRequests, setNocRequests] = useState<NocRequest[]>([]);
   const [heirRequests, setHeirRequests] = useState<HeirRequest[]>([]);
   const [certificatePayments, setCertificatePayments] = useState<CertificatePayment[]>([]);
+  const [myDonations, setMyDonations] = useState<any[]>([]);
+  const [mySubscriptions, setMySubscriptions] = useState<any[]>([]);
+  const [showDonationReceipt, setShowDonationReceipt] = useState<any | null>(null);
+  const [showSubscriptionReceipt, setShowSubscriptionReceipt] = useState<any | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState({
