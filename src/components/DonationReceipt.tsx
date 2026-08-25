@@ -118,6 +118,8 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
   const [hasActioned, setHasActioned] = useState(false);
   const [receiptNumber, setReceiptNumber] = useState<string>("");
   const [receiptLoading, setReceiptLoading] = useState(true);
+  const [retryToken, setRetryToken] = useState(0);
+
 
   // Strictly prevent navigation until user prints/downloads at least once
   useEffect(() => {
