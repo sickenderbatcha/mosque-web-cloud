@@ -1802,8 +1802,127 @@ const UserDashboard = () => {
                               </div>
                             );
                           })}
+
+                        {/* NOC & Heir certificate payments */}
+                        {[
+                          ...nocRequests
+                            .filter((n: any) => n.payment_status === "completed" || n.payment_status === "paid")
+                            .map((n: any) => ({ rec: n, type: "noc" as const, label: "தடையில்லா சான்றிதழ் (NOC)", subject: n.partner_name || n.applicant_name })),
+                          ...heirRequests
+                            .filter((h: any) => h.payment_status === "completed" || h.payment_status === "paid")
+                            .map((h: any) => ({ rec: h, type: "heir" as const, label: "வாரிசு சான்றிதழ் (Heir)", subject: h.deceased_name })),
+                        ].map(({ rec, type, label }) => {
+                          const method = certPaymentMethodMap[rec.id] || (rec.payment_status === "paid" ? "cash" : "online");
+                          return (
+                            <div key={`${type}-payment-${rec.id}`} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="p-2 rounded-full bg-green-500/10">
+                                    <FileText className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold font-tamil">{label}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {method === "online" ? "Online Payment" : "Cash Payment"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
+                              </div>
+                              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Paid On</span>
+                                  <span>{formatDate(rec.created_at)}</span>
+                                </div>
+                                {certReceiptNumberMap[rec.id] && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Receipt No.</span>
+                                    <span className="font-mono font-semibold text-primary">{certReceiptNumberMap[rec.id]}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Donations */}
+                        {myDonations.map((d: any) => (
+                          <div key={`donation-${d.id}`} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-full bg-green-500/10">
+                                  <Receipt className="h-4 w-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="font-semibold font-tamil">நன்கொடை (Donation)</p>
+                                  <p className="text-xs text-muted-foreground">{d.purpose || "General Donation"}</p>
+                                </div>
+                              </div>
+                              <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
+                            </div>
+                            <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Amount</span>
+                                <span className="font-semibold text-primary">₹{Number(d.amount).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Paid On</span>
+                                <span>{formatDate(d.donated_at || d.created_at)}</span>
+                              </div>
+                              {d.receipt_number && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Receipt No.</span>
+                                  <span className="font-mono font-semibold text-primary">{d.receipt_number}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="mt-3 pt-3 border-t flex items-center justify-end">
+                              <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowDonationReceipt(d)}>
+                                <Eye className="h-3.5 w-3.5" />
+                                View Receipt
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Subscriptions */}
+                        {mySubscriptions.map((s: any) => (
+                          <div key={`subscription-${s.id}`} className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-full bg-green-500/10">
+                                  <Receipt className="h-4 w-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="font-semibold font-tamil">சந்தா (Subscription)</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {(s.payment_method || "online").toLowerCase() === "cash" ? "Cash Payment" : "Online Payment"}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge className="bg-green-500/20 text-green-700">Paid</Badge>
+                            </div>
+                            <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Amount</span>
+                                <span className="font-semibold text-primary">₹{Number(s.total_amount || s.amount).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Paid On</span>
+                                <span>{formatDate(s.created_at)}</span>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t flex items-center justify-end">
+                              <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowSubscriptionReceipt(s)}>
+                                <Eye className="h-3.5 w-3.5" />
+                                View Receipt
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
+
                   </CardContent>
                 </Card>
               </TabsContent>
