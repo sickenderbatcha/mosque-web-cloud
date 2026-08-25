@@ -436,6 +436,8 @@ const SubscriptionForm = () => {
     setMemberPhone("");
     setMemberAddress("");
     setPendingMonths([]);
+    setPendingMonthsChecked(false);
+    setPendingMonthsError(false);
 
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke("validate-member", {
@@ -651,6 +653,8 @@ const SubscriptionForm = () => {
         setMemberAddress("");
         setMemberFound(false);
         setPendingMonths([]);
+        setPendingMonthsChecked(false);
+        setPendingMonthsError(false);
         setSubscriptionType("monthly");
         setNumberOfMonths(1);
         setFromMonth(currentMonth);
@@ -804,6 +808,8 @@ const SubscriptionForm = () => {
             setMemberAddress("");
             setMemberFound(false);
             setPendingMonths([]);
+            setPendingMonthsChecked(false);
+            setPendingMonthsError(false);
             setSubscriptionType("monthly");
             setNumberOfMonths(1);
             setFromMonth(currentMonth);
@@ -924,6 +930,8 @@ const SubscriptionForm = () => {
                       setMemberPhone("");
                       setMemberAddress("");
                       setPendingMonths([]);
+                      setPendingMonthsChecked(false);
+                      setPendingMonthsError(false);
                     }}
                     required
                   />
@@ -1269,6 +1277,8 @@ const SubscriptionForm = () => {
                 setMemberAddress("");
                 setMemberFound(false);
                 setPendingMonths([]);
+                setPendingMonthsChecked(false);
+                setPendingMonthsError(false);
               }}>
                 <span className="font-tamil">ரத்துசெய் / Cancel</span>
               </Button>
