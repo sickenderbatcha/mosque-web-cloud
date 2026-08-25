@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { IsoDatePicker } from "@/components/forms/IsoDatePicker";
 import SavedLetterheads from "@/components/letterhead/SavedLetterheads";
-import { useReceiptHeaderSettings } from "@/hooks/useReceiptHeaderSettings";
 import { useLetterheadSettings } from "@/hooks/useLetterheadSettings";
 import { useLetterheadDraft } from "@/hooks/useLetterheadDraft";
 import {
@@ -55,7 +54,6 @@ const clampNumber = (raw: string, min: number, max: number, fallback: number) =>
 const LetterheadPage = () => {
   useDocumentHead();
 
-  const { settings, isLoading } = useReceiptHeaderSettings();
   const { settings: letterheadSettings, isLoading: isLoadingLetterhead } = useLetterheadSettings();
   const [fields, setFields] = useState<LetterheadFields>(EMPTY_LETTERHEAD_FIELDS);
   const [layout, setLayout] = useState<LetterheadLayout>(DEFAULT_LETTERHEAD_LAYOUT);
@@ -138,7 +136,7 @@ const LetterheadPage = () => {
     }
   };
 
-  if (isLoading || isLoadingLetterhead) {
+  if (isLoadingLetterhead) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
