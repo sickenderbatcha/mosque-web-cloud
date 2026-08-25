@@ -124,7 +124,7 @@ const LetterheadPage = () => {
         fields,
         layout
       ),
-    [settings, letterheadSettings, fields, layout]
+    [letterheadSettings, fields, layout]
   );
 
   const handlePrint = () => {
