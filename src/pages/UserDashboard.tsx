@@ -3176,6 +3176,32 @@ const UserDashboard = () => {
         <CertificateReceipt data={showCertReceipt} onClose={() => setShowCertReceipt(null)} />
       )}
 
+      {showDonationReceipt && (
+        <DonationReceipt
+          donation={{
+            donorName: showDonationReceipt.donor_name,
+            donorPhone: showDonationReceipt.donor_phone || "",
+            donorEmail: showDonationReceipt.donor_email || undefined,
+            amount: Number(showDonationReceipt.amount),
+            purpose: showDonationReceipt.purpose || "General Donation",
+            receiptNumber: showDonationReceipt.receipt_number || undefined,
+            paymentMethod: showDonationReceipt.payment_method || "online",
+            isAnonymous: !!showDonationReceipt.is_anonymous,
+            createdAt: showDonationReceipt.donated_at || showDonationReceipt.created_at,
+            referenceId: showDonationReceipt.id,
+            razorpayPaymentId: showDonationReceipt.razorpay_payment_id || undefined,
+          }}
+          onClose={() => setShowDonationReceipt(null)}
+        />
+      )}
+
+      {showSubscriptionReceipt && (
+        <SubscriptionReceipt
+          subscription={showSubscriptionReceipt}
+          onClose={() => setShowSubscriptionReceipt(null)}
+        />
+      )}
+
       {/* Booking Receipt Modal */}
       {showBookingReceipt && (
         <BookingReceipt
