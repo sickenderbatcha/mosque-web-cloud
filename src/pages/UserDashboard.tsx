@@ -392,7 +392,7 @@ const UserDashboard = () => {
 
     setLoading(true);
     try {
-      const [bookingsRes, grievancesRes, registrationsRes, refundRes, nocRes, heirRes, certPaymentsRes] = await Promise.all([
+      const [bookingsRes, grievancesRes, registrationsRes, refundRes, nocRes, heirRes, certPaymentsRes, donationsRes, subscriptionsRes] = await Promise.all([
         supabase
           .from("mahal_bookings")
           .select("id, event_type, event_date, start_time, end_time, status, created_at, booking_amount, payment_status, applicant_name, applicant_phone, applicant_email")
