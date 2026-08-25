@@ -467,6 +467,13 @@ const DonationReceipt = ({ donation, onClose, requireAction = false }: DonationR
               <h2 className="font-semibold font-tamil">நன்கொடை ரசீது</h2>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {!receiptLoading && !receiptNumber && (
+                <Button variant="outline" size="sm" onClick={() => setRetryToken((t) => t + 1)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  மீண்டும் முயற்சி / Retry
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={handlePrint} disabled={receiptLoading || !receiptNumber}>
                 <Printer className="h-4 w-4 mr-2" />
                 அச்சிடு
