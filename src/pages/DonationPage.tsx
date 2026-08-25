@@ -590,8 +590,7 @@ const SubscriptionForm = () => {
           _payment_status: "completed",
           _payment_method: "Cash",
           _transaction_id: `CASH-${Date.now()}`,
-        })
-        .single();
+        });
 
         if (insertError) throw insertError;
 
