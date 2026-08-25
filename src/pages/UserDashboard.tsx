@@ -429,6 +429,8 @@ const UserDashboard = () => {
           .eq("user_id", user.id)
           .in("certificate_type", ["marriage", "death", "outside_marriage", "bonafide"])
           .order("created_at", { ascending: false }),
+        supabase.rpc("get_my_donations"),
+        supabase.rpc("get_my_subscriptions"),
       ]);
 
       setBookings(bookingsRes.data || []);
@@ -438,6 +440,17 @@ const UserDashboard = () => {
       setNocRequests((nocRes.data as NocRequest[]) || []);
       setHeirRequests((heirRes.data as HeirRequest[]) || []);
       setCertificatePayments((certPaymentsRes.data as CertificatePayment[]) || []);
+      setMyDonations(
+        ((donationsRes as any)?.data || []).filter(
+          (d: any) => d.payment_status === "completed" || d.payment_status === "paid"
+        )
+      );
+      setMySubscriptions(
+        ((subscriptionsRes as any)?.data || []).filter(
+          (s: any) => s.payment_status === "completed" || s.payment_status === "paid"
+        )
+      );
+
 
       // Fetch receipt numbers from income table for all completed certificates (sequential only)
       // For NOC/Heir: income may reference certificate_payments.id (new flow) or cert.id (legacy flow)
