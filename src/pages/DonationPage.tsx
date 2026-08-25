@@ -995,6 +995,29 @@ const SubscriptionForm = () => {
                 </div>
               </div>
             )}
+            {memberFound && !pendingMonthsLoading && pendingMonthsError && (
+              <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start justify-between gap-3">
+                <p className="text-sm text-destructive font-tamil">
+                  நிலுவை மாதங்களை சரிபார்க்க முடியவில்லை. மீண்டும் முயற்சிக்கவும். / Could not check pending months. Please retry.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => checkPendingMonths(membershipNumber.trim())}
+                >
+                  மீண்டும் / Retry
+                </Button>
+              </div>
+            )}
+            {memberFound && !pendingMonthsLoading && !pendingMonthsError && pendingMonthsChecked && pendingMonths.length === 0 && (
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 rounded-lg">
+                <p className="text-sm text-emerald-800 dark:text-emerald-300 font-tamil">
+                  ✅ நிலுவை மாதங்கள் இல்லை — வரும் மாதங்களுக்கு செலுத்தலாம். / No pending months — you can pay for upcoming months.
+                </p>
+              </div>
+            )}
+
 
             {/* Subscription Type Selection */}
             <div className="space-y-3">
