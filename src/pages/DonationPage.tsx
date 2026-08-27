@@ -2149,6 +2149,7 @@ const DonationPage = () => {
           onOpenChange={setShowCashRequestDialog}
           serviceType="donation"
           referenceId={cashRequestData.donationId}
+          allowDuplicate
           amount={cashRequestData.amount}
           applicantName={isAnonymous ? "Anonymous" : donorName}
           applicantPhone={phone}
