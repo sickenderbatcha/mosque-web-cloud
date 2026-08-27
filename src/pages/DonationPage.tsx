@@ -166,6 +166,8 @@ const SubscriptionForm = () => {
   const [pendingMonthsLoading, setPendingMonthsLoading] = useState(false);
   const [pendingMonthsError, setPendingMonthsError] = useState(false);
   const [pendingMonthsChecked, setPendingMonthsChecked] = useState(false);
+  const [nextUnpaidPeriod, setNextUnpaidPeriod] = useState<{ year: number; month: number } | null>(null);
+  const [subscriptionStartMonth, setSubscriptionStartMonth] = useState(1);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
 
@@ -335,6 +337,8 @@ const SubscriptionForm = () => {
         }
       }
 
+      setSubscriptionStartMonth(startMonth);
+
       if (allMonths.length === 0) {
         setPendingMonths([]);
         setPendingMonthsChecked(true);
@@ -369,6 +373,7 @@ const SubscriptionForm = () => {
 
       setPendingMonths(unpaid);
       setPendingMonthsChecked(true);
+      setNextUnpaidPeriod(unpaid.length > 0 ? unpaid[0] : null);
 
       // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
       if (unpaid.length > 0) {
@@ -407,6 +412,7 @@ const SubscriptionForm = () => {
         setFromYear(String(nextYear));
         setNumberOfMonths(1);
         setSubscriptionType("monthly");
+        setNextUnpaidPeriod({ year: nextYear, month: nextMonth });
       }
     } catch (error) {
       console.error("Error checking pending months:", error);
