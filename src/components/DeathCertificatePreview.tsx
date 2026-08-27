@@ -5,6 +5,7 @@ import { getCertificateImages, CertificateImages } from "@/lib/certificateImages
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 import CertificateFooterBlock from "@/components/CertificateFooterBlock";
+import { getRenderedDeathCertificateBody } from "@/lib/deathCertificateBody";
 
 interface Props {
   record: DeathRecord;
@@ -39,12 +40,17 @@ export default function DeathCertificatePreview({ record }: Props) {
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
   const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
+  const [bodyLines, setBodyLines] = useState<string[]>([]);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
     getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
+
+  useEffect(() => {
+    getRenderedDeathCertificateBody(record).then(setBodyLines);
+  }, [record]);
 
   // Determine if husband name should be shown
   const hasHusbandName = record.deceased_husband_name && record.deceased_husband_name.trim() !== "";
@@ -111,13 +117,9 @@ export default function DeathCertificatePreview({ record }: Props) {
       </div>
 
       {/* Certificate Body */}
-      <div className="text-sm leading-tight text-right" dir="rtl">
-        <p className="text-[13px] leading-relaxed text-justify" dir="ltr">
-          <span className="font-medium">{record.deceased_name}, {parentLabel}. {parentName}, {street}</span> என்ற முகவரியை சார்ந்த நபர் கடந்த{" "}
-          <span className="font-medium" style={{ fontFamily: "'Times New Roman', serif" }}>{deathDate}</span>{" "}
-          அன்று மரணமடைந்துவிட்டார். அன்னாரது உடல் எங்களது{" "}
-          <span style={{ fontFamily: "'Times New Roman', serif" }}>{burialPlace}</span>{" "}
-          மையய வாடியில்தான் அடக்கம் செய்யப்பட்டுள்ளது என்பதற்கு கொடுக்கலான சான்று.
+      <div className="text-sm leading-tight">
+        <p className="text-[13px] leading-relaxed text-justify font-tamil">
+          {bodyLines.join(" ")}
         </p>
       </div>
 
