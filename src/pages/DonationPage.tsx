@@ -1338,6 +1338,7 @@ const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState("");
   const [purpose, setPurpose] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const anonymousDonationEnabled = settings?.anonymous_donation_enabled !== "false";
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -1825,6 +1826,7 @@ const DonationPage = () => {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleDonationSubmit} className="space-y-6">
+                        {anonymousDonationEnabled && (
                         <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                           <Checkbox
                             id="anonymous"
@@ -1835,6 +1837,7 @@ const DonationPage = () => {
                             அநாமதேய நன்கொடை (Anonymous Donation)
                           </Label>
                         </div>
+                        )}
 
                         {/* Optional Membership Lookup */}
                         {!isAnonymous && (
