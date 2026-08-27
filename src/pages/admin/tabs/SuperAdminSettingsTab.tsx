@@ -86,6 +86,10 @@ const SuperAdminSettingsTab = () => {
   const [donationOnlineDisabled, setDonationOnlineDisabled] = useState(false);
   const [savingDonationOnline, setSavingDonationOnline] = useState(false);
 
+  // Anonymous donation feature toggle
+  const [anonymousDonationEnabled, setAnonymousDonationEnabled] = useState(true);
+  const [savingAnonymousDonation, setSavingAnonymousDonation] = useState(false);
+
   // Marriage certificate online payment toggle
   const [marriageCertOnlineDisabled, setMarriageCertOnlineDisabled] = useState(false);
   const [savingMarriageCertOnline, setSavingMarriageCertOnline] = useState(false);
@@ -142,6 +146,7 @@ const SuperAdminSettingsTab = () => {
     fetchHeroOverlayColor();
     fetchMahalOnlineSetting();
     fetchDonationOnlineSetting();
+    fetchAnonymousDonationSetting();
     fetchMarriageCertOnlineSetting();
     fetchDeathCertOnlineSetting();
     fetchBonafideCertOnlineSetting();
@@ -241,6 +246,43 @@ const SuperAdminSettingsTab = () => {
       });
     } finally {
       setSavingDonationOnline(false);
+    }
+  };
+
+  const fetchAnonymousDonationSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "anonymous_donation_enabled")
+        .maybeSingle();
+      if (data && !error) {
+        setAnonymousDonationEnabled(data.value !== "false");
+      }
+    } catch (error) {
+      console.error("Error fetching anonymous donation setting:", error);
+    }
+  };
+
+  const saveAnonymousDonationSetting = async (value: boolean) => {
+    setSavingAnonymousDonation(true);
+    try {
+      await upsertAppSetting("anonymous_donation_enabled", value ? "true" : "false", "Allow donors to give anonymously");
+      setAnonymousDonationEnabled(value);
+      toast({
+        title: "Anonymous Donation",
+        description: value
+          ? "Anonymous donations are now enabled"
+          : "Anonymous donations are now disabled",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save setting.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingAnonymousDonation(false);
     }
   };
 
@@ -1478,6 +1520,40 @@ const SuperAdminSettingsTab = () => {
                   checked={donationOnlineDisabled}
                   onCheckedChange={(checked) => saveDonationOnlineSetting(checked)}
                   disabled={savingDonationOnline}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Anonymous Donation Toggle */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <div>
+                  <h4 className="font-medium">Enable Anonymous Donation</h4>
+                  <p className="text-sm text-muted-foreground">
+                    When disabled, donors must provide their name on the donation form
+                  </p>
+                  <p className="text-xs text-muted-foreground font-tamil mt-1">
+                    முடக்கப்பட்டால், நன்கொடையாளர்கள் தங்கள் பெயரை கட்டாயம் வழங்க வேண்டும்
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    anonymousDonationEnabled
+                      ? "text-sm font-medium text-primary"
+                      : "text-sm font-medium text-destructive"
+                  }
+                >
+                  {anonymousDonationEnabled ? "Enabled" : "Disabled"}
+                </span>
+                <Switch
+                  checked={anonymousDonationEnabled}
+                  onCheckedChange={(checked) => saveAnonymousDonationSetting(checked)}
+                  disabled={savingAnonymousDonation}
                 />
               </div>
             </div>
