@@ -1339,6 +1339,9 @@ const DonationPage = () => {
   const [purpose, setPurpose] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const anonymousDonationEnabled = settings?.anonymous_donation_enabled !== "false";
+  useEffect(() => {
+    if (!anonymousDonationEnabled && isAnonymous) setIsAnonymous(false);
+  }, [anonymousDonationEnabled, isAnonymous]);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
