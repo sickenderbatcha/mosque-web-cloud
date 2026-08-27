@@ -211,6 +211,10 @@ export default function DeathRegisterTab() {
 
   // Cash payment request state
   const [showCashRequestDialog, setShowCashRequestDialog] = useState(false);
+  const [pendingPaymentConfirm, setPendingPaymentConfirm] = useState<{
+    mode: "online" | "cash";
+    record: DeathRecord;
+  } | null>(null);
   const [cashRequestData, setCashRequestData] = useState<{
     referenceId: string;
     amount: number;
@@ -1306,7 +1310,7 @@ export default function DeathRegisterTab() {
                       {isOnlineDisabledForUser ? (
                         <Button
                           size="sm"
-                          onClick={() => handleRazorpayPayment(viewRecord)}
+                          onClick={() => setPendingPaymentConfirm({ mode: "online", record: viewRecord })}
                           disabled={paymentLoading || paymentProcessing}
                         >
                           <IndianRupee className="h-4 w-4 mr-2" />
@@ -1316,7 +1320,7 @@ export default function DeathRegisterTab() {
                         <>
                           <Button
                             size="sm"
-                            onClick={() => handleRazorpayPayment(viewRecord)}
+                            onClick={() => setPendingPaymentConfirm({ mode: "online", record: viewRecord })}
                             disabled={paymentLoading || paymentProcessing || !razorpayLoaded}
                           >
                             <CreditCard className="h-4 w-4 mr-2" />
@@ -1325,7 +1329,7 @@ export default function DeathRegisterTab() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleCashPayment(viewRecord)}
+                            onClick={() => setPendingPaymentConfirm({ mode: "cash", record: viewRecord })}
                             disabled={paymentLoading || paymentProcessing}
                           >
                             <Banknote className="h-4 w-4 mr-2" />
@@ -1356,6 +1360,42 @@ export default function DeathRegisterTab() {
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
+        <AlertDialog
+          open={!!pendingPaymentConfirm}
+          onOpenChange={(open) => { if (!open) setPendingPaymentConfirm(null); }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-tamil">
+                பணம் செலுத்துதலை உறுதிப்படுத்தவும் / Confirm payment
+              </AlertDialogTitle>
+              <AlertDialogDescription className="font-tamil">
+                {pendingPaymentConfirm?.mode === "cash"
+                  ? "தொடர்வதற்கு முன் ரொக்கத்தை வசூலிக்கவும் / Collect cash before continue"
+                  : "ஆன்லைன் பணம் செலுத்துதலை தொடரவா? / Continue with online payment?"}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="font-tamil">இல்லை / No</AlertDialogCancel>
+              <AlertDialogAction
+                className="font-tamil"
+                onClick={() => {
+                  const pending = pendingPaymentConfirm;
+                  setPendingPaymentConfirm(null);
+                  if (!pending) return;
+                  if (pending.mode === "cash") {
+                    handleCashPayment(pending.record);
+                  } else {
+                    handleRazorpayPayment(pending.record);
+                  }
+                }}
+              >
+                ஆம் / Yes
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <AlertDialog open={!!deleteRecordId} onOpenChange={() => setDeleteRecordId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
