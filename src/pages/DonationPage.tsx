@@ -170,6 +170,15 @@ const SubscriptionForm = () => {
   const [subscriptionStartMonth, setSubscriptionStartMonth] = useState(1);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
+  // Yearly subscription is only offered when nothing is pending and the next unpaid
+  // month is the configured subscription start month
+  const yearlyAvailable =
+    !memberFound ||
+    (pendingMonthsChecked &&
+      pendingMonths.length === 0 &&
+      nextUnpaidPeriod !== null &&
+      nextUnpaidPeriod.month === subscriptionStartMonth);
+  const yearlyDisabled = hasForcedPending || !yearlyAvailable;
 
   const [cashRequestData, setCashRequestData] = useState<{
     subscriptionId?: string;
@@ -1040,8 +1049,12 @@ const SubscriptionForm = () => {
                 value={subscriptionType}
                 onValueChange={(val) => {
                   if (hasForcedPending) return;
+                  if (val === "yearly" && !yearlyAvailable) return;
                   setSubscriptionType(val);
-                  if (val === "yearly") setNumberOfMonths(1);
+                  if (val === "yearly") {
+                    setNumberOfMonths(1);
+                    if (nextUnpaidPeriod) setSubscriptionYear(String(nextUnpaidPeriod.year));
+                  }
                 }}
                 className="grid grid-cols-2 gap-4"
                 disabled={hasForcedPending}
@@ -1054,12 +1067,17 @@ const SubscriptionForm = () => {
                     <div className="text-lg font-bold text-primary mt-1">₹{monthlyAmount}/month</div>
                   </Label>
                 </div>
-                <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${hasForcedPending ? "opacity-60 cursor-not-allowed" : "cursor-pointer"} ${subscriptionType === "yearly" ? "border-primary bg-primary/5" : "border-muted"}`}>
-                  <RadioGroupItem value="yearly" id="yearly" disabled={hasForcedPending} />
-                  <Label htmlFor="yearly" className={`flex-1 ${hasForcedPending ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${yearlyDisabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"} ${subscriptionType === "yearly" ? "border-primary bg-primary/5" : "border-muted"}`}>
+                  <RadioGroupItem value="yearly" id="yearly" disabled={yearlyDisabled} />
+                  <Label htmlFor="yearly" className={`flex-1 ${yearlyDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
                     <div className="font-tamil font-medium">வருட சந்தா</div>
                     <div className="text-sm text-muted-foreground">Yearly</div>
                     <div className="text-lg font-bold text-primary mt-1">₹{yearlyAmount}</div>
+                    {!yearlyAvailable && !hasForcedPending && (
+                      <div className="text-xs text-muted-foreground mt-1 font-tamil">
+                        சந்தா தொடக்க மாதத்தில் மட்டுமே கிடைக்கும் / Available only from the subscription start month
+                      </div>
+                    )}
                   </Label>
                 </div>
               </RadioGroup>
