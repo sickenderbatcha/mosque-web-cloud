@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { LayoutDashboard, Calendar as CalendarIcon, MessageSquare, Building2, Clock, Loader2, CreditCard, Receipt, IndianRupee, Download, Settings, Mail, Phone, CalendarDays, X, User, Pencil, RotateCcw, FileCheck, Plus, Printer, Eye, ArrowLeft } from "lucide-react";
@@ -181,6 +181,20 @@ const UserDashboard = () => {
   const [mySubscriptions, setMySubscriptions] = useState<any[]>([]);
   const [showDonationReceipt, setShowDonationReceipt] = useState<any | null>(null);
   const [showSubscriptionReceipt, setShowSubscriptionReceipt] = useState<any | null>(null);
+
+  // Every completed payment shown in the Payments tab
+  const paidCount = useMemo(() => {
+    const isPaid = (status?: string | null) => status === "paid" || status === "completed";
+    return (
+      bookings.filter((b) => isPaid(b.payment_status)).length +
+      certificatePayments.filter((c) => isPaid(c.payment_status)).length +
+      nocRequests.filter((n: any) => isPaid(n.payment_status)).length +
+      heirRequests.filter((h: any) => isPaid(h.payment_status)).length +
+      myDonations.length +
+      mySubscriptions.length
+    );
+  }, [bookings, certificatePayments, nocRequests, heirRequests, myDonations, mySubscriptions]);
+
 
   const [loading, setLoading] = useState(true);
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
