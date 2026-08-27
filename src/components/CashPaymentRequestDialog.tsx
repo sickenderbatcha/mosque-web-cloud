@@ -32,6 +32,8 @@ interface CashPaymentRequestDialogProps {
   onSuccess?: () => void;
   /** Called before submitting - allows parent to create booking first and return the reference ID */
   onBeforeSubmit?: () => Promise<string>;
+  /** When true, an earlier request for this reference does not block a new one */
+  allowDuplicate?: boolean;
 }
 
 const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
@@ -57,6 +59,7 @@ const CashPaymentRequestDialog = ({
   serviceDetails,
   onSuccess,
   onBeforeSubmit,
+  allowDuplicate = false,
 }: CashPaymentRequestDialogProps) => {
   const { user } = useAuth();
   const [userNotes, setUserNotes] = useState("");
@@ -82,8 +85,16 @@ const CashPaymentRequestDialog = ({
       }
       return data;
     },
-    enabled: open && !!referenceId,
+    enabled: open && !!referenceId && !allowDuplicate,
   });
+
+  // Only an actionable (pending/approved) request for the same reference blocks a new one
+  const blockingRequest =
+    !allowDuplicate &&
+    existingRequest &&
+    (existingRequest.status === "pending" || existingRequest.status === "approved")
+      ? existingRequest
+      : null;
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -143,7 +154,7 @@ const CashPaymentRequestDialog = ({
           <div className="py-8 text-center text-muted-foreground">
             சரிபார்க்கிறது... (Checking...)
           </div>
-        ) : existingRequest ? (
+        ) : blockingRequest ? (
           <div className="space-y-4">
             <div className="bg-muted/50 border border-border rounded-lg p-4 text-center min-w-0">
               <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -154,9 +165,9 @@ const CashPaymentRequestDialog = ({
                 இந்த சான்றிதழுக்கான ரொக்க செலுத்துதல் கோரிக்கை ஏற்கனவே சமர்ப்பிக்கப்பட்டுள்ளது.
               </p>
               <p className="text-muted-foreground text-xs mt-2 break-words">
-                நிலை: {existingRequest.status === "pending" ? "நிலுவையில் உள்ளது (Pending)" : 
-                       existingRequest.status === "approved" ? "ஏற்றுக்கொள்ளப்பட்டது (Approved)" :
-                       existingRequest.status === "paid" ? "செலுத்தப்பட்டது (Paid)" : existingRequest.status}
+                நிலை: {blockingRequest.status === "pending" ? "நிலுவையில் உள்ளது (Pending)" : 
+                       blockingRequest.status === "approved" ? "ஏற்றுக்கொள்ளப்பட்டது (Approved)" :
+                       blockingRequest.status === "paid" ? "செலுத்தப்பட்டது (Paid)" : blockingRequest.status}
               </p>
             </div>
             <DialogFooter>
