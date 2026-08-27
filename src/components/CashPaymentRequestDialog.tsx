@@ -150,7 +150,7 @@ const CashPaymentRequestDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        {checkingExisting ? (
+        {checkingExisting && !allowDuplicate ? (
           <div className="py-8 text-center text-muted-foreground">
             சரிபார்க்கிறது... (Checking...)
           </div>
