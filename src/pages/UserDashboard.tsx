@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { LayoutDashboard, Calendar as CalendarIcon, MessageSquare, Building2, Clock, Loader2, CreditCard, Receipt, IndianRupee, Download, Settings, Mail, Phone, CalendarDays, X, User, Pencil, RotateCcw, FileCheck, Plus, Printer, Eye, ArrowLeft } from "lucide-react";
@@ -181,6 +181,20 @@ const UserDashboard = () => {
   const [mySubscriptions, setMySubscriptions] = useState<any[]>([]);
   const [showDonationReceipt, setShowDonationReceipt] = useState<any | null>(null);
   const [showSubscriptionReceipt, setShowSubscriptionReceipt] = useState<any | null>(null);
+
+  // Every completed payment shown in the Payments tab
+  const paidCount = useMemo(() => {
+    const isPaid = (status?: string | null) => status === "paid" || status === "completed";
+    return (
+      bookings.filter((b) => isPaid(b.payment_status)).length +
+      certificatePayments.filter((c) => isPaid(c.payment_status)).length +
+      nocRequests.filter((n: any) => isPaid(n.payment_status)).length +
+      heirRequests.filter((h: any) => isPaid(h.payment_status)).length +
+      myDonations.length +
+      mySubscriptions.length
+    );
+  }, [bookings, certificatePayments, nocRequests, heirRequests, myDonations, mySubscriptions]);
+
 
   const [loading, setLoading] = useState(true);
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
@@ -1113,12 +1127,8 @@ const UserDashboard = () => {
                       <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-2xl font-bold">{
-                        bookings.filter(b => b.payment_status === 'paid').length
-                        + certificatePayments.filter(c => c.payment_status === 'completed').length
-                        + nocRequests.filter(n => n.payment_status === 'completed' || n.payment_status === 'paid').length
-                        + heirRequests.filter(h => h.payment_status === 'completed' || h.payment_status === 'paid').length
-                      }</p>
+                      <p className="text-2xl font-bold">{paidCount}</p>
+
                       <p className="text-xs sm:text-sm text-muted-foreground font-tamil break-words leading-snug">பணம் செலுத்தியது</p>
                     </div>
                   </div>
@@ -1658,11 +1668,7 @@ const UserDashboard = () => {
                     <CardDescription>Your payment history and receipts</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'completed').length === 0 &&
-                     certificatePayments.filter(cp => cp.payment_status === 'completed').length === 0 &&
-                     nocRequests.filter((n: any) => n.payment_status === 'completed' || n.payment_status === 'paid').length === 0 &&
-                     heirRequests.filter((h: any) => h.payment_status === 'completed' || h.payment_status === 'paid').length === 0 &&
-                     myDonations.length === 0 && mySubscriptions.length === 0 ? (
+                    {paidCount === 0 ? (
                       <div className="text-center py-8">
                         <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground font-tamil">பணம் செலுத்தல் இல்லை</p>

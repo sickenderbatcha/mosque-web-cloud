@@ -6,6 +6,7 @@ import { generateDeathCertificateNumber } from "@/components/admin/DeathCertific
 import { getDeathCertificateFontSizes } from "@/components/admin/DeathCertificateFontSettings";
 import { addTamilText as addTamilTextCanvas, loadTamilFont } from "@/utils/pdf/tamilCanvasText";
 import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
+import { getRenderedDeathCertificateBody } from "@/lib/deathCertificateBody";
 
 export interface DeathRecord {
   id: string;
@@ -191,34 +192,8 @@ const generateCertificateContent = async (doc: jsPDF, record: DeathRecord) => {
   const bodyFontSize = fontSizes.body;
   const lineSpacing = fontSizes.bodyLineSpacing;
 
-  // Prepare data
-  const name = record.deceased_name || "";
-  const hasHusbandName = record.deceased_husband_name && record.deceased_husband_name.trim() !== "";
-  const parentLabel = hasHusbandName ? "க/பெ" : "த/பெ";
-  const parentName = hasHusbandName ? record.deceased_husband_name : record.deceased_father_name;
-  const addressParts = record.deceased_address ? record.deceased_address.split(",") : [""];
-  const street = addressParts[0]?.trim() || record.deceased_address || "";
-
-  // Death date formatting
-  const deathDateFormatted = (() => {
-    try {
-      const date = new Date(record.death_date);
-      return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
-    } catch {
-      return record.death_date;
-    }
-  })();
-
-  const burialPlace = record.burial_place_en || record.burial_place || "I.N.P.T";
-
-  // Body text lines - each rendered separately with auto-shrink enabled
-  const bodyLines = [
-    `${name}, ${parentLabel}. ${parentName},`,
-    `${street} என்ற முகவரியை சார்ந்த நபர்`,
-    `கடந்த ${deathDateFormatted} அன்று மரணமடைந்துவிட்டார்.`,
-    `அன்னாரது உடல் எங்களது ${burialPlace} மையய வாடியில்தான்`,
-    `அடக்கம் செய்யப்பட்டுள்ளது என்பதற்கு கொடுக்கலான சான்று.`
-  ];
+  // Body text lines come from the configurable template (@F tokens)
+  const bodyLines = await getRenderedDeathCertificateBody(record);
 
   // Render each line with auto-shrink to fit within content width
   for (const line of bodyLines) {

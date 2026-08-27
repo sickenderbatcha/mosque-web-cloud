@@ -166,8 +166,19 @@ const SubscriptionForm = () => {
   const [pendingMonthsLoading, setPendingMonthsLoading] = useState(false);
   const [pendingMonthsError, setPendingMonthsError] = useState(false);
   const [pendingMonthsChecked, setPendingMonthsChecked] = useState(false);
+  const [nextUnpaidPeriod, setNextUnpaidPeriod] = useState<{ year: number; month: number } | null>(null);
+  const [subscriptionStartMonth, setSubscriptionStartMonth] = useState(1);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
+  // Yearly subscription is only offered when nothing is pending and the next unpaid
+  // month is the configured subscription start month
+  const yearlyAvailable =
+    !memberFound ||
+    (pendingMonthsChecked &&
+      pendingMonths.length === 0 &&
+      nextUnpaidPeriod !== null &&
+      nextUnpaidPeriod.month === subscriptionStartMonth);
+  const yearlyDisabled = hasForcedPending || !yearlyAvailable;
 
   const [cashRequestData, setCashRequestData] = useState<{
     subscriptionId?: string;
@@ -335,6 +346,8 @@ const SubscriptionForm = () => {
         }
       }
 
+      setSubscriptionStartMonth(startMonth);
+
       if (allMonths.length === 0) {
         setPendingMonths([]);
         setPendingMonthsChecked(true);
@@ -369,6 +382,7 @@ const SubscriptionForm = () => {
 
       setPendingMonths(unpaid);
       setPendingMonthsChecked(true);
+      setNextUnpaidPeriod(unpaid.length > 0 ? unpaid[0] : null);
 
       // Auto-suggest first unpaid month to avoid checkout blocking on already-paid months
       if (unpaid.length > 0) {
@@ -407,6 +421,7 @@ const SubscriptionForm = () => {
         setFromYear(String(nextYear));
         setNumberOfMonths(1);
         setSubscriptionType("monthly");
+        setNextUnpaidPeriod({ year: nextYear, month: nextMonth });
       }
     } catch (error) {
       console.error("Error checking pending months:", error);
@@ -1034,8 +1049,12 @@ const SubscriptionForm = () => {
                 value={subscriptionType}
                 onValueChange={(val) => {
                   if (hasForcedPending) return;
+                  if (val === "yearly" && !yearlyAvailable) return;
                   setSubscriptionType(val);
-                  if (val === "yearly") setNumberOfMonths(1);
+                  if (val === "yearly") {
+                    setNumberOfMonths(1);
+                    if (nextUnpaidPeriod) setSubscriptionYear(String(nextUnpaidPeriod.year));
+                  }
                 }}
                 className="grid grid-cols-2 gap-4"
                 disabled={hasForcedPending}
@@ -1048,12 +1067,17 @@ const SubscriptionForm = () => {
                     <div className="text-lg font-bold text-primary mt-1">₹{monthlyAmount}/month</div>
                   </Label>
                 </div>
-                <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${hasForcedPending ? "opacity-60 cursor-not-allowed" : "cursor-pointer"} ${subscriptionType === "yearly" ? "border-primary bg-primary/5" : "border-muted"}`}>
-                  <RadioGroupItem value="yearly" id="yearly" disabled={hasForcedPending} />
-                  <Label htmlFor="yearly" className={`flex-1 ${hasForcedPending ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${yearlyDisabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"} ${subscriptionType === "yearly" ? "border-primary bg-primary/5" : "border-muted"}`}>
+                  <RadioGroupItem value="yearly" id="yearly" disabled={yearlyDisabled} />
+                  <Label htmlFor="yearly" className={`flex-1 ${yearlyDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
                     <div className="font-tamil font-medium">வருட சந்தா</div>
                     <div className="text-sm text-muted-foreground">Yearly</div>
                     <div className="text-lg font-bold text-primary mt-1">₹{yearlyAmount}</div>
+                    {!yearlyAvailable && !hasForcedPending && (
+                      <div className="text-xs text-muted-foreground mt-1 font-tamil">
+                        சந்தா தொடக்க மாதத்தில் மட்டுமே கிடைக்கும் / Available only from the subscription start month
+                      </div>
+                    )}
                   </Label>
                 </div>
               </RadioGroup>
@@ -1338,6 +1362,10 @@ const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState("");
   const [purpose, setPurpose] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const anonymousDonationEnabled = settings?.anonymous_donation_enabled !== "false";
+  useEffect(() => {
+    if (!anonymousDonationEnabled && isAnonymous) setIsAnonymous(false);
+  }, [anonymousDonationEnabled, isAnonymous]);
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("cash");
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -1825,6 +1853,7 @@ const DonationPage = () => {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleDonationSubmit} className="space-y-6">
+                        {anonymousDonationEnabled && (
                         <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                           <Checkbox
                             id="anonymous"
@@ -1835,6 +1864,7 @@ const DonationPage = () => {
                             அநாமதேய நன்கொடை (Anonymous Donation)
                           </Label>
                         </div>
+                        )}
 
                         {/* Optional Membership Lookup */}
                         {!isAnonymous && (
@@ -2149,6 +2179,7 @@ const DonationPage = () => {
           onOpenChange={setShowCashRequestDialog}
           serviceType="donation"
           referenceId={cashRequestData.donationId}
+          allowDuplicate
           amount={cashRequestData.amount}
           applicantName={isAnonymous ? "Anonymous" : donorName}
           applicantPhone={phone}
