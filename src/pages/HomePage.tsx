@@ -96,7 +96,7 @@ const HomePage = () => {
     { icon: Package, titleTamil: "சொத்து மேலாண்மை", titleEnglish: "Assets Management", path: "/backoffice/assets", visKey: "card_backoffice_assets" as const, tabKey: "asset-management" },
     { icon: FileSignature, titleTamil: "கடிதத் தலைப்பு", titleEnglish: "Letterhead", path: "/letterhead", visKey: "card_backoffice_letterhead" as const, tabKey: "letterhead" },
   ];
-  const backOfficeItems = allBackOfficeItems.filter((item) => isVisible(item.visKey) && (isAdmin || canAccessTab(item.tabKey)));
+  const backOfficeItems = allBackOfficeItems.filter((item) => isVisible(item.visKey));
 
   // Section components mapping
   const renderSection = (sectionId: string) => {
