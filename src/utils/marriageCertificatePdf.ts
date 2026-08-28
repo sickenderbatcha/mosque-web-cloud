@@ -13,6 +13,7 @@ const escapeHtml = (value: string): string =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 import { generateMarriageCertificateNumber } from "@/components/admin/MarriageCertificateNumberSettings";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
 
 export interface MarriageRecord {
   id: string;
@@ -426,12 +427,7 @@ export const generateMarriageCertificatePdf = async (record: MarriageRecord) => 
   const hijriText = formatHijriDate(record.hijri_day, record.hijri_month, record.hijri_year);
   const registerPageNo = record.register_page_number || "-";
 
-  // Normalize spacing (prevents odd letter spacing artifacts in some PDF viewers)
-  const certificateText = (
-    `This is to certify that the marriage (NIKKAH) ceremony of ${groomFullName} with ${brideFullName} ` +
-    `was solemnized on ${ceremonyDate}, ${dayNameEn} at ${timeText} (${hijriText}) at ${venue}, ` +
-    `Sivagangai Dist. and recorded in our Marriage Register Page No. ${registerPageNo}.`
-  ).replace(/\s+/g, " ");
+  const certificateText = (await getRenderedCertificateBody("marriage", record)).join(" ").replace(/\s+/g, " ");
 
   // Auto-shrink if the paragraph wraps too much
   const textWidth = pageWidth - margin * 2;
@@ -822,7 +818,7 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
         </div>
         
         <div class="certificate-body">
-          <p>This is to certify that the marriage (NIKKAH) ceremony of <strong>${groomFullName}</strong> with <strong>${brideFullName}</strong> was solemnized on <strong>${ceremonyDate}, ${dayNameEn}</strong> at <strong>${timeText}</strong> (${hijriText}) at <strong>${venue}</strong>, Sivagangai Dist. and recorded in our Marriage Register Page No. <strong>${registerPageNo}</strong>.</p>
+          ${certificateBodyHtml}
         </div>
         
         <div class="details">

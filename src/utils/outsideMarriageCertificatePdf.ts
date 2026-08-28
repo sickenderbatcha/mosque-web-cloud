@@ -13,6 +13,7 @@ const escapeHtml = (value: string): string =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 import { generateOutsideMarriageCertificateNumber } from "@/components/admin/OutsideMarriageCertificateNumberSettings";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
 
 export interface OutsideMarriageRecord {
   id: string;
@@ -306,11 +307,7 @@ export const generateOutsideMarriageCertificatePdf = async (record: OutsideMarri
   const hijriText = formatHijriDate(record.hijri_day, record.hijri_month, record.hijri_year);
   const registerPageNo = record.register_page_number || "-";
 
-  const certificateText = (
-    `This is to certify that the marriage (NIKKAH) ceremony of ${groomFullName} with ${brideFullName} ` +
-    `was solemnized on ${ceremonyDate}, ${dayNameEn} at ${timeText} (${hijriText}) at ${venue}, ` +
-    `Sivagangai Dist. and recorded in our Marriage Register Page No. ${registerPageNo}.`
-  ).replace(/\s+/g, " ");
+  const certificateText = (await getRenderedCertificateBody("outside_marriage", record)).join(" ").replace(/\s+/g, " ");
 
   const textWidth = pageWidth - margin * 2;
   const fitted = fitParagraphToLines(certificateText, textWidth, 11, 4, 9);
@@ -550,7 +547,7 @@ export const printOutsideMarriageCertificate = async (record: OutsideMarriageRec
           <h2>MARRIAGE CERTIFICATE</h2>
         </div>
         <div class="certificate-body">
-          <p>This is to certify that the marriage (NIKKAH) ceremony of <strong>${groomFullName}</strong> with <strong>${brideFullName}</strong> was solemnized on <strong>${ceremonyDate}, ${dayNameEn}</strong> at <strong>${timeText}</strong> (${hijriText}) at <strong>${venue}</strong>, Sivagangai Dist. and recorded in our Marriage Register Page No. <strong>${registerPageNo}</strong>.</p>
+          ${certificateBodyHtml}
         </div>
         <div class="details">
           <p><strong>Wali:</strong> ${waliName}</p>
