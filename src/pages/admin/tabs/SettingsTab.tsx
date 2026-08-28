@@ -1457,6 +1457,99 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* Outside Marriage Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Outside Marriage Certificate Fee (வெளியூர் திருமணச் சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee for outside marriage certificates (separately from regular certificates)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Outside Marriage Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_outside_marriage")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_outside_marriage")?.value || "100");
+              setCertificateFeeDialogType("outside_marriage");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Death Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Death Certificate Fee (இறப்புச் சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for death certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Death Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_death")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_death")?.value || "100");
+              setCertificateFeeDialogType("death");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bonafide Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Bonafide Certificate Fee (உறுப்பினர் சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for bonafide certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Bonafide Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100");
+              setCertificateFeeDialogType("bonafide");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Certificate Images Card */}
       <Card>
         <CardHeader>
@@ -1755,102 +1848,6 @@ const SettingsTab = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
-
-      {/* Outside Marriage Certificate Fee */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Outside Marriage Certificate Fee (வெளியூர் திருமணச் சான்றிதழ் கட்டணம்)
-          </CardTitle>
-          <CardDescription>
-            Configure the fee for outside marriage certificates (separately from regular certificates)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
-            <div>
-              <p className="text-sm text-muted-foreground">Outside Marriage Fee</p>
-              <p className="text-2xl font-bold">
-                ₹{settings.find((s) => s.key === "certificate_fee_outside_marriage")?.value || "100"}
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => {
-              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_outside_marriage")?.value || "100");
-              setCertificateFeeDialogType("outside_marriage");
-              setCertificateFeeDialogOpen(true);
-            }}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Death Certificate Fee */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Death Certificate Fee (இறப்புச் சான்றிதழ் கட்டணம்)
-          </CardTitle>
-          <CardDescription>
-            Configure the fee charged for death certificates
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
-            <div>
-              <p className="text-sm text-muted-foreground">Death Certificate Fee</p>
-              <p className="text-2xl font-bold">
-                ₹{settings.find((s) => s.key === "certificate_fee_death")?.value || "100"}
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => {
-              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_death")?.value || "100");
-              setCertificateFeeDialogType("death");
-              setCertificateFeeDialogOpen(true);
-            }}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bonafide Certificate Fee */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Bonafide Certificate Fee (உறுப்பினர் சான்றிதழ் கட்டணம்)
-          </CardTitle>
-          <CardDescription>
-            Configure the fee charged for bonafide certificates
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
-            <div>
-              <p className="text-sm text-muted-foreground">Bonafide Certificate Fee</p>
-              <p className="text-2xl font-bold">
-                ₹{settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100"}
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => {
-              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100");
-              setCertificateFeeDialogType("bonafide");
-              setCertificateFeeDialogOpen(true);
-            }}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
 
 
       {/* Receipt Number Settings */}
