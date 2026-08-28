@@ -859,9 +859,15 @@ const SettingsTab = () => {
     setCertificateFeeDialogOpen(true);
   };
 
+  const CERTIFICATE_FEE_KEYS: Record<string, { key: string; description: string }> = {
+    regular: { key: "certificate_fee", description: "Fee for marriage certificates in INR" },
+    outside_marriage: { key: "certificate_fee_outside_marriage", description: "Fee for outside marriage certificates in INR" },
+    death: { key: "certificate_fee_death", description: "Fee for death certificates in INR" },
+    bonafide: { key: "certificate_fee_bonafide", description: "Fee for bonafide certificates in INR" },
+  };
+
   const saveCertificateFee = async () => {
-    const isOutsideMarriage = certificateFeeDialogType === "outside_marriage";
-    const key = isOutsideMarriage ? "certificate_fee_outside_marriage" : "certificate_fee";
+    const { key, description } = CERTIFICATE_FEE_KEYS[certificateFeeDialogType] ?? CERTIFICATE_FEE_KEYS.regular;
     const existingSetting = settings.find((s) => s.key === key);
 
     setSaving(true);
@@ -878,10 +884,11 @@ const SettingsTab = () => {
           .insert({
             key,
             value: certificateFeeAmount,
-            description: isOutsideMarriage ? "Fee for outside marriage certificates in INR" : "Fee for marriage/death certificates in INR",
+            description,
           });
         if (error) throw error;
       }
+
 
       toast({
         title: "Fee Updated",
