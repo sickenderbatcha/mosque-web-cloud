@@ -4,6 +4,8 @@ import { getCertificateImages, CertificateImages } from "@/lib/certificateImages
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 import CertificateFooterBlock from "@/components/CertificateFooterBlock";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
+
 
 interface HeirCertificatePreviewProps {
   record: HeirRecord;
@@ -19,12 +21,18 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
   const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
+  const [bodyLines, setBodyLines] = useState<string[]>([]);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
     getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
+
+  useEffect(() => {
+    getRenderedCertificateBody("heir", record).then(setBodyLines);
+  }, [record]);
+
 
   // Parse heirs if it's a string
   const heirs: Heir[] = typeof record.heirs === 'string' 
@@ -91,14 +99,11 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
 
       {/* Body Text */}
       <div className="text-sm leading-relaxed mb-6 text-justify">
-        <p>
-          சிவகங்கை மாவட்டம், இளையான்குடி டவுன், <span className="font-semibold">{record.deceased_address}</span>{" "}
-          தெருவில் வசித்து வந்த எங்கள் ஜமாஅத்தைச் சார்ந்த{" "}
-          <span className="font-semibold">{record.deceased_father_name}</span> மகன்/மகள்{" "}
-          <span className="font-semibold">{record.deceased_name}</span>{" "}
-          அவர்களுக்கு கீழ்க்கண்ட நபர்கள் உறவு முறையில் உள்ளவர்கள் என சான்றளிக்கப்படுகிறது.
-        </p>
+        {bodyLines.map((line, i) => (
+          <p key={i}>{line}</p>
+        ))}
       </div>
+
 
       {/* Heirs Table */}
       <table className="w-full border-collapse border border-black text-sm mb-8">

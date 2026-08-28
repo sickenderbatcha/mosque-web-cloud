@@ -4,6 +4,7 @@ import { getCertificateHeaderSettings } from "@/lib/certificateHeaderSettings";
 import { getCertificateSignatureSettings } from "@/lib/certificateSignatureSettings";
 import { generateNocCertificateNumber } from "@/components/admin/NocCertificateNumberSettings";
 import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
 
 export interface NocRecord {
   id: string;
@@ -323,7 +324,7 @@ const generateCertificateContent = async (doc: jsPDF, record: NocRecord) => {
   // Build full paragraph text
   const groomOrBride = record.applicant_relationship === "மகன்" ? "மணமகனுக்கும்" : "மணமகளுக்கும்";
   
-  const bodyText = `எங்களது I. N. P. T. ஜமாத்தைச் சேர்ந்த ${record.father_name} என்பவரது ${record.applicant_relationship} ${record.applicant_name} என்ற ${groomOrBride} தங்கள் முஹல்லாவைச் சேர்ந்த ${record.partner_father_name} என்பவரது ${record.partner_applicant_relationship || ""} ${record.partner_name} என்ற ${record.partner_category} ஷரியத் முறைப்படி திருமணம் செய்து வைப்பதற்கு எங்களுக்கு எவ்வித ஆட்சேபனையும் இல்லை என்பதை இதன் மூலம் தங்களுக்குத் தெரியப்படுத்திக்கொள்கிறோம்.`;
+  const bodyText = (await getRenderedCertificateBody("noc", record)).join(" ");
 
   // Render justified paragraph
   const contentWidth = pageWidth - contentLeft - 25; // margins on both sides

@@ -7,6 +7,7 @@ import { addTamilText, loadTamilFont, getAutoShrinkFontSize } from "@/utils/pdf/
 import { getHeirCertificateFontSizes } from "@/components/admin/HeirCertificateFontSettings";
 import { generateHeirCertificateNumber } from "@/components/admin/HeirCertificateNumberSettings";
 import { drawCertificateFooter } from "@/utils/pdf/certificateFooter";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
 
 export interface Heir {
   name: string;
@@ -144,7 +145,7 @@ export const generateHeirCertificatePdf = async (record: HeirRecord): Promise<vo
   y += 9;
   
   // Body text - wrapped paragraph with 1.5x line height
-  const bodyText = `சிவகங்கை மாவட்டம், இளையான்குடி டவுன், ${record.deceased_address} தெருவில் வசித்து வந்த எங்கள் ஜமாஅத்தைச் சார்ந்த ${record.deceased_father_name} மகன்/மகள் ${record.deceased_name} அவர்களுக்கு கீழ்க்கண்ட நபர்கள் உறவு முறையில் உள்ளவர்கள் என சான்றளிக்கப்படுகிறது.`;
+  const bodyText = (await getRenderedCertificateBody("heir", record)).join(" ");
   
   y = addTamilText(doc, bodyText, margin, y, FS.body, "normal", "left", pageWidth - margin * 2, false, 1.5);
   y += 6;
@@ -337,7 +338,7 @@ export const printHeirCertificate = async (record: HeirRecord): Promise<void> =>
   addTamilText(doc, "வாரிசு சான்றிதழ்", pageWidth / 2, y, FS.title, "bold", "center");
   y += 9;
   
-  const bodyText = `சிவகங்கை மாவட்டம், இளையான்குடி டவுன், ${record.deceased_address} தெருவில் வசித்து வந்த எங்கள் ஜமாஅத்தைச் சார்ந்த ${record.deceased_father_name} மகன்/மகள் ${record.deceased_name} அவர்களுக்கு கீழ்க்கண்ட நபர்கள் உறவு முறையில் உள்ளவர்கள் என சான்றளிக்கப்படுகிறது.`;
+  const bodyText = (await getRenderedCertificateBody("heir", record)).join(" ");
   
   y = addTamilText(doc, bodyText, margin, y, FS.body, "normal", "left", pageWidth - margin * 2, false, 1.5);
   y += 6;

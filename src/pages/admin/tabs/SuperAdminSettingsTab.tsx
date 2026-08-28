@@ -29,7 +29,7 @@ import ReceiptNumberSettings from "@/components/admin/ReceiptNumberSettings";
 import ReceiptSequenceResetSettings from "@/components/admin/ReceiptSequenceResetSettings";
 import HeirCertificateFontSettings from "@/components/admin/HeirCertificateFontSettings";
 import DeathCertificateFontSettings from "@/components/admin/DeathCertificateFontSettings";
-import DeathCertificateBodySettings from "@/components/admin/DeathCertificateBodySettings";
+import CertificateBodySettings from "@/components/admin/CertificateBodySettings";
 import HeirCertificateNumberSettings from "@/components/admin/HeirCertificateNumberSettings";
 import NocCertificateNumberSettings from "@/components/admin/NocCertificateNumberSettings";
 import MarriageCertificateNumberSettings from "@/components/admin/MarriageCertificateNumberSettings";
@@ -2138,7 +2138,7 @@ const SuperAdminSettingsTab = () => {
       {/* Death Certificate Font Settings */}
       <DeathCertificateFontSettings />
 
-      <DeathCertificateBodySettings />
+      <CertificateBodySettings />
 
       {/* Heir Certificate Number Settings */}
       <HeirCertificateNumberSettings />

@@ -6,6 +6,7 @@ import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER, CERTIFICATE_HEADER_SETTING_KEYS } from "@/lib/certificateHeaderSettings";
 import { generateMarriageCertificateNumber } from "@/components/admin/MarriageCertificateNumberSettings";
 import CertificateFooterBlock from "@/components/CertificateFooterBlock";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
 
 interface TrusteeInfo {
   name: string;
@@ -63,6 +64,11 @@ export default function MarriageCertificatePreview({ record }: Props) {
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
   const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
+  const [bodyLines, setBodyLines] = useState<string[]>([]);
+
+  useEffect(() => {
+    getRenderedCertificateBody("marriage", record).then(setBodyLines);
+  }, [record]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -192,14 +198,9 @@ export default function MarriageCertificatePreview({ record }: Props) {
 
       {/* Certificate Body */}
       <div className="text-xs leading-relaxed mb-4">
-        <p>
-          This is to certify that the marriage (NIKKAH) ceremony of{" "}
-          <strong>{groomFullName}</strong> with <strong>{brideFullName}</strong> was
-          solemnized on <strong>{ceremonyDate}, {dayNameEn}</strong> at{" "}
-          <strong>{timeText}</strong> ({hijriText}) at <strong>{venue}</strong>,
-          Sivagangai Dist. and recorded in our Marriage Register Page No.{" "}
-          <strong>{registerPageNo}</strong>.
-        </p>
+        {bodyLines.map((line, i) => (
+          <p key={i}>{line}</p>
+        ))}
       </div>
 
       {/* Details */}

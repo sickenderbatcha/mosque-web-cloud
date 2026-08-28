@@ -3,37 +3,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RotateCcw, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { upsertAppSetting } from "@/lib/appSettingsUtils";
 import {
-  DEATH_CERT_BODY_SETTING_KEY,
-  DEATH_CERT_FIELDS,
-  DEFAULT_DEATH_CERT_BODY,
-  getDeathCertificateBodyTemplate,
-} from "@/lib/deathCertificateBody";
+  CERTIFICATE_BODY_CONFIGS,
+  CERTIFICATE_BODY_TYPES,
+  CertificateBodyType,
+  getCertificateBodyTemplate,
+} from "@/lib/certificateBody";
 
-const DeathCertificateBodySettings = () => {
+const CertificateBodySettings = () => {
   const { toast } = useToast();
-  const [template, setTemplate] = useState(DEFAULT_DEATH_CERT_BODY);
+  const [type, setType] = useState<CertificateBodyType>("death");
+  const [template, setTemplate] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const config = CERTIFICATE_BODY_CONFIGS[type];
+
   useEffect(() => {
-    getDeathCertificateBodyTemplate()
-      .then(setTemplate)
-      .finally(() => setLoading(false));
-  }, []);
+    let active = true;
+    setLoading(true);
+    getCertificateBodyTemplate(type)
+      .then((value) => {
+        if (active) setTemplate(value);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [type]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await upsertAppSetting(
-        DEATH_CERT_BODY_SETTING_KEY,
+        config.settingKey,
         template,
-        "Death certificate body text template using @F<serial> field tokens"
+        `${config.label} body text template using @F<serial> field tokens`
       );
-      toast({ title: "Saved", description: "Death certificate body text updated." });
+      toast({ title: "Saved", description: `${config.label} body text updated.` });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -53,14 +66,24 @@ const DeathCertificateBodySettings = () => {
     <Card>
       <CardHeader>
         <CardTitle className="font-tamil">
-          இறப்புச் சான்றிதழ் உரை / Death Certificate Body Text
+          சான்றிதழ் உரை / Certificate Body Text
         </CardTitle>
         <CardDescription>
-          Use <code>@F1</code>, <code>@F2</code> … tokens to insert death register field values. Each
-          line becomes one line on the certificate.
+          Use <code>@F1</code>, <code>@F2</code> … tokens to insert record field values. Each line
+          becomes one line on the certificate.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Tabs value={type} onValueChange={(v) => setType(v as CertificateBodyType)} activationMode="manual">
+          <TabsList className="flex flex-wrap h-auto">
+            {CERTIFICATE_BODY_TYPES.map((c) => (
+              <TabsTrigger key={c.type} value={c.type} className="font-tamil text-xs">
+                {c.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
         {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
@@ -90,7 +113,7 @@ const DeathCertificateBodySettings = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {DEATH_CERT_FIELDS.map((field) => (
+                    {config.fields.map((field) => (
                       <tr key={field.serial} className="border-t">
                         <td className="p-2">{field.serial}</td>
                         <td className="p-2 font-mono">@F{field.serial}</td>
@@ -112,7 +135,7 @@ const DeathCertificateBodySettings = () => {
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save
               </Button>
-              <Button variant="outline" onClick={() => setTemplate(DEFAULT_DEATH_CERT_BODY)} disabled={saving}>
+              <Button variant="outline" onClick={() => setTemplate(config.defaultTemplate)} disabled={saving}>
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Reset to default
               </Button>
@@ -124,4 +147,4 @@ const DeathCertificateBodySettings = () => {
   );
 };
 
-export default DeathCertificateBodySettings;
+export default CertificateBodySettings;
