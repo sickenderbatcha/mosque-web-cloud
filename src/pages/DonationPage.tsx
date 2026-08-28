@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useUserTabPermissions } from "@/hooks/useUserTabPermissions";
 import { useOnlinePaymentAvailability } from "@/hooks/useOnlinePaymentAvailability";
-import { Heart, User, Phone, CreditCard, Loader2, Calendar, Search } from "lucide-react";
+import { Heart, User, Phone, CreditCard, Loader2, Calendar, Search, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1101,7 +1102,30 @@ const SubscriptionForm = () => {
                         (Fixed to next unpaid month / அடுத்த நிலுவை மாதம்)
                       </span>
                     )}
+                    {lockFromPeriod && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button type="button" className="ml-1 align-middle text-muted-foreground" aria-label="Why is this locked?">
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs font-tamil">
+                            {hasForcedPending
+                              ? "நிலுவையில் உள்ள மாதங்களை முதலில் செலுத்த வேண்டும், எனவே தொடக்க காலம் மாற்ற முடியாது. / Pending months must be paid first, so the start period cannot be changed."
+                              : "மாதங்களை தவிர்க்காமல் வரிசையாக செலுத்த வேண்டும். அடுத்த செலுத்தப்படாத மாதமே தொடக்க காலம். / Subscriptions must be paid in order without skipping, so the start period is fixed to the next unpaid month."}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </Label>
+                  {lockFromPeriod && (
+                    <p className="text-xs text-muted-foreground font-tamil">
+                      {hasForcedPending
+                        ? "நிலுவையில் உள்ள மாதங்கள் முதலில் செலுத்தப்பட வேண்டும். / Pending months must be cleared first."
+                        : "மாதங்களை தவிர்க்க முடியாது; அடுத்த செலுத்தப்படாத மாதத்திலிருந்தே தொடங்கும். / Months cannot be skipped; payment starts from the next unpaid month."}
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
                     <Select value={fromMonth} onValueChange={setFromMonth} disabled={lockFromPeriod}>
                       <SelectTrigger className={lockFromPeriod ? "opacity-60" : ""}>
