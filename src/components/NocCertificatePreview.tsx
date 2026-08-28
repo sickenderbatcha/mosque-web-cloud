@@ -4,6 +4,8 @@ import { getCertificateImages, CertificateImages } from "@/lib/certificateImages
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 import CertificateFooterBlock from "@/components/CertificateFooterBlock";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
+
 
 interface NocCertificatePreviewProps {
   record: NocRecord;
@@ -19,12 +21,18 @@ export default function NocCertificatePreview({ record }: NocCertificatePreviewP
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
   const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
+  const [bodyLines, setBodyLines] = useState<string[]>([]);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
     getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
+
+  useEffect(() => {
+    getRenderedCertificateBody("noc", record).then(setBodyLines);
+  }, [record]);
+
 
   return (
     <div className="bg-white p-8 border rounded-lg shadow-sm max-w-[210mm] mx-auto print:shadow-none print:border-0">
@@ -74,10 +82,11 @@ export default function NocCertificatePreview({ record }: NocCertificatePreviewP
 
       {/* Body */}
       <div className="font-tamil text-sm leading-relaxed mb-8 text-justify w-full">
-        <p>
-          எங்களது I. N. P. T. ஜமாத்தைச் சேர்ந்த <span className="font-semibold">{record.father_name}</span> என்பவரது {record.applicant_relationship} <span className="font-semibold">{record.applicant_name}</span> என்ற {record.applicant_relationship === "மகன்" ? "மணமகனுக்கும்" : "மணமகளுக்கும்"} தங்கள் முஹல்லாவைச் சேர்ந்த <span className="font-semibold">{record.partner_father_name}</span> என்பவரது {record.partner_applicant_relationship} <span className="font-semibold">{record.partner_name}</span> என்ற {record.partner_category} ஷரியத் முறைப்படி திருமணம் செய்து வைப்பதற்கு எங்களுக்கு எவ்வித ஆட்சேபனையும் இல்லை என்பதை இதன் மூலம் தங்களுக்குத் தெரியப்படுத்திக்கொள்கிறோம்.
-        </p>
+        {bodyLines.map((line, i) => (
+          <p key={i}>{line}</p>
+        ))}
       </div>
+
 
       {/* Signature Section */}
       <div className="flex justify-between items-end mt-12">
