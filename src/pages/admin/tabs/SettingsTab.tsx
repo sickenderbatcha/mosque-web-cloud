@@ -39,7 +39,7 @@ const SettingsTab = () => {
   const [subscriptionType, setSubscriptionType] = useState<"monthly" | "yearly">("monthly");
   const [subscriptionAmount, setSubscriptionAmount] = useState("");
   const [certificateFeeDialogOpen, setCertificateFeeDialogOpen] = useState(false);
-  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage">("regular");
+  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage" | "death" | "bonafide">("regular");
   const [certificateFeeAmount, setCertificateFeeAmount] = useState("");
   const [trusteeDialogOpen, setTrusteeDialogOpen] = useState(false);
   const [trusteeName, setTrusteeName] = useState("");
