@@ -1640,13 +1640,24 @@ const SettingsTab = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {certificateFeeDialogType === "outside_marriage" ? "Edit Outside Marriage Certificate Fee" : "Edit Certificate Fee"}
+              {certificateFeeDialogType === "outside_marriage"
+                ? "Edit Outside Marriage Certificate Fee"
+                : certificateFeeDialogType === "death"
+                ? "Edit Death Certificate Fee"
+                : certificateFeeDialogType === "bonafide"
+                ? "Edit Bonafide Certificate Fee"
+                : "Edit Certificate Fee"}
             </DialogTitle>
             <DialogDescription>
-              {certificateFeeDialogType === "outside_marriage" 
+              {certificateFeeDialogType === "outside_marriage"
                 ? "Set the fee for outside marriage certificates (வெளியூர் திருமணச் சான்றிதழ் கட்டணம்)"
-                : "Set the fee for marriage/death certificates (சான்றிதழ் கட்டணம்)"}
+                : certificateFeeDialogType === "death"
+                ? "Set the fee for death certificates (இறப்புச் சான்றிதழ் கட்டணம்)"
+                : certificateFeeDialogType === "bonafide"
+                ? "Set the fee for bonafide certificates (உறுப்பினர் சான்றிதழ் கட்டணம்)"
+                : "Set the fee for marriage certificates (சான்றிதழ் கட்டணம்)"}
             </DialogDescription>
+
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
