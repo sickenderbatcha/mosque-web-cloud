@@ -86,6 +86,16 @@ const ServicesPage = () => {
     "marriage" | "death" | "bonafide" | "noc" | "heir"
   >("marriage");
 
+  // Fee resolved per certificate type (death and bonafide have their own settings)
+  const certificateFee =
+    activeCertificateType === "death"
+      ? parseInt(settings.certificate_fee_death) || parseInt(settings.certificate_fee) || 100
+      : activeCertificateType === "bonafide"
+      ? parseInt(settings.certificate_fee_bonafide) || parseInt(settings.certificate_fee) || 100
+      : parseInt(settings.certificate_fee) || 100;
+
+
+
   const [searchDate, setSearchDate] = useState("");
   const [membershipNo, setMembershipNo] = useState("");
   const [selectedRecord, setSelectedRecord] = useState("");
