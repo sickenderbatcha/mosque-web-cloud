@@ -4,6 +4,8 @@ import { getCertificateImages, CertificateImages } from "@/lib/certificateImages
 import { getCertificateSignatureSettings, CertificateSignatureSettings, DEFAULT_CERTIFICATE_SIGNATURE } from "@/lib/certificateSignatureSettings";
 import { getCertificateHeaderSettings, CertificateHeaderSettings, DEFAULT_CERTIFICATE_HEADER } from "@/lib/certificateHeaderSettings";
 import CertificateFooterBlock from "@/components/CertificateFooterBlock";
+import { getRenderedCertificateBody } from "@/lib/certificateBody";
+
 
 interface HeirCertificatePreviewProps {
   record: HeirRecord;
@@ -19,12 +21,18 @@ export default function HeirCertificatePreview({ record }: HeirCertificatePrevie
   });
   const [headerSettings, setHeaderSettings] = useState<CertificateHeaderSettings>(DEFAULT_CERTIFICATE_HEADER);
   const [signatureSettings, setSignatureSettings] = useState<CertificateSignatureSettings>(DEFAULT_CERTIFICATE_SIGNATURE);
+  const [bodyLines, setBodyLines] = useState<string[]>([]);
 
   useEffect(() => {
     getCertificateImages().then(setImages);
     getCertificateSignatureSettings().then(setSignatureSettings);
     getCertificateHeaderSettings().then(setHeaderSettings);
   }, []);
+
+  useEffect(() => {
+    getRenderedCertificateBody("heir", record).then(setBodyLines);
+  }, [record]);
+
 
   // Parse heirs if it's a string
   const heirs: Heir[] = typeof record.heirs === 'string' 
