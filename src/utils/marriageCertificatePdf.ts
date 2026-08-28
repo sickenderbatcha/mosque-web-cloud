@@ -619,6 +619,12 @@ export const printMarriageCertificate = async (record: MarriageRecord) => {
   const marriageFooter = await getCertificateFooter("marriage");
   const marriageFooterHtml = certificateFooterHtml(marriageFooter.ta, marriageFooter.en);
 
+  const escapeHtml = (v: string) =>
+    v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const certificateBodyHtml = (await getRenderedCertificateBody("marriage", record))
+    .map((line) => `<p>${escapeHtml(line)}</p>`)
+    .join("");
+
   const printContent = `
     <!DOCTYPE html>
     <html>
