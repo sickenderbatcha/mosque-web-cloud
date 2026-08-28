@@ -58,8 +58,8 @@ const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
-  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
-  const certificateFee = parseInt(settings.certificate_fee) || 100;
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "certificate_fee_death", "certificate_fee_bonafide", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
+
 
   const canBypassCertOnlineDisable = isAdmin || canAccessTab("certificate-payments");
 
