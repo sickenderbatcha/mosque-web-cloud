@@ -58,8 +58,8 @@ const ServicesPage = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { canAccessTab } = useUserTabPermissions();
-  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
-  const certificateFee = parseInt(settings.certificate_fee) || 100;
+  const { settings, isLoading: settingsLoading, getSetting } = useAppSettings(["certificate_fee", "certificate_fee_death", "certificate_fee_bonafide", "bonafide_cert_online_disabled", "marriage_cert_online_disabled", "death_cert_online_disabled"]);
+
 
   const canBypassCertOnlineDisable = isAdmin || canAccessTab("certificate-payments");
 
@@ -85,6 +85,16 @@ const ServicesPage = () => {
   const [activeCertificateType, setActiveCertificateType] = useState<
     "marriage" | "death" | "bonafide" | "noc" | "heir"
   >("marriage");
+
+  // Fee resolved per certificate type (death and bonafide have their own settings)
+  const certificateFee =
+    activeCertificateType === "death"
+      ? parseInt(settings.certificate_fee_death) || parseInt(settings.certificate_fee) || 100
+      : activeCertificateType === "bonafide"
+      ? parseInt(settings.certificate_fee_bonafide) || parseInt(settings.certificate_fee) || 100
+      : parseInt(settings.certificate_fee) || 100;
+
+
 
   const [searchDate, setSearchDate] = useState("");
   const [membershipNo, setMembershipNo] = useState("");

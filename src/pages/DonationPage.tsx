@@ -170,6 +170,11 @@ const SubscriptionForm = () => {
   const [subscriptionStartMonth, setSubscriptionStartMonth] = useState(1);
   // hasForcedPending: only lock the form when config is ON and pending months exist
   const hasForcedPending = forcePendingEnabled && pendingMonths.length > 0;
+  // Lock the From Period whenever we know the member's next unpaid month,
+  // so earlier unpaid months can't be skipped
+  const lockFromPeriod =
+    hasForcedPending || (memberFound && pendingMonthsChecked && nextUnpaidPeriod !== null);
+
   // Yearly subscription is only offered when nothing is pending and the next unpaid
   // month is the configured subscription start month
   const yearlyAvailable =
@@ -1091,10 +1096,15 @@ const SubscriptionForm = () => {
                   <Label className="font-tamil">
                     தொடக்க காலம் * (From Period)
                     {hasForcedPending && <span className="text-xs text-amber-600 dark:text-amber-400 ml-2">(Auto-set to pending months)</span>}
+                    {!hasForcedPending && lockFromPeriod && (
+                      <span className="text-xs text-amber-600 dark:text-amber-400 ml-2">
+                        (Fixed to next unpaid month / அடுத்த நிலுவை மாதம்)
+                      </span>
+                    )}
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
-                    <Select value={fromMonth} onValueChange={setFromMonth} disabled={hasForcedPending}>
-                      <SelectTrigger className={hasForcedPending ? "opacity-60" : ""}>
+                    <Select value={fromMonth} onValueChange={setFromMonth} disabled={lockFromPeriod}>
+                      <SelectTrigger className={lockFromPeriod ? "opacity-60" : ""}>
                         <SelectValue placeholder="Month" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1105,10 +1115,11 @@ const SubscriptionForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select value={fromYear} onValueChange={setFromYear} disabled={hasForcedPending}>
-                      <SelectTrigger className={hasForcedPending ? "opacity-60" : ""}>
+                    <Select value={fromYear} onValueChange={setFromYear} disabled={lockFromPeriod}>
+                      <SelectTrigger className={lockFromPeriod ? "opacity-60" : ""}>
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
+
                       <SelectContent>
                         {yearOptions.map((year) => (
                           <SelectItem key={year} value={year}>

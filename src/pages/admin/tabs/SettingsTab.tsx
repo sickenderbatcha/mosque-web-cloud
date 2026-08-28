@@ -39,7 +39,7 @@ const SettingsTab = () => {
   const [subscriptionType, setSubscriptionType] = useState<"monthly" | "yearly">("monthly");
   const [subscriptionAmount, setSubscriptionAmount] = useState("");
   const [certificateFeeDialogOpen, setCertificateFeeDialogOpen] = useState(false);
-  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage">("regular");
+  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage" | "death" | "bonafide">("regular");
   const [certificateFeeAmount, setCertificateFeeAmount] = useState("");
   const [trusteeDialogOpen, setTrusteeDialogOpen] = useState(false);
   const [trusteeName, setTrusteeName] = useState("");
@@ -859,9 +859,15 @@ const SettingsTab = () => {
     setCertificateFeeDialogOpen(true);
   };
 
+  const CERTIFICATE_FEE_KEYS: Record<string, { key: string; description: string }> = {
+    regular: { key: "certificate_fee", description: "Fee for marriage certificates in INR" },
+    outside_marriage: { key: "certificate_fee_outside_marriage", description: "Fee for outside marriage certificates in INR" },
+    death: { key: "certificate_fee_death", description: "Fee for death certificates in INR" },
+    bonafide: { key: "certificate_fee_bonafide", description: "Fee for bonafide certificates in INR" },
+  };
+
   const saveCertificateFee = async () => {
-    const isOutsideMarriage = certificateFeeDialogType === "outside_marriage";
-    const key = isOutsideMarriage ? "certificate_fee_outside_marriage" : "certificate_fee";
+    const { key, description } = CERTIFICATE_FEE_KEYS[certificateFeeDialogType] ?? CERTIFICATE_FEE_KEYS.regular;
     const existingSetting = settings.find((s) => s.key === key);
 
     setSaving(true);
@@ -878,10 +884,11 @@ const SettingsTab = () => {
           .insert({
             key,
             value: certificateFeeAmount,
-            description: isOutsideMarriage ? "Fee for outside marriage certificates in INR" : "Fee for marriage/death certificates in INR",
+            description,
           });
         if (error) throw error;
       }
+
 
       toast({
         title: "Fee Updated",
@@ -1633,13 +1640,24 @@ const SettingsTab = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {certificateFeeDialogType === "outside_marriage" ? "Edit Outside Marriage Certificate Fee" : "Edit Certificate Fee"}
+              {certificateFeeDialogType === "outside_marriage"
+                ? "Edit Outside Marriage Certificate Fee"
+                : certificateFeeDialogType === "death"
+                ? "Edit Death Certificate Fee"
+                : certificateFeeDialogType === "bonafide"
+                ? "Edit Bonafide Certificate Fee"
+                : "Edit Certificate Fee"}
             </DialogTitle>
             <DialogDescription>
-              {certificateFeeDialogType === "outside_marriage" 
+              {certificateFeeDialogType === "outside_marriage"
                 ? "Set the fee for outside marriage certificates (வெளியூர் திருமணச் சான்றிதழ் கட்டணம்)"
-                : "Set the fee for marriage/death certificates (சான்றிதழ் கட்டணம்)"}
+                : certificateFeeDialogType === "death"
+                ? "Set the fee for death certificates (இறப்புச் சான்றிதழ் கட்டணம்)"
+                : certificateFeeDialogType === "bonafide"
+                ? "Set the fee for bonafide certificates (உறுப்பினர் சான்றிதழ் கட்டணம்)"
+                : "Set the fee for marriage certificates (சான்றிதழ் கட்டணம்)"}
             </DialogDescription>
+
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -1770,6 +1788,70 @@ const SettingsTab = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Death Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Death Certificate Fee (இறப்புச் சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for death certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Death Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_death")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_death")?.value || "100");
+              setCertificateFeeDialogType("death");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bonafide Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Bonafide Certificate Fee (உறுப்பினர் சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for bonafide certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Bonafide Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_bonafide")?.value || "100");
+              setCertificateFeeDialogType("bonafide");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+
 
       {/* Receipt Number Settings */}
       <ReceiptNumberSettings />
