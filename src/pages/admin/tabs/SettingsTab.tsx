@@ -39,7 +39,7 @@ const SettingsTab = () => {
   const [subscriptionType, setSubscriptionType] = useState<"monthly" | "yearly">("monthly");
   const [subscriptionAmount, setSubscriptionAmount] = useState("");
   const [certificateFeeDialogOpen, setCertificateFeeDialogOpen] = useState(false);
-  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage" | "death" | "bonafide">("regular");
+  const [certificateFeeDialogType, setCertificateFeeDialogType] = useState<"regular" | "outside_marriage" | "death" | "bonafide" | "noc" | "heir">("regular");
   const [certificateFeeAmount, setCertificateFeeAmount] = useState("");
   const [trusteeDialogOpen, setTrusteeDialogOpen] = useState(false);
   const [trusteeName, setTrusteeName] = useState("");
@@ -864,6 +864,8 @@ const SettingsTab = () => {
     outside_marriage: { key: "certificate_fee_outside_marriage", description: "Fee for outside marriage certificates in INR" },
     death: { key: "certificate_fee_death", description: "Fee for death certificates in INR" },
     bonafide: { key: "certificate_fee_bonafide", description: "Fee for bonafide certificates in INR" },
+    noc: { key: "certificate_fee_noc", description: "Fee for NOC certificates in INR" },
+    heir: { key: "certificate_fee_heir", description: "Fee for heir certificates in INR" },
   };
 
   const saveCertificateFee = async () => {
@@ -1550,6 +1552,68 @@ const SettingsTab = () => {
         </CardContent>
       </Card>
 
+      {/* NOC Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            NOC Certificate Fee (ஆட்சேபணை இல்லா சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for NOC certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">NOC Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_noc")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_noc")?.value || "100");
+              setCertificateFeeDialogType("noc");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Heir Certificate Fee */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Heir Certificate Fee (வாரிசு சான்றிதழ் கட்டணம்)
+          </CardTitle>
+          <CardDescription>
+            Configure the fee charged for heir certificates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg max-w-sm">
+            <div>
+              <p className="text-sm text-muted-foreground">Heir Certificate Fee</p>
+              <p className="text-2xl font-bold">
+                ₹{settings.find((s) => s.key === "certificate_fee_heir")?.value || "100"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => {
+              setCertificateFeeAmount(settings.find((s) => s.key === "certificate_fee_heir")?.value || "100");
+              setCertificateFeeDialogType("heir");
+              setCertificateFeeDialogOpen(true);
+            }}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Certificate Images Card */}
       <Card>
         <CardHeader>
@@ -1739,6 +1803,10 @@ const SettingsTab = () => {
                 ? "Edit Death Certificate Fee"
                 : certificateFeeDialogType === "bonafide"
                 ? "Edit Bonafide Certificate Fee"
+                : certificateFeeDialogType === "noc"
+                ? "Edit NOC Certificate Fee"
+                : certificateFeeDialogType === "heir"
+                ? "Edit Heir Certificate Fee"
                 : "Edit Certificate Fee"}
             </DialogTitle>
             <DialogDescription>
@@ -1748,6 +1816,10 @@ const SettingsTab = () => {
                 ? "Set the fee for death certificates (இறப்புச் சான்றிதழ் கட்டணம்)"
                 : certificateFeeDialogType === "bonafide"
                 ? "Set the fee for bonafide certificates (உறுப்பினர் சான்றிதழ் கட்டணம்)"
+                : certificateFeeDialogType === "noc"
+                ? "Set the fee for NOC certificates (ஆட்சேபணை இல்லா சான்றிதழ் கட்டணம்)"
+                : certificateFeeDialogType === "heir"
+                ? "Set the fee for heir certificates (வாரிசு சான்றிதழ் கட்டணம்)"
                 : "Set the fee for marriage certificates (சான்றிதழ் கட்டணம்)"}
             </DialogDescription>
 
