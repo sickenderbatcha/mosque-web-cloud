@@ -115,7 +115,7 @@ export default function HeirCertificatePage() {
     { name: "", relationship: "", age: "", marriage_eligibility: "" }
   ]);
 
-  const certificateFee = Number(getSetting("certificate_fee_heir") || getSetting("certificate_fee") || "100");
+  const certificateFee = Number(getSetting("certificate_fee_heir") || "100");
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
