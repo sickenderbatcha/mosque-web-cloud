@@ -2159,6 +2159,7 @@ export type Database = {
           status: string
           upi_id: string | null
           user_id: string
+          voucher_number: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -2178,6 +2179,7 @@ export type Database = {
           status?: string
           upi_id?: string | null
           user_id: string
+          voucher_number?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -2197,6 +2199,7 @@ export type Database = {
           status?: string
           upi_id?: string | null
           user_id?: string
+          voucher_number?: string | null
         }
         Relationships: [
           {
