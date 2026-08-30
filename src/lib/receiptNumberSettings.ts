@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general" | "rental";
+export type ReceiptType = "booking" | "donation" | "subscription" | "cash_payment" | "certificate_noc" | "certificate_heir" | "certificate_general" | "rental" | "refund";
 
 export interface ReceiptNumberSettings {
   booking_prefix: string;
@@ -11,6 +11,7 @@ export interface ReceiptNumberSettings {
   certificate_heir_prefix: string;
   certificate_general_prefix: string;
   rental_prefix: string;
+  refund_prefix: string;
 }
 
 // Default prefixes
@@ -23,6 +24,7 @@ const DEFAULT_SETTINGS: ReceiptNumberSettings = {
   certificate_heir_prefix: "HEIR-",
   certificate_general_prefix: "CERT-",
   rental_prefix: "RENT-",
+  refund_prefix: "REF-",
 };
 
 // Keys used in app_settings
@@ -35,7 +37,9 @@ const SETTING_KEYS: Record<keyof ReceiptNumberSettings, string> = {
   certificate_heir_prefix: "receipt_num_prefix_cert_heir",
   certificate_general_prefix: "receipt_num_prefix_cert_general",
   rental_prefix: "receipt_num_prefix_rental",
+  refund_prefix: "receipt_num_prefix_refund",
 };
+
 
 // No-op for backward compatibility
 export const clearReceiptNumberCache = () => {};
