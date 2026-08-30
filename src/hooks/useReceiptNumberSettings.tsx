@@ -47,6 +47,8 @@ export const useReceiptNumberSettings = () => {
           receipt_num_prefix_cert_heir: "certificate_heir_prefix",
           receipt_num_prefix_cert_general: "certificate_general_prefix",
           receipt_num_prefix_rental: "rental_prefix",
+          receipt_num_prefix_refund: "refund_prefix",
+
         };
 
         data.forEach((item) => {
