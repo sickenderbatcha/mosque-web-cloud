@@ -30,6 +30,7 @@ interface RefundRequest {
   refund_payment_type: string | null;
   refund_reference_number: string | null;
   refund_additional_info: string | null;
+  voucher_number: string | null;
   created_at: string;
   processed_at: string | null;
   mahal_bookings: {
@@ -225,6 +226,9 @@ const RefundsTab = () => {
     return { type: "Not provided", value: "-" };
   };
 
+  const getVoucherNumber = (refund: RefundRequest) =>
+    refund.voucher_number || `REF-${refund.id.substring(0, 8).toUpperCase()}`;
+
   const buildVoucherHTML = async (refund: RefundRequest, autoPrint = false) => {
     let regularBase64 = "";
     let boldBase64 = "";
@@ -297,7 +301,7 @@ const RefundsTab = () => {
   <div class="voucher-title">பணத்திரும்ப வவுச்சர்</div>
 
   <div class="info-row">
-    <span><span class="label">வவுச்சர் எண்:</span> REF-${refund.id.substring(0, 8).toUpperCase()}</span>
+    <span><span class="label">வவுச்சர் எண்:</span> ${getVoucherNumber(refund)}</span>
     <span><span class="label">தேதி:</span> ${format(new Date(), "dd/MM/yyyy")}</span>
   </div>
 
@@ -351,7 +355,7 @@ ${autoPrint ? `<script>window.onload = function() { window.print(); }</script>` 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `refund-voucher-REF-${refund.id.substring(0, 8).toUpperCase()}.html`;
+    a.download = `refund-voucher-${getVoucherNumber(refund)}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
