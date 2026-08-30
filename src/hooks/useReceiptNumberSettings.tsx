@@ -16,6 +16,7 @@ const RECEIPT_NUMBER_KEYS = [
   "receipt_num_prefix_cert_heir",
   "receipt_num_prefix_cert_general",
   "receipt_num_prefix_rental",
+  "receipt_num_prefix_refund",
 ];
 
 export const useReceiptNumberSettings = () => {
