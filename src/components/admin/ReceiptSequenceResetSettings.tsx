@@ -24,6 +24,7 @@ const RECEIPT_TYPE_LABELS: Record<string, string> = {
   certificate_general: "சான்றிதழ் பொது (Certificate General - Marriage/Death/NOC/Heir)",
   certificate_heir: "வாரிசு சான்றிதழ் (Heir Certificate)",
   rental: "வாடகை (Rental)",
+  refund: "பணத்திரும்ப வவுச்சர் (Refund Voucher)",
 };
 
 const ReceiptSequenceResetSettings = () => {
