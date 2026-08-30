@@ -608,6 +608,8 @@ const MahalBookingPage = () => {
           paymentMethod: "cash",
         });
         setShowReceipt(true);
+        setCalendarRefreshKey((k) => k + 1);
+
 
         // Reset form
         setFormData({
