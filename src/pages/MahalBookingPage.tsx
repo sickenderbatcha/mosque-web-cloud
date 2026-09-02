@@ -110,6 +110,7 @@ const MahalBookingPage = () => {
     pendingServices?: typeof selectedServices;
   } | null>(null);
   const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
+  const [desktopCalendarKey, setDesktopCalendarKey] = useState(0);
   const [showOTPDialog, setShowOTPDialog] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [isAdminOverride, setIsAdminOverride] = useState(false);
@@ -337,6 +338,7 @@ const MahalBookingPage = () => {
             });
             setShowReceipt(true);
             setCalendarRefreshKey((k) => k + 1);
+            setDesktopCalendarKey((k) => k + 1);
 
 
             // Reset form
@@ -609,6 +611,7 @@ const MahalBookingPage = () => {
         });
         setShowReceipt(true);
         setCalendarRefreshKey((k) => k + 1);
+        setDesktopCalendarKey((k) => k + 1);
 
 
         // Reset form
@@ -1361,6 +1364,7 @@ const MahalBookingPage = () => {
                 <div className="sticky top-24 space-y-4 sm:space-y-6 w-full overflow-hidden z-10">
                   {/* Availability Calendar */}
                   <AvailabilityCalendar 
+                    key={desktopCalendarKey}
                     selectedDate={formData.eventDate}
                     onDateSelect={(date) => handleFieldChange("eventDate", format(date, "yyyy-MM-dd"))}
                     refreshKey={calendarRefreshKey}
