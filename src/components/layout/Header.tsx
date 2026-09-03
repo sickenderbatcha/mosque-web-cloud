@@ -133,11 +133,7 @@ const Header = () => {
     if (user) {
       const isAdminLike = isAdmin || hasTabAccess;
       const triggerVariant = isSuperAdmin ? "destructive" : isAdminLike ? "outline" : "default";
-      const triggerLabel = isSuperAdmin ?
-      "சூப்பர் நிர்வாகி" :
-      isAdminLike ?
-      "நிர்வாக பலகை" :
-      user.user_metadata?.full_name || user.email?.split("@")[0];
+      const triggerLabel = user.user_metadata?.full_name || user.email?.split("@")[0];
       const TriggerIcon = isSuperAdmin || isAdminLike ? Shield : User;
 
       return (
