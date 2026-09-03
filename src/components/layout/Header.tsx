@@ -367,23 +367,7 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {isSuperAdmin &&
-              <Button asChild variant="destructive" size="sm" className="gap-2">
-                  <Link to="/superadmin">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-tamil text-xs">சூப்பர் நிர்வாகி</span>
-                  </Link>
-                </Button>
-              }
 
-              {(isAdmin || hasTabAccess) &&
-              <Button asChild variant="outline" size="sm" className="gap-2">
-                  <Link to="/admin">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-tamil text-xs">நிர்வாக பலகை</span>
-                  </Link>
-                </Button>
-              }
 
               <AuthButton />
             </div>
