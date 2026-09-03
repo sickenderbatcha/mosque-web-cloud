@@ -131,42 +131,64 @@ const Header = () => {
     }
 
     if (user) {
+      const isAdminLike = isAdmin || hasTabAccess;
+      const triggerVariant = isSuperAdmin ? "destructive" : isAdminLike ? "outline" : "default";
+      const triggerLabel = isSuperAdmin ?
+      "சூப்பர் நிர்வாகி" :
+      isAdminLike ?
+      "நிர்வாக பலகை" :
+      user.user_metadata?.full_name || user.email?.split("@")[0];
+      const TriggerIcon = isSuperAdmin || isAdminLike ? Shield : User;
+
       return (
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="default" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                <span className="font-tamil text-xs max-w-24 truncate">
-                  {user.user_metadata?.full_name || user.email?.split("@")[0]}
-                </span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                {user.email}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard" className="cursor-pointer">
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
-                  <span className="font-tamil">டாஷ்போர்டு</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={triggerVariant} size="sm" className="gap-2">
+              <TriggerIcon className="h-4 w-4" />
+              <span className="font-tamil text-xs max-w-32 truncate">{triggerLabel}</span>
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+              {user.email}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {isSuperAdmin &&
+            <DropdownMenuItem asChild>
+                <Link to="/superadmin" className="cursor-pointer">
+                  <Shield className="h-4 w-4 mr-2" />
+                  <span className="font-tamil">சூப்பர் நிர்வாகி</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="cursor-pointer">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="font-tamil">சுயவிவரம்</span>
+            }
+            {isAdminLike &&
+            <DropdownMenuItem asChild>
+                <Link to="/admin" className="cursor-pointer">
+                  <Shield className="h-4 w-4 mr-2" />
+                  <span className="font-tamil">நிர்வாக பலகை</span>
                 </Link>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            <span className="font-tamil text-xs">வெளியேறு</span>
-          </Button>
-        </div>);
+            }
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard" className="cursor-pointer">
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                <span className="font-tamil">டாஷ்போர்டு</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="cursor-pointer">
+                <User className="h-4 w-4 mr-2" />
+                <span className="font-tamil">சுயவிவரம்</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="font-tamil">வெளியேறு</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>);
 
     }
 
@@ -179,6 +201,7 @@ const Header = () => {
       </Button>);
 
   };
+
 
   const MobileAuthButton = () => {
     if (loading) {
@@ -344,23 +367,7 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {isSuperAdmin &&
-              <Button asChild variant="destructive" size="sm" className="gap-2">
-                  <Link to="/superadmin">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-tamil text-xs">சூப்பர் நிர்வாகி</span>
-                  </Link>
-                </Button>
-              }
 
-              {(isAdmin || hasTabAccess) &&
-              <Button asChild variant="outline" size="sm" className="gap-2">
-                  <Link to="/admin">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-tamil text-xs">நிர்வாக பலகை</span>
-                  </Link>
-                </Button>
-              }
 
               <AuthButton />
             </div>
