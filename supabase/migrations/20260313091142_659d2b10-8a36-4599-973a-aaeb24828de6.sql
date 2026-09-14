@@ -1,1 +1,0 @@
-ALTER TABLE public.rental_payments ADD COLUMN IF NOT EXISTS remarks text;
