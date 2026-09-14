@@ -92,11 +92,12 @@ export async function requireCronOrAdmin(
   req: Request,
   corsHeaders: Record<string, string>,
 ): Promise<Response | null> {
-  const cronSecret = Deno.env.get("CRON_SECRET");
+  const accepted = [Deno.env.get("CRON_SECRET"), Deno.env.get("CRON_SECRET_DB")]
+    .filter((v): v is string => !!v);
   const provided =
     req.headers.get("x-cron-secret") || req.headers.get("X-Cron-Secret") || "";
 
-  if (cronSecret && provided && provided === cronSecret) return null;
+  if (provided && accepted.includes(provided)) return null;
 
   const caller = await getCaller(req);
   if (caller.isAdmin) return null;
